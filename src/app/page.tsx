@@ -2,10 +2,20 @@ import Image from "next/image";
 import Link from "next/link";
 import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/Button";
+import { ProgramCard, type ProgramCardProps } from "@/components/domain/ProgramCard";
 import styles from "./(public)/home.module.css";
 
+interface Destination {
+  readonly slug: string;
+  readonly nameAr: string;
+  readonly nameEn: string;
+  readonly image: string;
+  readonly badge: string;
+  readonly large?: boolean;
+}
+
 /* ── Destination data backed by real images from صور rafeeq ── */
-const DESTINATIONS = [
+const DESTINATIONS: readonly Destination[] = [
   {
     slug: "alula",
     nameAr: "العلا",
@@ -39,17 +49,56 @@ const DESTINATIONS = [
     slug: "aseer",
     nameAr: "عسير",
     nameEn: "Aseer",
-    image: "/media/destinations/aseer/images-placeholder.jpg",
+    image: "/media/destinations/aseer/aseer-banner.jpg",
     badge: "طبيعة",
   },
   {
     slug: "al-ahsa",
     nameAr: "الأحساء",
     nameEn: "Al Ahsa",
-    image: "/media/destinations/al-ahsa/images-placeholder.jpg",
+    image: "/media/destinations/al-ahsa/al-ahsa-banner.jpg",
     badge: "واحة تاريخية",
   },
-] as const;
+];
+
+const FEATURED_PROGRAMS: readonly ProgramCardProps[] = [
+  {
+    id: "prog-alula-history",
+    title: "جولة تاريخية شاملة في مدائن صالح والبلدة القديمة بالعلا",
+    location: "العلا",
+    duration: "يومان (8 ساعات)",
+    groupSize: "حتى 6 أشخاص",
+    rating: 4.9,
+    reviewsCount: 42,
+    priceSar: 850,
+    image: "/media/destinations/alula/01-alula-banner-five.2e16d0ba.fill-1920x1080-a03aa27a.jpg",
+    badge: "الأعلى تقييماً",
+  },
+  {
+    id: "prog-riyadh-desert",
+    title: "سفاري صحراء الرياض وجلسة كشتة تقليدية تحت النجوم",
+    location: "الرياض",
+    duration: "يوم واحد (6 ساعات)",
+    groupSize: "حتى 10 أشخاص",
+    rating: 4.8,
+    reviewsCount: 38,
+    priceSar: 450,
+    image: "/media/destinations/riyadh/01-riyadh-banner-new.2e16d0ba.fill-1920x1080-be8fd66c.jpg",
+    badge: "الأكثر حجزاً",
+  },
+  {
+    id: "prog-jeddah-balad",
+    title: "جولة حارتنا التاريخية في منطقة البلد وجدة القديمة",
+    location: "جدة",
+    duration: "4 ساعات",
+    groupSize: "حتى 8 أشخاص",
+    rating: 4.95,
+    reviewsCount: 56,
+    priceSar: 300,
+    image: "/media/destinations/jeddah/01-jeddah-banner.2e16d0ba.fill-1920x1080-fc73dd1c.jpg",
+    badge: "تجربة ثقافية",
+  },
+];
 
 const STEPS = [
   { number: 1, icon: "🔍", title: "اكتشف", desc: "تصفح البرامج السياحية حسب الوجهة والنشاط والتاريخ" },
@@ -166,6 +215,33 @@ export default function HomePage() {
               <span className={styles["dest-card__badge"]}>{dest.badge}</span>
             </Link>
           ))}
+        </div>
+      </section>
+
+      {/* ═══ Featured Programs Section ═══ */}
+      <section className={styles["programs-section"]}>
+        <div className={styles["section-header"]}>
+          <div className={styles["section-eyebrow"]}>التجارب المميزة</div>
+          <h2 className={styles["section-title"]}>
+            برامج سياحية <span className="text-gradient">مختارة</span>
+          </h2>
+          <p className={styles["section-subtitle"]}>
+            استكشف تجارب استثنائية صممها وينفذها مرشدون سياحيون محليون معتمدون
+          </p>
+        </div>
+
+        <div className={styles["programs-grid"]}>
+          {FEATURED_PROGRAMS.map((program) => (
+            <ProgramCard key={program.id} {...program} />
+          ))}
+        </div>
+
+        <div style={{ textAlign: "center", marginTop: "var(--space-12)" }}>
+          <Link href="/programs">
+            <Button variant="secondary" size="lg">
+              عرض جميع البرامج →
+            </Button>
+          </Link>
         </div>
       </section>
 

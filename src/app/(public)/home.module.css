@@ -275,7 +275,32 @@
   left: var(--space-4);
 }
 
-/* ── How It Works ── */
+/* ── Featured Programs Section ── */
+.programs-section {
+  padding-block: var(--space-24);
+  background: var(--color-bg-secondary);
+}
+
+.programs-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-6);
+  max-width: var(--max-width);
+  margin-inline: auto;
+  padding-inline: var(--space-6);
+}
+
+@media (max-width: 1024px) {
+  .programs-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .programs-grid {
+    grid-template-columns: 1fr;
+  }
+}
 .how-it-works {
   padding-block: var(--space-24);
   background: var(--color-midnight-blue);
