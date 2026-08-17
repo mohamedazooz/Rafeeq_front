@@ -1,4 +1,4 @@
-import React from "react";
+import type { ButtonHTMLAttributes, ReactNode } from "react";
 import styles from "./Button.module.css";
 
 export type ButtonVariant =
@@ -11,13 +11,13 @@ export type ButtonVariant =
 
 export type ButtonSize = "sm" | "md" | "lg" | "xl";
 
-export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   readonly variant?: ButtonVariant;
   readonly size?: ButtonSize;
   readonly isLoading?: boolean;
   readonly isIcon?: boolean;
   readonly fullWidth?: boolean;
-  readonly children: React.ReactNode;
+  readonly children: ReactNode;
 }
 
 export function Button({
