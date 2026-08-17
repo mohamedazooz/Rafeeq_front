@@ -1,0 +1,173 @@
+/* ═══════════════════════════════════════════════════════════════
+   Button Component Styles
+   ═══════════════════════════════════════════════════════════════ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-6);
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: var(--text-sm);
+  line-height: 1;
+  border-radius: var(--radius-lg);
+  transition:
+    all var(--duration-base) var(--ease-out-expo);
+  position: relative;
+  overflow: hidden;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.15) 0%,
+    transparent 50%
+  );
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--ease-out-quart);
+}
+
+.btn:hover::before {
+  opacity: 1;
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+/* ── Primary (Gold) ── */
+.btn--primary {
+  background: var(--gradient-gold);
+  color: var(--color-midnight-blue);
+  box-shadow: var(--shadow-gold);
+}
+
+.btn--primary:hover {
+  box-shadow: var(--shadow-gold-lg);
+  transform: translateY(-2px);
+}
+
+.btn--primary:active {
+  transform: translateY(0) scale(0.97);
+}
+
+/* ── Secondary (Emerald) ── */
+.btn--secondary {
+  background: var(--gradient-emerald);
+  color: var(--color-warm-white);
+  box-shadow: var(--shadow-md);
+}
+
+.btn--secondary:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+/* ── Outline ── */
+.btn--outline {
+  background: transparent;
+  color: var(--color-gold-royal);
+  border: 1.5px solid var(--color-gold-royal);
+}
+
+.btn--outline:hover {
+  background: var(--color-gold-royal);
+  color: var(--color-midnight-blue);
+  transform: translateY(-2px);
+}
+
+/* ── Ghost ── */
+.btn--ghost {
+  background: transparent;
+  color: var(--color-text-primary);
+}
+
+.btn--ghost:hover {
+  background: var(--color-border);
+}
+
+/* ── Glass ── */
+.btn--glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  color: var(--color-warm-white);
+  border: 1px solid var(--glass-border);
+}
+
+.btn--glass:hover {
+  background: var(--glass-bg-light);
+}
+
+/* ── Sizes ── */
+.btn--sm {
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-xs);
+  border-radius: var(--radius-md);
+}
+
+.btn--lg {
+  padding: var(--space-4) var(--space-8);
+  font-size: var(--text-base);
+  border-radius: var(--radius-xl);
+}
+
+.btn--xl {
+  padding: var(--space-5) var(--space-10);
+  font-size: var(--text-lg);
+  border-radius: var(--radius-xl);
+}
+
+/* ── Icon Button ── */
+.btn--icon {
+  padding: var(--space-3);
+  border-radius: var(--radius-full);
+}
+
+.btn--icon.btn--sm {
+  padding: var(--space-2);
+}
+
+.btn--icon.btn--lg {
+  padding: var(--space-4);
+}
+
+/* ── Loading State ── */
+.btn--loading {
+  pointer-events: none;
+  opacity: 0.75;
+}
+
+.btn__spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top-color: currentColor;
+  border-radius: var(--radius-full);
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Full Width ── */
+.btn--full {
+  width: 100%;
+}
+
+/* ── Disabled ── */
+.btn:disabled,
+.btn[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
