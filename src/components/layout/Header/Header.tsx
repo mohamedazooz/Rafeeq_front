@@ -72,12 +72,16 @@ export function Header() {
           >
             EN
           </button>
-          <Button variant="outline" size="sm">
-            دخول
-          </Button>
-          <Button variant="primary" size="sm">
-            سجل الآن
-          </Button>
+          <Link href="/login">
+            <Button variant="outline" size="sm">
+              دخول
+            </Button>
+          </Link>
+          <Link href="/register">
+            <Button variant="primary" size="sm">
+              سجل الآن
+            </Button>
+          </Link>
 
           {/* Mobile Menu Toggle */}
           <button
@@ -112,12 +116,16 @@ export function Header() {
           </Link>
         ))}
         <div style={{ marginTop: "auto", display: "flex", gap: "var(--space-3)" }}>
-          <Button variant="outline" fullWidth>
-            دخول
-          </Button>
-          <Button variant="primary" fullWidth>
-            سجل الآن
-          </Button>
+          <Link href="/login" style={{ flexGrow: 1 }}>
+            <Button variant="outline" fullWidth onClick={() => setIsMobileOpen(false)}>
+              دخول
+            </Button>
+          </Link>
+          <Link href="/register" style={{ flexGrow: 1 }}>
+            <Button variant="primary" fullWidth onClick={() => setIsMobileOpen(false)}>
+              سجل الآن
+            </Button>
+          </Link>
         </div>
       </div>
     </header>

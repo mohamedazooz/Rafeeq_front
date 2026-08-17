@@ -4,7 +4,7 @@
    ═══════════════════════════════════════════════════════════════ */
 
 /* ── Google Fonts Import ── */
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800;900&family=Alexandria:wght@400;500;600;700;800;900&family=Changa:wght@400;600;700;800&family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
 
 /* ═══════════════════════════════════════════════════════════════
    ROOT — Design Tokens
@@ -56,9 +56,10 @@
   --gradient-midnight: linear-gradient(180deg, #0D1B2A 0%, #1B2D45 100%);
   --gradient-shimmer: linear-gradient(90deg, transparent 0%, rgba(200, 169, 110, 0.08) 50%, transparent 100%);
 
-  /* ── Typography ── */
-  --font-heading: 'Outfit', 'IBM Plex Sans Arabic', sans-serif;
-  --font-body: 'Inter', 'IBM Plex Sans Arabic', sans-serif;
+  /* ── Typography (Bold, Sharp, Decorated Arabic Stack) ── */
+  --font-heading: var(--font-alexandria), 'Alexandria', var(--font-cairo), 'Cairo', var(--font-tajawal), 'Tajawal', sans-serif;
+  --font-body: var(--font-cairo), 'Cairo', var(--font-tajawal), 'Tajawal', var(--font-alexandria), 'Alexandria', sans-serif;
+  --font-decorated: 'Changa', var(--font-alexandria), 'Cairo', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
   --text-xs: 0.75rem;     /* 12px */
@@ -194,16 +195,19 @@ html {
 body {
   font-family: var(--font-body);
   font-size: var(--text-base);
+  font-weight: 600; /* Bold & crystal clear default text */
   line-height: var(--leading-normal);
   color: var(--color-text-primary);
   background-color: var(--color-bg-primary);
   overflow-x: hidden;
   min-height: 100vh;
+  text-rendering: optimizeLegibility;
 }
 
 /* ── RTL Support ── */
 [dir="rtl"] body {
-  font-family: 'IBM Plex Sans Arabic', var(--font-body);
+  font-family: var(--font-cairo), 'Cairo', var(--font-tajawal), 'Tajawal', var(--font-alexandria), 'Alexandria', sans-serif;
+  font-weight: 600;
 }
 
 [dir="rtl"] h1,
@@ -212,7 +216,14 @@ body {
 [dir="rtl"] h4,
 [dir="rtl"] h5,
 [dir="rtl"] h6 {
-  font-family: 'IBM Plex Sans Arabic', var(--font-heading);
+  font-family: var(--font-heading);
+  font-weight: 800;
+}
+
+/* Ensure buttons, inputs, links, labels, and text elements are bold throughout */
+button, input, select, textarea, label, a, option {
+  font-family: inherit;
+  font-weight: 700;
 }
 
 /* ── Typography Base ── */

@@ -159,12 +159,16 @@ export default function HomePage() {
           </p>
 
           <div className={styles.hero__actions}>
-            <Button variant="primary" size="xl">
-              استكشف البرامج
-            </Button>
-            <Button variant="glass" size="xl">
-              كن مرشداً
-            </Button>
+            <Link href="/programs">
+              <Button variant="primary" size="xl">
+                استكشف البرامج
+              </Button>
+            </Link>
+            <Link href="/become-guide">
+              <Button variant="glass" size="xl">
+                كن مرشداً
+              </Button>
+            </Link>
           </div>
         </div>
 
@@ -296,12 +300,16 @@ export default function HomePage() {
               ودفع آمن بالضمان
             </p>
             <div className={styles.cta__actions}>
-              <Button variant="primary" size="lg">
-                سجل كمرشد الآن
-              </Button>
-              <Button variant="ghost" size="lg" style={{ color: "rgba(255,255,255,0.6)" }}>
-                تعرف على المزيد
-              </Button>
+              <Link href="/become-guide">
+                <Button variant="primary" size="lg">
+                  سجل كمرشد الآن
+                </Button>
+              </Link>
+              <Link href="/about">
+                <Button variant="ghost" size="lg" style={{ color: "rgba(255,255,255,0.6)" }}>
+                  تعرف على المزيد
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
@@ -352,7 +360,7 @@ export default function HomePage() {
 
           <div className={styles.footer__bottom}>
             <span className={styles.footer__copy}>
-              © 2026 رفيق Rafeeq. جميع الحقوق محفوظة.
+              © 2026 رفيق. جميع الحقوق محفوظة — منصة السياحة السعودية.
             </span>
             <div className={styles.footer__socials}>
               <a href="#" className={styles["footer__social-link"]} aria-label="X (Twitter)">𝕏</a>
