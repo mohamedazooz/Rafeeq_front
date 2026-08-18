@@ -11,6 +11,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "www.visitsaudi.com",
       },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
     ],
   },
 
@@ -20,9 +24,7 @@ const nextConfig: NextConfig = {
   },
 
   /* ── Experimental features ── */
-  experimental: {
-    optimizeCss: true,
-  },
+  experimental: {},
 
   /* ── Redirects for clean URLs ── */
   async redirects() {

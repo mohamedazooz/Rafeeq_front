@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Cairo, Tajawal, Alexandria, Outfit } from "next/font/google";
 import "@/styles/globals.css";
-import { HeaderShell } from "@/components/layout/HeaderShell";
 
 const cairo = Cairo({
   subsets: ["arabic", "latin"],
@@ -36,6 +35,11 @@ export const metadata: Metadata = {
     default: "رفيق | منصة السياحة السعودية الهادفة",
     template: "%s | رفيق",
   },
+  icons: {
+    icon: "/icon.png",
+    shortcut: "/icon.png",
+    apple: "/icon.png",
+  },
   description:
     "منصة رفيق تربطك بأفضل المرشدين السياحيين المعتمدين في المملكة العربية السعودية. اكتشف برامج سياحية فريدة في الرياض، العلا، جدة، عسير والمزيد.",
   keywords: [
@@ -69,6 +73,11 @@ export const metadata: Metadata = {
   },
 };
 
+import { HeaderShell } from "@/components/layout/HeaderShell";
+import { FooterShell } from "@/components/layout/FooterShell";
+import { ThemeProvider } from "@/lib/theme-provider";
+import { LanguageProvider } from "@/lib/language-provider";
+
 export default function RootLayout({
   children,
 }: {
@@ -78,12 +87,16 @@ export default function RootLayout({
     <html
       lang="ar"
       dir="rtl"
-      data-theme="light"
       className={`${cairo.variable} ${tajawal.variable} ${alexandria.variable} ${outfit.variable}`}
     >
       <body className={cairo.className}>
-        <HeaderShell />
-        {children}
+        <LanguageProvider>
+          <ThemeProvider>
+            <HeaderShell />
+            {children}
+            <FooterShell />
+          </ThemeProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

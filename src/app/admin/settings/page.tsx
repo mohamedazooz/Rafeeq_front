@@ -22,74 +22,74 @@ export default function AdminSettingsPage() {
   };
 
   return (
-    <div style={{ padding: "var(--space-6)", maxWidth: "800px" }}>
+    <div style={{ maxWidth: "850px" }}>
       {toast && (
-        <div style={{ position: "fixed", bottom: "24px", left: "24px", background: "var(--color-saudi-green)", color: "#fff", padding: "12px 24px", borderRadius: "var(--radius-lg)", boxShadow: "0 10px 25px rgba(0,0,0,0.3)", zIndex: 9999, fontWeight: 700, fontSize: "var(--text-sm)" }}>
+        <div style={{ position: "fixed", bottom: "24px", left: "24px", background: "#10B981", color: "#fff", padding: "14px 28px", borderRadius: "14px", boxShadow: "0 10px 30px rgba(0,0,0,0.5)", zIndex: 9999, fontWeight: 800, fontSize: "14px" }}>
           {toast}
         </div>
       )}
 
-      <div style={{ marginBottom: "var(--space-8)" }}>
-        <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 800 }}>إعدادات الحوكمة والتسعير ⚙️</h1>
-        <p style={{ color: "var(--color-text-muted)", fontSize: "var(--text-sm)" }}>ضبط نسبة العمولة، إضافات الأدمن (رسوم وضرائب)، وفترة احتجاز الضمان والسياسات المالية</p>
+      <div style={{ marginBottom: "28px" }}>
+        <h1 style={{ fontSize: "28px", fontWeight: 900, color: "#C8A96E" }}>إعدادات الحوكمة والتسعير ⚙️</h1>
+        <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "13px", marginTop: "4px" }}>ضبط نسبة العمولة، إضافات الأدمن (رسوم وضرائب)، وفترة احتجاز الضمان والسياسات المالية</p>
       </div>
 
-      <form onSubmit={handleSave} className="glass" style={{ padding: "var(--space-8)", borderRadius: "var(--radius-2xl)", display: "flex", flexDirection: "column", gap: "var(--space-6)" }}>
-        <h2 style={{ fontSize: "var(--text-xl)", fontWeight: 800 }}>1. إعدادات العمولة والضمان البنكي</h2>
+      <form onSubmit={handleSave} style={{ background: "rgba(15, 23, 42, 0.6)", border: "1px solid rgba(255,255,255,0.08)", padding: "28px", borderRadius: "24px", display: "flex", flexDirection: "column", gap: "24px" }}>
+        <h2 style={{ fontSize: "18px", fontWeight: 800, color: "#fff" }}>1. إعدادات العمولة والضمان البنكي</h2>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--space-4)" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
           <div>
-            <label style={{ display: "block", fontSize: "var(--text-xs)", fontWeight: 600, marginBottom: "var(--space-1)" }}>نسبة عمولة المنصة (%)</label>
+            <label style={{ display: "block", fontSize: "12px", color: "rgba(255,255,255,0.7)", marginBottom: "4px" }}>نسبة عمولة المنصة (%)</label>
             <input
               type="number"
               value={commissionRate}
               onChange={(e) => setCommissionRate(Number(e.target.value))}
-              style={{ width: "100%", padding: "var(--space-3)", borderRadius: "var(--radius-md)", border: "1px solid var(--color-border)", background: "rgba(0,0,0,0.2)", color: "#fff" }}
+              style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.15)", background: "rgba(0,0,0,0.4)", color: "#fff", outline: "none", fontSize: "13px" }}
             />
-            <span style={{ fontSize: "var(--text-xs)", color: "var(--color-text-muted)" }}>تخصم من مستحق المرشد</span>
+            <span style={{ fontSize: "11px", color: "rgba(255,255,255,0.4)", display: "block", marginTop: "4px" }}>تخصم من مستحق المرشد عند الإفراج</span>
           </div>
 
           <div>
-            <label style={{ display: "block", fontSize: "var(--text-xs)", fontWeight: 600, marginBottom: "var(--space-1)" }}>فترة احتجاز الضمان (أيام)</label>
+            <label style={{ display: "block", fontSize: "12px", color: "rgba(255,255,255,0.7)", marginBottom: "4px" }}>فترة احتجاز الضمان (أيام)</label>
             <input
               type="number"
               value={escrowHoldDays}
               onChange={(e) => setEscrowHoldDays(Number(e.target.value))}
-              style={{ width: "100%", padding: "var(--space-3)", borderRadius: "var(--radius-md)", border: "1px solid var(--color-border)", background: "rgba(0,0,0,0.2)", color: "#fff" }}
+              style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.15)", background: "rgba(0,0,0,0.4)", color: "#fff", outline: "none", fontSize: "13px" }}
             />
-            <span style={{ fontSize: "var(--text-xs)", color: "var(--color-text-muted)" }}>المدة بعد مكتمل الرحلة حتى الإفراج</span>
+            <span style={{ fontSize: "11px", color: "rgba(255,255,255,0.4)", display: "block", marginTop: "4px" }}>المدة بعد مكتمل الرحلة حتى الإفراج</span>
           </div>
         </div>
 
         <div>
-          <label style={{ display: "block", fontSize: "var(--text-xs)", fontWeight: 600, marginBottom: "var(--space-1)" }}>رسوم الإلغاء المتأخر (%)</label>
+          <label style={{ display: "block", fontSize: "12px", color: "rgba(255,255,255,0.7)", marginBottom: "4px" }}>رسوم الإلغاء المتأخر (%)</label>
           <input
             type="number"
             value={cancellationFeePercent}
             onChange={(e) => setCancellationFeePercent(Number(e.target.value))}
-            style={{ width: "100%", padding: "var(--space-3)", borderRadius: "var(--radius-md)", border: "1px solid var(--color-border)", background: "rgba(0,0,0,0.2)", color: "#fff" }}
+            style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.15)", background: "rgba(0,0,0,0.4)", color: "#fff", outline: "none", fontSize: "13px" }}
           />
-          <span style={{ fontSize: "var(--text-xs)", color: "var(--color-text-muted)" }}>تقتطع عند الإلغاء قبل أقل من 24 ساعة</span>
+          <span style={{ fontSize: "11px", color: "rgba(255,255,255,0.4)", display: "block", marginTop: "4px" }}>تقتطع عند الإلغاء قبل أقل من 24 ساعة</span>
         </div>
 
-        <h2 style={{ fontSize: "var(--text-xl)", fontWeight: 800, marginTop: "var(--space-4)" }}>2. إضافات أدمن التسعير (الضرائب والرسوم)</h2>
+        <h2 style={{ fontSize: "18px", fontWeight: 800, color: "#fff", marginTop: "8px" }}>2. إضافات أدمن التسعير (الضرائب والرسوم)</h2>
 
-        <div style={{ padding: "var(--space-4)", background: "var(--color-bg-primary)", borderRadius: "var(--radius-xl)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ padding: "16px", background: "rgba(0,0,0,0.3)", borderRadius: "16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
-            <h3 style={{ fontSize: "var(--text-sm)", fontWeight: 700 }}>ضريبة القيمة المضافة (VAT 15%)</h3>
-            <p style={{ fontSize: "var(--text-xs)", color: "var(--color-text-muted)" }}>نوع: ضريبة رسمية • قيمة: 15% عائمة</p>
+            <h3 style={{ fontSize: "14px", fontWeight: 800, color: "#fff" }}>ضريبة القيمة المضافة (VAT 15%)</h3>
+            <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.5)", marginTop: "2px" }}>نوع: ضريبة رسمية • قيمة: 15% عائمة</p>
           </div>
           <button
             type="button"
             onClick={() => setVatActive(!vatActive)}
             style={{
               padding: "4px 12px",
-              borderRadius: "var(--radius-full)",
+              borderRadius: "100px",
               border: "none",
               background: vatActive ? "rgba(16,185,129,0.15)" : "rgba(255,255,255,0.05)",
-              color: vatActive ? "var(--color-saudi-green)" : "var(--color-text-muted)",
-              fontWeight: 700,
-              fontSize: "var(--text-xs)",
+              color: vatActive ? "#10B981" : "rgba(255,255,255,0.4)",
+              fontWeight: 800,
+              fontSize: "11px",
               cursor: "pointer",
             }}
           >
@@ -97,22 +97,22 @@ export default function AdminSettingsPage() {
           </button>
         </div>
 
-        <div style={{ padding: "var(--space-4)", background: "var(--color-bg-primary)", borderRadius: "var(--radius-xl)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ padding: "16px", background: "rgba(0,0,0,0.3)", borderRadius: "16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
-            <h3 style={{ fontSize: "var(--text-sm)", fontWeight: 700 }}>رسوم خدمة المنصة والضمان البنكي</h3>
-            <p style={{ fontSize: "var(--text-xs)", color: "var(--color-text-muted)" }}>نوع: رسوم تشغيلية • قيمة: 25 ر.س ثابتة لكل حجز</p>
+            <h3 style={{ fontSize: "14px", fontWeight: 800, color: "#fff" }}>رسوم خدمة المنصة والضمان البنكي</h3>
+            <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.5)", marginTop: "2px" }}>نوع: رسوم تشغيلية • قيمة: 25 ر.س ثابتة لكل حجز</p>
           </div>
           <button
             type="button"
             onClick={() => setServiceFeeActive(!serviceFeeActive)}
             style={{
               padding: "4px 12px",
-              borderRadius: "var(--radius-full)",
+              borderRadius: "100px",
               border: "none",
               background: serviceFeeActive ? "rgba(16,185,129,0.15)" : "rgba(255,255,255,0.05)",
-              color: serviceFeeActive ? "var(--color-saudi-green)" : "var(--color-text-muted)",
-              fontWeight: 700,
-              fontSize: "var(--text-xs)",
+              color: serviceFeeActive ? "#10B981" : "rgba(255,255,255,0.4)",
+              fontWeight: 800,
+              fontSize: "11px",
               cursor: "pointer",
             }}
           >

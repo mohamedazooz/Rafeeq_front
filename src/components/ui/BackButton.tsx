@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useLanguage } from "@/lib/language-provider";
 
 interface BackButtonProps {
   readonly fallbackHref?: string;
@@ -13,9 +14,14 @@ export function BackButton({
   fallbackHref = "/",
   labelAr = "العودة",
   labelEn = "Back",
-  lang = "ar",
+  lang: overrideLang,
 }: BackButtonProps) {
   const router = useRouter();
+  const { lang: globalLang } = useLanguage();
+
+  const currentLang = overrideLang || globalLang;
+  const isRtl = currentLang === "ar";
+  const label = isRtl ? labelAr : labelEn;
 
   const handleBack = () => {
     if (typeof window !== "undefined" && window.history.length > 1) {
@@ -25,10 +31,6 @@ export function BackButton({
     }
   };
 
-  const isRtl = lang === "ar";
-  const label = isRtl ? labelAr : labelEn;
-  const arrow = isRtl ? "→" : "←";
-
   return (
     <button
       type="button"
@@ -37,19 +39,20 @@ export function BackButton({
       style={{
         display: "inline-flex",
         alignItems: "center",
-        gap: "var(--space-2)",
-        padding: "var(--space-2) var(--space-4)",
-        borderRadius: "var(--radius-full)",
-        border: "1px solid var(--glass-border)",
+        gap: "6px",
+        padding: "6px 14px",
+        borderRadius: "100px",
+        border: "1px solid rgba(255, 255, 255, 0.15)",
         background: "rgba(255, 255, 255, 0.08)",
         color: "var(--color-warm-white)",
-        fontSize: "var(--text-xs)",
+        fontSize: "12px",
         fontWeight: 700,
         cursor: "pointer",
-        transition: "all var(--duration-fast)",
       }}
     >
-      <span style={{ fontSize: "var(--text-sm)" }}>{arrow}</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: isRtl ? "none" : "rotate(180deg)" }}>
+        <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+      </svg>
       <span>{label}</span>
     </button>
   );

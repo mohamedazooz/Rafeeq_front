@@ -1,6 +1,10 @@
+"use client";
+
+import { Header } from "@/components/layout/Header";
 import { ProgramCard, type ProgramCardProps } from "@/components/domain/ProgramCard";
 import { Button } from "@/components/ui/Button";
 import { BackButton } from "@/components/ui/BackButton";
+import { useLanguage } from "@/lib/language-provider";
 
 const PROGRAMS: readonly ProgramCardProps[] = [
   {
@@ -75,67 +79,76 @@ const PROGRAMS: readonly ProgramCardProps[] = [
     image: "/media/destinations/al-ahsa/al-ahsa-banner.jpg",
     badge: "واحة يونسكو",
   },
-] as const;
+];
 
 export default function ProgramsPage() {
+  const { lang } = useLanguage();
+  const isAr = lang === "ar";
+
   return (
     <>
+      <Header />
+
       <section
         style={{
-          background: "var(--gradient-midnight)",
-          paddingBlock: "var(--space-32) var(--space-12)",
+          background: "var(--color-bg-primary)",
+          paddingBlock: "100px 40px",
           position: "relative",
+          borderBottom: "1px solid var(--color-border)",
         }}
       >
         <div className="container" style={{ position: "relative", zIndex: 2 }}>
-          <div style={{ marginBottom: "var(--space-6)" }}>
+          <div style={{ marginBottom: "var(--space-6)", textAlign: isAr ? "right" : "left" }}>
             <BackButton fallbackHref="/" labelAr="العودة للرئيسية" />
           </div>
 
           <span
             style={{
-              color: "var(--color-gold-royal)",
-              fontWeight: 700,
+              color: "var(--color-gold-heading)",
+              fontWeight: 800,
               fontSize: "var(--text-sm)",
               display: "block",
               marginBottom: "var(--space-2)",
             }}
           >
-            🧭 البرامج السياحية المتاحة
+            🧭 {isAr ? "البرامج السياحية المتاحة" : "Available Tour Programs"}
           </span>
           <h1
             style={{
               fontSize: "var(--text-4xl)",
-              fontWeight: 800,
-              color: "var(--color-warm-white)",
+              fontWeight: 900,
+              color: "var(--color-text-primary)",
               marginBottom: "var(--space-4)",
             }}
           >
-            استكشف تجارب سياحية <span className="text-gradient">فريدة لا تُنسى</span>
+            {isAr ? "استكشف تجارب سياحية فريدة لا تُنسى" : "Explore Unique & Unforgettable Tours"}
           </h1>
 
           {/* Search & Filter Bar */}
           <div
-            className="glass"
             style={{
               padding: "var(--space-4)",
               borderRadius: "var(--radius-2xl)",
               display: "grid",
-              gridTemplateColumns: "2fr 1fr 1fr auto",
+              gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
               gap: "var(--space-3)",
               alignItems: "center",
               marginTop: "var(--space-6)",
+              background: "var(--color-bg-card)",
+              border: "1px solid var(--color-border)",
+              boxShadow: "var(--shadow-md)",
             }}
           >
             <input
               type="text"
-              placeholder="ابحث عن برنامج سياحي أو تجربة..."
+              placeholder={isAr ? "ابحث عن برنامج سياحي أو تجربة..." : "Search tour program or experience..."}
               style={{
                 padding: "var(--space-3)",
                 borderRadius: "var(--radius-md)",
-                border: "1px solid var(--glass-border)",
-                background: "rgba(255,255,255,0.05)",
-                color: "white",
+                border: "1px solid var(--color-border)",
+                background: "var(--color-bg-secondary)",
+                color: "var(--color-text-primary)",
+                fontSize: "13px",
                 outline: "none",
               }}
             />
@@ -143,39 +156,41 @@ export default function ProgramsPage() {
               style={{
                 padding: "var(--space-3)",
                 borderRadius: "var(--radius-md)",
-                border: "1px solid var(--glass-border)",
-                background: "#0D1B2A",
-                color: "white",
+                border: "1px solid var(--color-border)",
+                background: "var(--color-bg-secondary)",
+                color: "var(--color-text-primary)",
+                fontSize: "13px",
                 outline: "none",
               }}
             >
-              <option value="">جميع الوجهات</option>
-              <option value="alula">العلا</option>
-              <option value="riyadh">الرياض</option>
-              <option value="jeddah">جدة</option>
-              <option value="red-sea">البحر الأحمر</option>
-              <option value="aseer">عسير</option>
-              <option value="al-ahsa">الأحساء</option>
+              <option value="">{isAr ? "جميع الوجهات" : "All Destinations"}</option>
+              <option value="alula">{isAr ? "العلا" : "AlUla"}</option>
+              <option value="riyadh">{isAr ? "الرياض" : "Riyadh"}</option>
+              <option value="jeddah">{isAr ? "جدة" : "Jeddah"}</option>
+              <option value="red-sea">{isAr ? "البحر الأحمر" : "The Red Sea"}</option>
+              <option value="aseer">{isAr ? "عسير" : "Asir"}</option>
+              <option value="al-ahsa">{isAr ? "الأحساء" : "Al Ahsa"}</option>
             </select>
 
             <select
               style={{
                 padding: "var(--space-3)",
                 borderRadius: "var(--radius-md)",
-                border: "1px solid var(--glass-border)",
-                background: "#0D1B2A",
-                color: "white",
+                border: "1px solid var(--color-border)",
+                background: "var(--color-bg-secondary)",
+                color: "var(--color-text-primary)",
+                fontSize: "13px",
                 outline: "none",
               }}
             >
-              <option value="">جميع التصنيفات</option>
-              <option value="culture">تراث وثقافة</option>
-              <option value="adventure">مغامرة وطبيعة</option>
-              <option value="luxury">رفاهية وفاخر</option>
+              <option value="">{isAr ? "جميع التصنيفات" : "All Categories"}</option>
+              <option value="culture">{isAr ? "تراث وثقافة" : "Heritage & Culture"}</option>
+              <option value="adventure">{isAr ? "مغامرة وطبيعة" : "Adventure & Nature"}</option>
+              <option value="luxury">{isAr ? "رفاهية وفاخر" : "Luxury & Resorts"}</option>
             </select>
 
             <Button variant="primary" size="md">
-              تطبيق البحث 🔍
+              {isAr ? "تطبيق البحث" : "Apply Search"}
             </Button>
           </div>
         </div>

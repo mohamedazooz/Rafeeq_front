@@ -3,13 +3,27 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
+import { IconButton } from "@/components/ui/IconButton";
+import { useLanguage } from "@/lib/language-provider";
+import { dispatchDualActionNotification } from "@/lib/action-dispatcher";
+import {
+  LayoutDashboardIcon,
+  UsersIcon,
+  CompassIcon,
+  WalletIcon,
+  ShieldCheckIcon,
+  CheckCircleIcon,
+  EyeIcon,
+  ActivityIcon,
+  MapPinIcon,
+} from "@/components/icons";
 
 // KPI Cards Data
 const INITIAL_KPIS = [
-  { title: "إجمالي الحجوزات (GBV)", val: "148,500 ر.س", sub: "+18% مقارنة بالشهر السابق", color: "#10B981" },
-  { title: "صافي إيرادات المنصة", val: "22,275 ر.س", sub: "عمولة 15% + رسوم الخدمات", color: "#C8A96E" },
-  { title: "رصيد الـ Escrow الإجمالي", val: "38,400 ر.س", sub: "مبالغ ضامنة لـ 42 حجز قائم", color: "#3B82F6" },
-  { title: "طلبات الاعتماد المعلقة", val: "5 طلبات", sub: "3 مرشدين + 2 برنامج سياحي", color: "#F59E0B" },
+  { titleAr: "إجمالي الحجوزات (GBV)", val: "148,500 ر.س", subAr: "+18% مقارنة بالشهر السابق", color: "#10B981" },
+  { titleAr: "صافي إيرادات المنصة", val: "22,275 ر.س", subAr: "عمولة 15% + رسوم الخدمات", color: "var(--color-gold-heading)" },
+  { titleAr: "رصيد الـ Escrow الإجمالي", val: "38,400 ر.س", subAr: "مبالغ ضامنة لـ 42 حجز قائم", color: "#3B82F6" },
+  { titleAr: "طلبات الاعتماد المعلقة", val: "5 طلبات", subAr: "3 مرشدين + 2 برنامج سياحي", color: "#F59E0B" },
 ];
 
 // Monthly Revenue Trend Data
@@ -40,195 +54,144 @@ const REGIONS = [
 ];
 
 export default function AdminDashboardPage() {
+  const { lang } = useLanguage();
+  const isAr = lang === "ar";
+
   const [guidesQueue, setGuidesQueue] = useState([
-    { id: "g-1", name: "سعود فهد الدوسري", license: "TL-992014", city: "الرياض" },
-    { id: "g-2", name: "منى علي الغامدي", license: "TL-881023", city: "جدة" },
-    { id: "g-3", name: "تركي بن طلال العتيبي", license: "TL-772910", city: "العلا" },
+    { id: "g-1", name: "سعود فهد الدوسري", email: "saud.aldosari@example.com", license: "TG-992014", city: "الرياض" },
+    { id: "g-2", name: "منى علي الغامدي", email: "mona.ghamdi@example.com", license: "TG-881023", city: "جدة" },
+    { id: "g-3", name: "تركي بن طلال العتيبي", email: "turki.otaibi@example.com", license: "TG-772910", city: "العلا" },
   ]);
 
   const [programsQueue, setProgramsQueue] = useState([
-    { id: "p-1", title: "رحلة جبل القارة والواحة بالأحساء", guide: "خالد الحربي", price: "380 ر.س" },
-    { id: "p-2", title: "جولة الغوص واستكشاف شعب حقل", guide: "ريم العلي", price: "550 ر.س" },
+    { id: "p-1", title: "رحلة جبل القارة والواحة بالأحساء", guide: "خالد الحربي", guideEmail: "khaled.harbi@example.com", price: "380 ر.س" },
+    { id: "p-2", title: "جولة الغوص واستكشاف شعب حقل", guide: "ريم العلي", guideEmail: "reem.ali@example.com", price: "550 ر.س" },
   ]);
 
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3500);
+    setTimeout(() => setToastMessage(null), 4000);
   };
 
-  const handleApproveGuide = (id: string, name: string) => {
-    setGuidesQueue((prev) => prev.filter((g) => g.id !== id));
-    showToast(`تم اعتماد وتوثيق رخصة المرشد (${name}) بنجاح! ✓`);
+  const handleApproveGuide = (guide: typeof guidesQueue[0]) => {
+    setGuidesQueue((prev) => prev.filter((g) => g.id !== guide.id));
+
+    dispatchDualActionNotification({
+      title: "اعتماد وتوثيق رخصة المرشد السياحي",
+      message: `تم اعتماد ترخيص الإرشاد (${guide.license}) وتفعيل الحساب.`,
+      actionType: "APPROVE",
+      targetEmail: guide.email,
+      targetName: guide.name,
+      targetRole: "Guide",
+    });
+
+    showToast(isAr ? `تم اعتماد وتوثيق رخصة المرشد (${guide.name}) بنجاح!` : `Guide approved.`);
   };
 
-  const handlePublishProgram = (id: string, title: string) => {
-    setProgramsQueue((prev) => prev.filter((p) => p.id !== id));
-    showToast(`تم نشر البرنامج السياحي (${title}) في الكتالوج العام للمسافرين! 🚀`);
+  const handlePublishProgram = (prog: typeof programsQueue[0]) => {
+    setProgramsQueue((prev) => prev.filter((p) => p.id !== prog.id));
+
+    dispatchDualActionNotification({
+      title: "اعتماد ونشر البرنامج السياحي",
+      message: `تم نشر برنامجك (${prog.title}) في الكتالوج العام للمسافرين.`,
+      actionType: "APPROVE",
+      targetEmail: prog.guideEmail,
+      targetName: prog.guide,
+      targetRole: "Guide",
+    });
+
+    showToast(isAr ? `تم نشر البرنامج السياحي (${prog.title}) في الكتالوج العام للمسافرين!` : `Program published.`);
   };
 
   return (
-    <div>
+    <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
       {/* Toast Notification */}
       {toastMessage && (
-        <div
-          style={{
-            position: "fixed",
-            bottom: "24px",
-            left: "24px",
-            background: "linear-gradient(90deg, #10B981 0%, #059669 100%)",
-            color: "#fff",
-            padding: "14px 28px",
-            borderRadius: "14px",
-            boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
-            zIndex: 9999,
-            fontWeight: 800,
-            fontSize: "14px",
-          }}
-        >
-          {toastMessage}
+        <div style={{ position: "fixed", bottom: "24px", left: "24px", background: "var(--color-bg-card)", border: "1px solid var(--color-gold-heading)", color: "var(--color-text-primary)", padding: "14px 24px", borderRadius: "14px", boxShadow: "0 10px 30px rgba(0,0,0,0.6)", zIndex: 9999, fontWeight: 800, fontSize: "13px", display: "flex", alignItems: "center", gap: "10px" }}>
+          <ShieldCheckIcon size={18} color="#10B981" />
+          <span>{toastMessage}</span>
         </div>
       )}
 
       {/* Page Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "32px" }}>
-        <div>
-          <h1 style={{ fontSize: "28px", fontWeight: 900, color: "#C8A96E" }}>لوحة القيادة والحوكمة العليا 🏛️</h1>
-          <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "13px", marginTop: "4px" }}>
-            إدارة المستخدمين، اعتماد المرشدين والبرامج، مراقبة الـ Escrow والعمولات، وإحصائيات الـ APIs
-          </p>
+      <div>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "rgba(200, 169, 110, 0.15)", border: "1px solid rgba(200, 169, 110, 0.3)", padding: "4px 12px", borderRadius: "100px", color: "var(--color-gold-heading)", fontSize: "11px", fontWeight: 800, marginBottom: "8px" }}>
+          <LayoutDashboardIcon size={14} color="var(--color-gold-heading)" />
+          {isAr ? "لوحة القيادة والمؤشرات الحية للمنصة" : "Executive Governance & Live KPI Dashboard"}
         </div>
-
-        <div style={{ display: "flex", gap: "12px" }}>
-          <Link href="/admin/endpoints">
-            <Button variant="outline" size="sm">⚡ إدارة الـ Endpoints</Button>
-          </Link>
-          <Link href="/admin/bookings">
-            <Button variant="outline" size="sm">🎫 إدارة الحجوزات</Button>
-          </Link>
-          <Link href="/admin/disputes">
-            <Button variant="secondary" size="sm">🔔 النزاعات والشكاوى</Button>
-          </Link>
-        </div>
+        <h1 style={{ fontSize: "26px", fontWeight: 900, color: "var(--color-text-primary)" }}>
+          {isAr ? "لوحة القيادة والحوكمة العليا 🏛️" : "Executive Governance Dashboard"}
+        </h1>
+        <p style={{ color: "var(--color-text-secondary)", fontSize: "13px", marginTop: "2px" }}>
+          {isAr ? "نظرة شاملة ومؤشرات أداء لمنظومة رفيق للسياحة، مراقبة الضمان المالي Escrow، واعتماد المرشدين والبرامج." : "Real-time overview of bookings, escrow liability, guide approvals, and regional distribution."}
+        </p>
       </div>
 
-      {/* KPI Cards Grid */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))", gap: "20px", marginBottom: "32px" }}>
-        {INITIAL_KPIS.map((kpi) => (
-          <div
-            key={kpi.title}
-            style={{
-              background: "linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(11, 19, 41, 0.9) 100%)",
-              border: "1px solid rgba(200, 169, 110, 0.2)",
-              padding: "24px",
-              borderRadius: "20px",
-              boxShadow: "0 10px 30px rgba(0,0,0,0.3)",
-            }}
-          >
-            <span style={{ fontSize: "12px", color: "rgba(255,255,255,0.5)", fontWeight: 600 }}>{kpi.title}</span>
-            <h2 style={{ fontSize: "26px", fontWeight: 900, color: kpi.color, marginBlock: "8px" }}>{kpi.val}</h2>
-            <span style={{ fontSize: "12px", color: "rgba(255,255,255,0.7)" }}>{kpi.sub}</span>
+      {/* KPI Cards Row */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px" }}>
+        {INITIAL_KPIS.map((kpi, idx) => (
+          <div key={idx} style={{ background: "var(--color-bg-card)", border: "1px solid var(--color-border)", padding: "20px", borderRadius: "20px", display: "flex", flexDirection: "column", gap: "6px" }}>
+            <span style={{ fontSize: "12px", color: "var(--color-text-secondary)", fontWeight: 600 }}>{kpi.titleAr}</span>
+            <h3 style={{ fontSize: "24px", fontWeight: 900, color: kpi.color, margin: 0 }}>{kpi.val}</h3>
+            <span style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>{kpi.subAr}</span>
           </div>
         ))}
       </div>
 
-      {/* Analytics & Charts Section */}
-      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "24px", marginBottom: "32px" }}>
-        {/* Revenue SVG Area/Line Chart */}
-        <div style={{ background: "rgba(15, 23, 42, 0.6)", border: "1px solid rgba(255,255,255,0.08)", padding: "24px", borderRadius: "24px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
+      {/* Analytics Grid */}
+      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "20px" }}>
+        {/* Monthly Revenue Breakdown Chart */}
+        <div style={{ background: "var(--color-bg-card)", border: "1px solid var(--color-border)", padding: "24px", borderRadius: "20px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
             <div>
-              <h3 style={{ fontSize: "18px", fontWeight: 800, color: "#fff" }}>مؤشر الإيرادات وحجم الحجوزات (GBV)</h3>
-              <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.5)" }}>التطور الشهري لصافي العمولة وإجمالي المبالغ المدفوعة بالريال السعودي</p>
+              <h3 style={{ fontSize: "16px", fontWeight: 800, color: "var(--color-gold-heading)" }}>{isAr ? "نمو الحجوزات وإيرادات المنصة (آخر 6 أشهر)" : "Revenue Growth"}</h3>
+              <p style={{ fontSize: "12px", color: "var(--color-text-secondary)" }}>{isAr ? "مقارنة إجمالي قيمة الحجوزات GBV مع صافي عمولة رفيق" : "GBV vs Platform Commission"}</p>
             </div>
-            <span style={{ fontSize: "11px", background: "rgba(200,169,110,0.15)", color: "#C8A96E", padding: "4px 12px", borderRadius: "100px", fontWeight: 700, border: "1px solid rgba(200,169,110,0.3)" }}>
-              📈 نمو مستمر +18%
-            </span>
-          </div>
-
-          {/* SVG Visual Graph */}
-          <div style={{ width: "100%", height: "230px", position: "relative" }}>
-            <svg width="100%" height="100%" viewBox="0 0 500 180" preserveAspectRatio="none" style={{ overflow: "visible" }}>
-              <defs>
-                <linearGradient id="gbvGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#10B981" stopOpacity="0.4" />
-                  <stop offset="100%" stopColor="#10B981" stopOpacity="0.0" />
-                </linearGradient>
-              </defs>
-
-              {/* Grid Lines */}
-              <line x1="0" y1="30" x2="500" y2="30" stroke="rgba(255,255,255,0.05)" strokeDasharray="4 4" />
-              <line x1="0" y1="80" x2="500" y2="80" stroke="rgba(255,255,255,0.05)" strokeDasharray="4 4" />
-              <line x1="0" y1="130" x2="500" y2="130" stroke="rgba(255,255,255,0.05)" strokeDasharray="4 4" />
-
-              {/* Area Under GBV Curve */}
-              <polygon points="0,160 0,130 100,100 200,70 300,45 400,35 500,20 500,160" fill="url(#gbvGrad)" />
-
-              {/* GBV Polyline */}
-              <polyline
-                fill="none"
-                stroke="#10B981"
-                strokeWidth="3.5"
-                points="0,130 100,100 200,70 300,45 400,35 500,20"
-              />
-
-              {/* Revenue Polyline */}
-              <polyline
-                fill="none"
-                stroke="#C8A96E"
-                strokeWidth="3"
-                strokeDasharray="5 3"
-                points="0,165 100,150 200,130 300,110 400,100 500,85"
-              />
-
-              {/* Data Nodes */}
-              {[
-                { x: 0, y: 130 },
-                { x: 100, y: 100 },
-                { x: 200, y: 70 },
-                { x: 300, y: 45 },
-                { x: 400, y: 35 },
-                { x: 500, y: 20 },
-              ].map((pt, i) => (
-                <circle key={i} cx={pt.x} cy={pt.y} r="5" fill="#10B981" stroke="#0b1329" strokeWidth="2" />
-              ))}
-            </svg>
-
-            {/* X Axis Labels */}
-            <div style={{ display: "flex", justifyContent: "space-between", marginTop: "8px", fontSize: "12px", color: "rgba(255,255,255,0.5)", fontWeight: 600 }}>
-              {REVENUE_DATA.map((d) => (
-                <span key={d.month}>{d.month}</span>
-              ))}
+            <div style={{ display: "flex", gap: "12px", fontSize: "11px", fontWeight: 700 }}>
+              <span style={{ display: "flex", alignItems: "center", gap: "6px", color: "#10B981" }}>
+                <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#10B981" }}></span>
+                {isAr ? "حجم الحجوزات GBV" : "GBV"}
+              </span>
+              <span style={{ display: "flex", alignItems: "center", gap: "6px", color: "var(--color-gold-heading)" }}>
+                <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: "var(--color-gold-heading)" }}></span>
+                {isAr ? "صافي العمولة (15%)" : "Net 15%"}
+              </span>
             </div>
           </div>
 
-          <div style={{ display: "flex", gap: "24px", marginTop: "20px", fontSize: "12px" }}>
-            <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <span style={{ width: "12px", height: "12px", background: "#10B981", borderRadius: "50%" }}></span>
-              إجمالي الحجوزات (GBV)
-            </span>
-            <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <span style={{ width: "12px", height: "12px", background: "#C8A96E", borderRadius: "50%" }}></span>
-              صافي عمولة المنصة (15%)
-            </span>
+          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", height: "180px", paddingTop: "20px", gap: "12px" }}>
+            {REVENUE_DATA.map((item, i) => {
+              const gbvHeight = (item.gbv / 160000) * 100;
+              const revHeight = (item.revenue / 25000) * 100;
+              return (
+                <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", height: "100%", justifyContent: "flex-end", gap: "8px" }}>
+                  <div style={{ display: "flex", alignItems: "flex-end", gap: "4px", height: "100%", width: "100%", justifyContent: "center" }}>
+                    <div style={{ width: "14px", height: `${gbvHeight}%`, background: "#10B981", borderRadius: "4px 4px 0 0" }} title={`GBV: ${item.gbv} SAR`} />
+                    <div style={{ width: "14px", height: `${revHeight}%`, background: "var(--color-gold-heading)", borderRadius: "4px 4px 0 0" }} title={`Net: ${item.revenue} SAR`} />
+                  </div>
+                  <span style={{ fontSize: "11px", color: "var(--color-text-secondary)", fontWeight: 700 }}>{item.month}</span>
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        {/* Booking Status Distribution Bar Chart */}
-        <div style={{ background: "rgba(15, 23, 42, 0.6)", border: "1px solid rgba(255,255,255,0.08)", padding: "24px", borderRadius: "24px" }}>
-          <h3 style={{ fontSize: "18px", fontWeight: 800, marginBottom: "4px" }}>توزيع حالات الحجوزات</h3>
-          <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.5)", marginBottom: "24px" }}>إجمالي الحجوزات النشطة: 50 حجز</p>
+        {/* Booking Distribution */}
+        <div style={{ background: "var(--color-bg-card)", border: "1px solid var(--color-border)", padding: "24px", borderRadius: "20px" }}>
+          <h3 style={{ fontSize: "16px", fontWeight: 800, color: "var(--color-gold-heading)", marginBottom: "4px" }}>{isAr ? "توزيع حالات الحجوزات" : "Bookings Distribution"}</h3>
+          <p style={{ fontSize: "12px", color: "var(--color-text-secondary)", marginBottom: "16px" }}>{isAr ? "الحالة الإجمالية لـ 50 حجز أخير" : "Recent 50 bookings"}</p>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-            {BOOKING_STATUSES.map((st) => (
-              <div key={st.label}>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", marginBottom: "4px", fontWeight: 600 }}>
-                  <span>{st.label}</span>
-                  <span>{st.count} ({st.percent}%)</span>
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            {BOOKING_STATUSES.map((st, i) => (
+              <div key={i}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", fontWeight: 700, marginBottom: "4px" }}>
+                  <span style={{ color: "var(--color-text-primary)" }}>{st.label}</span>
+                  <span style={{ color: st.color }}>{st.count} ({st.percent}%)</span>
                 </div>
-                <div style={{ width: "100%", height: "8px", background: "rgba(255,255,255,0.06)", borderRadius: "100px", overflow: "hidden" }}>
-                  <div style={{ width: `${st.percent}%`, height: "100%", background: st.color, borderRadius: "100px" }} />
+                <div style={{ height: "6px", background: "var(--color-bg-secondary)", borderRadius: "100px", overflow: "hidden" }}>
+                  <div style={{ height: "100%", width: `${st.percent}%`, background: st.color, borderRadius: "100px" }} />
                 </div>
               </div>
             ))}
@@ -236,79 +199,68 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* Regional Distribution & Approval Queues */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "24px" }}>
-        {/* Regional Trips Breakdown */}
-        <div style={{ background: "rgba(15, 23, 42, 0.6)", border: "1px solid rgba(255,255,255,0.08)", padding: "24px", borderRadius: "24px" }}>
-          <h3 style={{ fontSize: "16px", fontWeight: 800, marginBottom: "16px" }}>توزيع الرحلات حسب المناطق 📍</h3>
-          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-            {REGIONS.map((r) => (
-              <div key={r.region} style={{ padding: "12px", background: "rgba(0,0,0,0.3)", borderRadius: "12px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: "12px", fontWeight: 700 }}>{r.region}</span>
-                <span style={{ fontSize: "12px", color: "#C8A96E", fontWeight: 800 }}>{r.trips} رحلة ({r.share})</span>
+      {/* Two Queues Row */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
+        {/* Guides Approval Queue */}
+        <div style={{ background: "var(--color-bg-card)", border: "1px solid var(--color-border)", padding: "24px", borderRadius: "20px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+            <div>
+              <h3 style={{ fontSize: "16px", fontWeight: 800, color: "var(--color-gold-heading)" }}>{isAr ? "طابور اعتماد المرشدين 📄" : "Guides Approval Queue"}</h3>
+              <p style={{ fontSize: "12px", color: "var(--color-text-secondary)" }}>{isAr ? "طلبات التحقق من رخصة وزارة السياحة" : "MOT license verification"}</p>
+            </div>
+            <Link href="/admin/guides-approval" style={{ fontSize: "12px", color: "var(--color-gold-heading)", textDecoration: "none", fontWeight: 800 }}>
+              {isAr ? "عرض الكل ←" : "View All"}
+            </Link>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            {guidesQueue.map((g) => (
+              <div key={g.id} style={{ background: "var(--color-bg-secondary)", padding: "12px 16px", borderRadius: "14px", border: "1px solid var(--color-border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div>
+                  <h4 style={{ fontSize: "13px", fontWeight: 800 }}>{g.name}</h4>
+                  <span style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>{g.city} • {g.license}</span>
+                </div>
+                <IconButton
+                  variant="success"
+                  size="sm"
+                  title={isAr ? "اعتماد مباشر" : "Approve"}
+                  icon={<CheckCircleIcon size={14} />}
+                  onClick={() => handleApproveGuide(g)}
+                />
               </div>
             ))}
           </div>
         </div>
 
-        {/* Guides Approval Queue */}
-        <div style={{ background: "rgba(15, 23, 42, 0.6)", border: "1px solid rgba(255,255,255,0.08)", padding: "24px", borderRadius: "24px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-            <h3 style={{ fontSize: "16px", fontWeight: 800 }}>اعتماد مرشدين ({guidesQueue.length})</h3>
-            <Link href="/admin/guides-approval" style={{ fontSize: "12px", color: "#C8A96E", textDecoration: "none", fontWeight: 700 }}>
-              عرض الكل ←
-            </Link>
-          </div>
-
-          {guidesQueue.length === 0 ? (
-            <div style={{ padding: "24px", textAlign: "center", color: "rgba(255,255,255,0.5)", fontSize: "13px" }}>
-              لا توجد طلبات معلقة 🎉
-            </div>
-          ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-              {guidesQueue.map((g) => (
-                <div key={g.id} style={{ padding: "12px", background: "rgba(0,0,0,0.3)", borderRadius: "12px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <div>
-                    <h4 style={{ fontSize: "13px", fontWeight: 700 }}>{g.name}</h4>
-                    <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.5)" }}>رخصة: {g.license} • {g.city}</p>
-                  </div>
-                  <Button variant="secondary" size="sm" onClick={() => handleApproveGuide(g.id, g.name)}>
-                    اعتماد ✓
-                  </Button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
         {/* Programs Review Queue */}
-        <div style={{ background: "rgba(15, 23, 42, 0.6)", border: "1px solid rgba(255,255,255,0.08)", padding: "24px", borderRadius: "24px" }}>
+        <div style={{ background: "var(--color-bg-card)", border: "1px solid var(--color-border)", padding: "24px", borderRadius: "20px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-            <h3 style={{ fontSize: "16px", fontWeight: 800 }}>نشر برامج ({programsQueue.length})</h3>
-            <Link href="/admin/programs-review" style={{ fontSize: "12px", color: "#C8A96E", textDecoration: "none", fontWeight: 700 }}>
-              عرض الكل ←
+            <div>
+              <h3 style={{ fontSize: "16px", fontWeight: 800, color: "var(--color-gold-heading)" }}>{isAr ? "طابور نشر البرامج السياحية 📋" : "Program Review Queue"}</h3>
+              <p style={{ fontSize: "12px", color: "var(--color-text-secondary)" }}>{isAr ? "برامج جديدة بانتظار الاعتماد للنشر" : "Pending tours for public release"}</p>
+            </div>
+            <Link href="/admin/programs-review" style={{ fontSize: "12px", color: "var(--color-gold-heading)", textDecoration: "none", fontWeight: 800 }}>
+              {isAr ? "عرض الكل ←" : "View All"}
             </Link>
           </div>
 
-          {programsQueue.length === 0 ? (
-            <div style={{ padding: "24px", textAlign: "center", color: "rgba(255,255,255,0.5)", fontSize: "13px" }}>
-              تم نشر كافة البرامج 🚀
-            </div>
-          ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-              {programsQueue.map((p) => (
-                <div key={p.id} style={{ padding: "12px", background: "rgba(0,0,0,0.3)", borderRadius: "12px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <div>
-                    <h4 style={{ fontSize: "13px", fontWeight: 700 }}>{p.title}</h4>
-                    <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.5)" }}>المرشد: {p.guide} • {p.price}</p>
-                  </div>
-                  <Button variant="primary" size="sm" onClick={() => handlePublishProgram(p.id, p.title)}>
-                    نشر 🚀
-                  </Button>
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            {programsQueue.map((p) => (
+              <div key={p.id} style={{ background: "var(--color-bg-secondary)", padding: "12px 16px", borderRadius: "14px", border: "1px solid var(--color-border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div>
+                  <h4 style={{ fontSize: "13px", fontWeight: 800 }}>{p.title}</h4>
+                  <span style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>{p.guide} • {p.price}</span>
                 </div>
-              ))}
-            </div>
-          )}
+                <IconButton
+                  variant="success"
+                  size="sm"
+                  title={isAr ? "نشر مباشر" : "Publish"}
+                  icon={<CheckCircleIcon size={14} />}
+                  onClick={() => handlePublishProgram(p)}
+                />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

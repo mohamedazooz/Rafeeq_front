@@ -7,24 +7,23 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { BackButton } from "@/components/ui/BackButton";
 import { authService } from "@/lib/api/services";
-
+import { useLanguage } from "@/lib/language-provider";
+import { useTheme } from "@/lib/theme-provider";
 import { ALL_COUNTRY_CODES, CountryCode } from "@/lib/country-codes";
 
-type Lang = "ar" | "en";
 type LoginMethod = "email" | "phone";
 
 const DICT = {
   ar: {
     title: "تسجيل الدخول",
     subtitle: "مرحباً بك! اختر طريقة الدخول المفضلة للوصول إلى حسابك",
-    visionBadge: "🇸🇦 تماشياً مع رؤية المملكة 2030",
     welcome: "مرحباً بك مجدداً في رفيق",
     tagline: "بوابتك الرقمية لاستكشاف المملكة العربية السعودية وحجز البرامج السياحية مع مرشدين محليين معتمدين.",
     socialGoogle: "المتابعة باستخدام Google",
     socialApple: "المتابعة باستخدام Apple",
     orText: "أو عبر",
-    emailTab: "✉️ البريد الإلكتروني",
-    phoneTab: "📱 رقم الجوال (OTP)",
+    emailTab: "البريد الإلكتروني",
+    phoneTab: "رقم الجوال (OTP)",
     emailLabel: "البريد الإلكتروني",
     emailPlaceholder: "name@example.com",
     passwordLabel: "كلمة المرور",
@@ -37,24 +36,19 @@ const DICT = {
     enterOtpText: "أدخل رمز OTP المكون من 6 أرقام المرسل إلى",
     noAccount: "ليس لديك حساب بعد؟",
     registerNow: "أنشئ حساباً مجانياً الآن",
-    ratingText: "4.95 / 5.0 متوسط تقييم الرحلات",
-    quote: '"تجربة حجز العلا مع المرشد عبد العزيز كانت استثنائية جداً! الدفع بالضمان أعطانا راحة بال كاملة، والرحلة كانت غنية بالمعلومات التاريخية."',
-    quoteAuthor: "د. عبد الله الخالدي — مسافر من الرياض",
-    stat1Label: "مسافر مستكشف",
-    stat2Label: "دفع آمن بالضمان",
-    stat3Label: "مرشد معتمد",
+    featureTitle: "منصة رفيق للسياحة السعودية",
+    featureDesc: "احجز رحلاتك بثقة مع أفضل المرشدين السياحيين المرخصين من وزارة السياحة وبحساب ضمان مالي محمي 100%.",
   },
   en: {
     title: "Sign In",
     subtitle: "Welcome back! Choose your preferred login method",
-    visionBadge: "🇸🇦 Aligned with Saudi Vision 2030",
     welcome: "Welcome back to Rafeeq",
     tagline: "Your digital portal to explore Saudi Arabia and book tours with certified local guides.",
     socialGoogle: "Continue with Google",
     socialApple: "Continue with Apple",
     orText: "OR",
-    emailTab: "✉️ Email & Password",
-    phoneTab: "📱 Mobile Phone (OTP)",
+    emailTab: "Email Address",
+    phoneTab: "Mobile Phone (OTP)",
     emailLabel: "Email Address",
     emailPlaceholder: "name@example.com",
     passwordLabel: "Password",
@@ -67,18 +61,18 @@ const DICT = {
     enterOtpText: "Enter the 6-digit OTP code sent to",
     noAccount: "Don't have an account yet?",
     registerNow: "Create a free account now",
-    ratingText: "4.95 / 5.0 Average Trip Rating",
-    quote: '"My AlUla booking experience with guide Abdulaziz was truly exceptional! Escrow payment gave us total peace of mind."',
-    quoteAuthor: "Dr. Abdullah Al-Khaldi — Traveler from Riyadh",
-    stat1Label: "Travelers",
-    stat2Label: "Escrow Guarantee",
-    stat3Label: "Certified Guides",
+    featureTitle: "Rafeeq Saudi Tourism Platform",
+    featureDesc: "Book tours with confidence featuring MOT-licensed local guides and 100% Escrow protected payments.",
   },
 } as const;
 
 export default function LoginPage() {
   const router = useRouter();
-  const [lang, setLang] = useState<Lang>("ar");
+  const { lang, toggleLanguage } = useLanguage();
+  const { theme, toggleTheme } = useTheme();
+  const isAr = lang === "ar";
+  const t = DICT[lang];
+
   const [method, setMethod] = useState<LoginMethod>("email");
   const [step, setStep] = useState<1 | 2>(1);
   const [selectedCountry, setSelectedCountry] = useState<CountryCode>(ALL_COUNTRY_CODES[0]);
@@ -89,12 +83,6 @@ export default function LoginPage() {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
-
-  const t = DICT[lang];
-
-  const toggleLanguage = () => {
-    setLang((prev) => (prev === "ar" ? "en" : "ar"));
-  };
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -111,7 +99,6 @@ export default function LoginPage() {
         else router.push("/client/dashboard");
       }
     } catch {
-      // Demo fallback login simulation
       setIsLoading(false);
       localStorage.setItem("rafeeq_access_token", "demo_jwt_token");
       router.push("/client/dashboard");
@@ -159,137 +146,77 @@ export default function LoginPage() {
 
   return (
     <div
-      dir={lang === "ar" ? "rtl" : "ltr"}
+      dir={isAr ? "rtl" : "ltr"}
       style={{
         minHeight: "100vh",
         display: "grid",
-        gridTemplateColumns: "1.1fr 0.9fr",
-        background: "var(--color-midnight-blue)",
+        gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))",
+        background: "var(--color-bg-primary)",
+        color: "var(--color-text-primary)",
+        transition: "background 0.3s ease, color 0.3s ease",
       }}
     >
-      {/* Left Visual & Testimonial Side */}
-      <div style={{ position: "relative", width: "100%", height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "var(--space-12)", overflow: "hidden" }}>
-        <Image
-          src="/media/destinations/alula/01-alula-banner-five.2e16d0ba.fill-1920x1080-a03aa27a.jpg"
-          alt="AlUla Saudi Arabia"
-          fill
-          priority
-          style={{ objectFit: "cover" }}
-        />
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(13,27,42,0.3) 0%, rgba(13,27,42,0.85) 60%, rgba(13,27,42,0.96) 100%)" }} />
+      {/* Form Container (Right/Left according to RTL) */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "32px 24px", position: "relative" }}>
+        <div style={{ width: "100%", maxWidth: "460px", padding: "32px", borderRadius: "24px", border: "1px solid var(--color-border)", background: "var(--color-bg-card)", boxShadow: "0 12px 30px rgba(0,0,0,0.15)" }}>
+          
+          {/* Top Bar: Clean Back Button, Transparent Logo & Theme/Lang Controls */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
+            <BackButton fallbackHref="/" labelAr="الرئيسية" labelEn="Home" lang={lang} />
 
-        {/* Top Header & Language Switcher */}
-        <div style={{ position: "relative", zIndex: 2, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <Link href="/" style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color: "var(--color-gold-royal)", textDecoration: "none" }}>
-            {lang === "ar" ? "رفيق" : "Rafeeq"}
-          </Link>
-          <div style={{ display: "flex", gap: "var(--space-3)", alignItems: "center" }}>
-            <div className="glass" style={{ padding: "var(--space-2) var(--space-4)", borderRadius: "var(--radius-full)", fontSize: "var(--text-xs)", color: "var(--color-gold-light)", fontWeight: 600 }}>
-              {t.visionBadge}
-            </div>
-            <button
-              type="button"
-              onClick={toggleLanguage}
-              style={{
-                padding: "var(--space-2) var(--space-4)",
-                background: "rgba(255,255,255,0.15)",
-                border: "1px solid rgba(255,255,255,0.2)",
-                borderRadius: "var(--radius-full)",
-                color: "var(--color-warm-white)",
-                fontWeight: 700,
-                fontSize: "var(--text-xs)",
-                cursor: "pointer",
-              }}
-            >
-              🌐 {lang === "ar" ? "English" : "العربية"}
-            </button>
-          </div>
-        </div>
+            <Link href="/" style={{ display: "flex", alignItems: "center", gap: "8px", textDecoration: "none" }}>
+              <Image src="/logo-emblem.png" alt="Rafeeq Logo" width={34} height={34} style={{ objectFit: "contain" }} />
+              <span style={{ fontSize: "20px", fontWeight: 900, color: "var(--color-gold-heading)" }}>{isAr ? "رفيق" : "Rafeeq"}</span>
+            </Link>
 
-        {/* Floating Social Proof Card */}
-        <div style={{ position: "relative", zIndex: 2, display: "flex", flexDirection: "column", gap: "var(--space-6)" }}>
-          <div className="glass" style={{ padding: "var(--space-6)", borderRadius: "var(--radius-2xl)", border: "1px solid rgba(200, 169, 110, 0.3)", backdropFilter: "blur(25px)" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "var(--space-3)", marginBottom: "var(--space-3)" }}>
-              <div style={{ display: "flex", gap: "2px", color: "#FFC107", fontSize: "var(--text-sm)" }}>
-                ★★★★★
-              </div>
-              <span style={{ fontSize: "var(--text-xs)", color: "var(--color-gold-light)", fontWeight: 700 }}>
-                {t.ratingText}
-              </span>
-            </div>
-            <p style={{ fontSize: "var(--text-sm)", color: "var(--color-warm-white)", lineHeight: "var(--leading-relaxed)", fontStyle: "italic", marginBottom: "var(--space-4)" }}>
-              {t.quote}
-            </p>
-            <div style={{ display: "flex", alignItems: "center", gap: "var(--space-3)" }}>
-              <div style={{ width: "36px", height: "36px", borderRadius: "var(--radius-full)", background: "var(--gradient-gold)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-midnight-blue)", fontWeight: 800, fontSize: "var(--text-sm)" }}>
-                د
-              </div>
-              <div>
-                <h4 style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--color-warm-white)" }}>{t.quoteAuthor}</h4>
-              </div>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <button
+                type="button"
+                onClick={toggleTheme}
+                style={{ padding: "6px 12px", borderRadius: "100px", border: "1px solid var(--color-border)", background: "var(--color-bg-secondary)", color: "var(--color-text-primary)", fontSize: "12px", fontWeight: 700, cursor: "pointer" }}
+              >
+                {theme === "light" ? "🌙" : "☀️"}
+              </button>
+              <button
+                type="button"
+                onClick={toggleLanguage}
+                style={{ padding: "6px 12px", borderRadius: "100px", border: "1px solid var(--color-border)", background: "var(--color-bg-secondary)", color: "var(--color-text-primary)", fontSize: "12px", fontWeight: 700, cursor: "pointer" }}
+              >
+                {isAr ? "EN" : "عربي"}
+              </button>
             </div>
           </div>
 
-          {/* Key Trust Stats */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "var(--space-4)", textAlign: "center" }}>
-            <div className="glass" style={{ padding: "var(--space-3)", borderRadius: "var(--radius-lg)" }}>
-              <span style={{ display: "block", fontSize: "var(--text-xl)", fontWeight: 800, color: "var(--color-gold-light)" }}>+50,000</span>
-              <span style={{ fontSize: "var(--text-xs)", color: "rgba(255,255,255,0.6)" }}>{t.stat1Label}</span>
-            </div>
-            <div className="glass" style={{ padding: "var(--space-3)", borderRadius: "var(--radius-lg)" }}>
-              <span style={{ display: "block", fontSize: "var(--text-xl)", fontWeight: 800, color: "var(--color-saudi-green-light)" }}>100%</span>
-              <span style={{ fontSize: "var(--text-xs)", color: "rgba(255,255,255,0.6)" }}>{t.stat2Label}</span>
-            </div>
-            <div className="glass" style={{ padding: "var(--space-3)", borderRadius: "var(--radius-lg)" }}>
-              <span style={{ display: "block", fontSize: "var(--text-xl)", fontWeight: 800, color: "var(--color-gold-royal)" }}>+200</span>
-              <span style={{ fontSize: "var(--text-xs)", color: "rgba(255,255,255,0.6)" }}>{t.stat3Label}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Right Form Container */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "var(--space-8)", position: "relative" }}>
-        {/* Ambient Gold Glow */}
-        <div style={{ position: "absolute", width: "350px", height: "350px", borderRadius: "50%", background: "radial-gradient(circle, rgba(200, 169, 110, 0.15) 0%, transparent 70%)", pointerEvents: "none" }} />
-
-        <div className="glass" style={{ width: "100%", maxWidth: "460px", padding: "var(--space-8)", borderRadius: "var(--radius-2xl)", border: "1px solid rgba(255, 255, 255, 0.12)", position: "relative", zIndex: 2 }}>
-          <div style={{ marginBottom: "var(--space-4)" }}>
-            <BackButton fallbackHref="/" labelAr="العودة للرئيسية" labelEn="Back to Home" lang={lang} />
-          </div>
-
-          {/* Header */}
-          <div style={{ marginBottom: "var(--space-6)" }}>
-            <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color: "var(--color-warm-white)" }}>{t.title}</h1>
-            <p style={{ fontSize: "var(--text-xs)", color: "rgba(255,255,255,0.6)", marginTop: "var(--space-1)" }}>
-              {t.subtitle}
-            </p>
+          {/* Title & Subtitle */}
+          <div style={{ marginBottom: "24px" }}>
+            <h1 style={{ fontSize: "26px", fontWeight: 900, color: "var(--color-text-primary)" }}>{t.title}</h1>
+            <p style={{ fontSize: "13px", color: "var(--color-text-secondary)", marginTop: "4px" }}>{t.subtitle}</p>
           </div>
 
           {errorMsg && (
-            <div style={{ padding: "var(--space-3)", background: "rgba(220,53,69,0.2)", border: "1px solid var(--color-error)", color: "white", borderRadius: "var(--radius-md)", fontSize: "var(--text-xs)", marginBottom: "var(--space-4)" }}>
+            <div style={{ padding: "12px", background: "rgba(220,53,69,0.15)", border: "1px solid var(--color-error)", color: "#EF4444", borderRadius: "10px", fontSize: "12px", marginBottom: "16px" }}>
               {errorMsg}
             </div>
           )}
 
           {/* Social OAuth Buttons */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-3)", marginBottom: "var(--space-6)" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "20px" }}>
             <button
               type="button"
               onClick={() => authService.login("google@demo.com", "demo1234")}
               style={{
                 width: "100%",
-                padding: "var(--space-3)",
-                borderRadius: "var(--radius-lg)",
-                background: "rgba(255, 255, 255, 0.08)",
-                border: "1px solid rgba(255, 255, 255, 0.15)",
-                color: "var(--color-warm-white)",
-                fontWeight: 600,
-                fontSize: "var(--text-sm)",
+                padding: "12px",
+                borderRadius: "12px",
+                background: "var(--color-bg-secondary)",
+                border: "1px solid var(--color-border)",
+                color: "var(--color-text-primary)",
+                fontWeight: 700,
+                fontSize: "13px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: "var(--space-3)",
+                gap: "10px",
                 cursor: "pointer",
               }}
             >
@@ -307,17 +234,17 @@ export default function LoginPage() {
               onClick={() => authService.login("apple@demo.com", "demo1234")}
               style={{
                 width: "100%",
-                padding: "var(--space-3)",
-                borderRadius: "var(--radius-lg)",
-                background: "rgba(255, 255, 255, 0.08)",
-                border: "1px solid rgba(255, 255, 255, 0.15)",
-                color: "var(--color-warm-white)",
-                fontWeight: 600,
-                fontSize: "var(--text-sm)",
+                padding: "12px",
+                borderRadius: "12px",
+                background: "var(--color-bg-secondary)",
+                border: "1px solid var(--color-border)",
+                color: "var(--color-text-primary)",
+                fontWeight: 700,
+                fontSize: "13px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: "var(--space-3)",
+                gap: "10px",
                 cursor: "pointer",
               }}
             >
@@ -326,26 +253,26 @@ export default function LoginPage() {
           </div>
 
           {/* Divider */}
-          <div style={{ display: "flex", alignItems: "center", gap: "var(--space-3)", marginBottom: "var(--space-6)" }}>
-            <div style={{ flexGrow: 1, height: "1px", background: "rgba(255,255,255,0.12)" }} />
-            <span style={{ fontSize: "var(--text-xs)", color: "rgba(255,255,255,0.4)", whiteSpace: "nowrap" }}>{t.orText}</span>
-            <div style={{ flexGrow: 1, height: "1px", background: "rgba(255,255,255,0.12)" }} />
+          <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
+            <div style={{ flexGrow: 1, height: "1px", background: "var(--color-border)" }} />
+            <span style={{ fontSize: "11px", color: "var(--color-text-secondary)", whiteSpace: "nowrap" }}>{t.orText}</span>
+            <div style={{ flexGrow: 1, height: "1px", background: "var(--color-border)" }} />
           </div>
 
-          {/* Method Tabs */}
-          <div style={{ display: "flex", gap: "var(--space-2)", padding: "var(--space-1)", background: "rgba(255,255,255,0.06)", borderRadius: "var(--radius-lg)", marginBottom: "var(--space-6)" }}>
+          {/* Clean Method Tabs (No Icons) */}
+          <div style={{ display: "flex", gap: "6px", padding: "4px", background: "var(--color-bg-secondary)", borderRadius: "12px", marginBottom: "20px" }}>
             <button
               type="button"
               onClick={() => setMethod("email")}
               style={{
                 flexGrow: 1,
-                padding: "var(--space-2)",
-                borderRadius: "var(--radius-md)",
+                padding: "8px 12px",
+                borderRadius: "8px",
                 border: "none",
                 background: method === "email" ? "var(--gradient-gold)" : "transparent",
-                color: method === "email" ? "var(--color-midnight-blue)" : "rgba(255,255,255,0.7)",
-                fontWeight: 700,
-                fontSize: "var(--text-xs)",
+                color: method === "email" ? "#0f172a" : "var(--color-text-secondary)",
+                fontWeight: 800,
+                fontSize: "12px",
                 cursor: "pointer",
               }}
             >
@@ -353,16 +280,16 @@ export default function LoginPage() {
             </button>
             <button
               type="button"
-              onClick={() => { setMethod("phone"); setStep(1); }}
+              onClick={() => setMethod("phone")}
               style={{
                 flexGrow: 1,
-                padding: "var(--space-2)",
-                borderRadius: "var(--radius-md)",
+                padding: "8px 12px",
+                borderRadius: "8px",
                 border: "none",
                 background: method === "phone" ? "var(--gradient-gold)" : "transparent",
-                color: method === "phone" ? "var(--color-midnight-blue)" : "rgba(255,255,255,0.7)",
-                fontWeight: 700,
-                fontSize: "var(--text-xs)",
+                color: method === "phone" ? "#0f172a" : "var(--color-text-secondary)",
+                fontWeight: 800,
+                fontSize: "12px",
                 cursor: "pointer",
               }}
             >
@@ -370,25 +297,25 @@ export default function LoginPage() {
             </button>
           </div>
 
-          {/* Email Form */}
-          {method === "email" && (
-            <form onSubmit={handleEmailLogin} style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>
+          {/* Form Content */}
+          {method === "email" ? (
+            <form onSubmit={handleEmailLogin} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
               <div>
-                <label style={{ display: "block", fontSize: "var(--text-xs)", color: "rgba(255,255,255,0.8)", marginBottom: "var(--space-1)" }}>{t.emailLabel}</label>
+                <label style={{ display: "block", fontSize: "12px", color: "var(--color-text-secondary)", marginBottom: "4px", fontWeight: 700 }}>{t.emailLabel}</label>
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder={t.emailPlaceholder}
-                  style={{ width: "100%", padding: "var(--space-3)", borderRadius: "var(--radius-md)", border: "1px solid var(--glass-border)", background: "rgba(255,255,255,0.05)", color: "white", outline: "none" }}
+                  style={{ width: "100%", padding: "12px", borderRadius: "10px", border: "1px solid var(--color-border)", background: "var(--color-bg-secondary)", color: "var(--color-text-primary)", outline: "none", fontSize: "13px" }}
                 />
               </div>
 
               <div>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--space-1)" }}>
-                  <label style={{ fontSize: "var(--text-xs)", color: "rgba(255,255,255,0.8)" }}>{t.passwordLabel}</label>
-                  <Link href="/forgot-password" style={{ fontSize: "var(--text-xs)", color: "var(--color-gold-royal)", textDecoration: "none" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+                  <label style={{ fontSize: "12px", color: "var(--color-text-secondary)", fontWeight: 700 }}>{t.passwordLabel}</label>
+                  <Link href="/forgot-password" style={{ fontSize: "11px", color: "var(--color-gold-heading)", textDecoration: "none", fontWeight: 700 }}>
                     {t.forgotPass}
                   </Link>
                 </div>
@@ -399,158 +326,120 @@ export default function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder={t.passwordPlaceholder}
-                    style={{ width: "100%", padding: "var(--space-3)", paddingInlineEnd: "var(--space-10)", borderRadius: "var(--radius-md)", border: "1px solid var(--glass-border)", background: "rgba(255,255,255,0.05)", color: "white", outline: "none" }}
+                    style={{ width: "100%", padding: "12px", paddingInlineEnd: "40px", borderRadius: "10px", border: "1px solid var(--color-border)", background: "var(--color-bg-secondary)", color: "var(--color-text-primary)", outline: "none", fontSize: "13px" }}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword((prev) => !prev)}
-                    style={{ position: "absolute", left: lang === "ar" ? "var(--space-3)" : "auto", right: lang === "en" ? "var(--space-3)" : "auto", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "rgba(255,255,255,0.5)", fontSize: "var(--text-sm)", cursor: "pointer" }}
+                    style={{ position: "absolute", left: isAr ? "12px" : "auto", right: isAr ? "auto" : "12px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "var(--color-text-secondary)", fontSize: "14px", cursor: "pointer" }}
                   >
                     {showPassword ? "👁️‍🗨️" : "👁️"}
                   </button>
                 </div>
               </div>
 
-              <Button variant="primary" fullWidth size="lg" isLoading={isLoading}>
+              <Button variant="primary" fullWidth size="lg" isLoading={isLoading} style={{ marginTop: "6px" }}>
                 {t.loginBtn}
               </Button>
             </form>
-          )}
-
-          {/* Phone OTP Form */}
-          {method === "phone" && step === 1 && (
-            <form onSubmit={handleSendOtp} style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>
-              <div>
-                <label style={{ display: "block", fontSize: "var(--text-xs)", color: "rgba(255,255,255,0.8)", marginBottom: "var(--space-1)" }}>{t.phoneLabel}</label>
-                <div style={{ display: "flex", width: "100%", direction: "ltr", background: "rgba(255, 255, 255, 0.08)", border: "1.5px solid rgba(200, 169, 110, 0.35)", borderRadius: "var(--radius-lg)", overflow: "hidden", height: "56px", boxShadow: "0 4px 20px rgba(0,0,0,0.2)" }}>
-                  {/* Compact Side Country Selector (Flag + Code Only) */}
-                  <div
-                    style={{
-                      position: "relative",
-                      width: "115px",
-                      height: "100%",
-                      flexShrink: 0,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: "6px",
-                      background: "rgba(255, 255, 255, 0.12)",
-                      borderRight: "1px solid rgba(255, 255, 255, 0.2)",
-                      color: "white",
-                      fontWeight: 800,
-                      fontSize: "var(--text-base)",
-                      cursor: "pointer",
-                    }}
-                  >
-                    <span style={{ fontSize: "1.2rem" }}>{selectedCountry.flag}</span>
-                    <span style={{ direction: "ltr", letterSpacing: "0.5px" }}>{selectedCountry.code}</span>
-                    <span style={{ fontSize: "10px", color: "var(--color-gold-light)", marginInlineStart: "2px" }}>▼</span>
-
-                    {/* Native Select Overlay */}
+          ) : (
+            <form onSubmit={step === 1 ? handleSendOtp : handleVerifyOtp} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+              {step === 1 ? (
+                <div>
+                  <label style={{ display: "block", fontSize: "12px", color: "var(--color-text-secondary)", marginBottom: "4px", fontWeight: 700 }}>{t.phoneLabel}</label>
+                  <div style={{ display: "flex", gap: "8px" }}>
                     <select
-                      value={selectedCountry.code + selectedCountry.iso}
+                      value={selectedCountry.code}
                       onChange={(e) => {
-                        const found = ALL_COUNTRY_CODES.find((c) => (c.code + c.iso) === e.target.value);
+                        const found = ALL_COUNTRY_CODES.find((c) => c.code === e.target.value);
                         if (found) setSelectedCountry(found);
                       }}
-                      style={{
-                        position: "absolute",
-                        inset: 0,
-                        opacity: 0,
-                        width: "100%",
-                        height: "100%",
-                        cursor: "pointer",
-                        fontSize: "var(--text-base)",
-                      }}
+                      style={{ padding: "12px", borderRadius: "10px", border: "1px solid var(--color-border)", background: "var(--color-bg-secondary)", color: "var(--color-text-primary)", fontSize: "12px", outline: "none" }}
                     >
                       {ALL_COUNTRY_CODES.map((c) => (
-                        <option key={c.iso + c.code} value={c.code + c.iso} style={{ background: "#0D1B2A", color: "white", padding: "8px", fontSize: "14px" }}>
-                          {c.flag} {lang === "ar" ? c.countryAr : c.countryEn} ({c.code})
+                        <option key={c.code} value={c.code}>
+                          {c.flag} {c.code}
                         </option>
                       ))}
                     </select>
+
+                    <input
+                      type="tel"
+                      required
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ""))}
+                      placeholder="55 123 4567"
+                      style={{ flexGrow: 1, padding: "12px", borderRadius: "10px", border: "1px solid var(--color-border)", background: "var(--color-bg-secondary)", color: "var(--color-text-primary)", outline: "none", fontSize: "13px" }}
+                    />
                   </div>
-
-                  {/* Prominent Large Phone Input Box */}
-                  <input
-                    type="tel"
-                    required
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                    placeholder="5X XXX XXXX"
-                    style={{
-                      flex: 1,
-                      minWidth: 0,
-                      width: "100%",
-                      height: "100%",
-                      padding: "0 var(--space-4)",
-                      border: "none",
-                      background: "transparent",
-                      color: "white",
-                      fontSize: "var(--text-lg)",
-                      fontWeight: 800,
-                      letterSpacing: "1.5px",
-                      outline: "none",
-                      direction: "ltr",
-                    }}
-                  />
                 </div>
-              </div>
+              ) : (
+                <div>
+                  <label style={{ display: "block", fontSize: "12px", color: "var(--color-text-secondary)", marginBottom: "6px", fontWeight: 700 }}>
+                    {t.enterOtpText} {selectedCountry.code}{phoneNumber}
+                  </label>
+                  <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
+                    {otp.map((digit, idx) => (
+                      <input
+                        key={idx}
+                        id={`otp-${idx}`}
+                        type="text"
+                        maxLength={1}
+                        value={digit}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          const newOtp = [...otp];
+                          newOtp[idx] = val;
+                          setOtp(newOtp);
+                          if (val && idx < 5) {
+                            const nextEl = document.getElementById(`otp-${idx + 1}`);
+                            nextEl?.focus();
+                          }
+                        }}
+                        style={{ width: "42px", height: "48px", textAlign: "center", fontSize: "18px", fontWeight: 800, borderRadius: "10px", border: "1px solid var(--color-border)", background: "var(--color-bg-secondary)", color: "var(--color-text-primary)", outline: "none" }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
 
-              <Button variant="primary" fullWidth size="lg" isLoading={isLoading}>
-                {t.sendOtpBtn}
-              </Button>
-            </form>
-          )}
-
-          {method === "phone" && step === 2 && (
-            <form onSubmit={handleVerifyOtp} style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>
-              <div style={{ textAlign: "center", marginBottom: "var(--space-2)" }}>
-                <span style={{ fontSize: "var(--text-xs)", color: "rgba(255,255,255,0.7)" }}>
-                  {t.enterOtpText} {selectedCountry.flag} {selectedCountry.code} {phoneNumber}
-                </span>
-              </div>
-
-              <div style={{ display: "flex", gap: "var(--space-2)", justifyContent: "center", direction: "ltr" }}>
-                {otp.map((digit, idx) => (
-                  <input
-                    key={idx}
-                    type="text"
-                    maxLength={1}
-                    value={digit}
-                    onChange={(e) => {
-                      const newOtp = [...otp];
-                      newOtp[idx] = e.target.value;
-                      setOtp(newOtp);
-                    }}
-                    style={{
-                      width: "44px",
-                      height: "50px",
-                      textAlign: "center",
-                      fontSize: "var(--text-xl)",
-                      fontWeight: 800,
-                      borderRadius: "var(--radius-md)",
-                      border: "1px solid var(--color-gold-royal)",
-                      background: "rgba(255,255,255,0.1)",
-                      color: "white",
-                    }}
-                  />
-                ))}
-              </div>
-
-              <Button variant="primary" fullWidth size="lg" isLoading={isLoading}>
-                {t.verifyOtpBtn}
+              <Button variant="primary" fullWidth size="lg" isLoading={isLoading} style={{ marginTop: "6px" }}>
+                {step === 1 ? t.sendOtpBtn : t.verifyOtpBtn}
               </Button>
             </form>
           )}
 
           {/* Footer Register Link */}
-          <div style={{ marginTop: "var(--space-6)", textAlign: "center", fontSize: "var(--text-xs)", color: "rgba(255,255,255,0.5)" }}>
+          <div style={{ marginTop: "24px", textAlign: "center", fontSize: "12px", color: "var(--color-text-secondary)" }}>
             {t.noAccount}{" "}
-            <Link href="/register" style={{ color: "var(--color-gold-royal)", textDecoration: "none", fontWeight: 700 }}>
+            <Link href="/register" style={{ color: "var(--color-gold-heading)", textDecoration: "none", fontWeight: 800 }}>
               {t.registerNow}
             </Link>
           </div>
+        </div>
+      </div>
+
+      {/* Visual Showcase Side (Without any testimonial reviews) */}
+      <div style={{ position: "relative", width: "100%", height: "100%", minHeight: "400px", display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: "40px", overflow: "hidden" }}>
+        <Image
+          src="/media/destinations/alula/01-alula-banner-five.2e16d0ba.fill-1920x1080-a03aa27a.jpg"
+          alt="AlUla Saudi Arabia"
+          fill
+          priority
+          style={{ objectFit: "cover" }}
+        />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(13,27,42,0.2) 0%, rgba(13,27,42,0.85) 60%, rgba(13,27,42,0.96) 100%)" }} />
+
+        <div style={{ position: "relative", zIndex: 2, color: "#FFFFFF", maxWidth: "520px" }}>
+          <span style={{ padding: "4px 14px", background: "var(--gradient-gold)", color: "#0f172a", borderRadius: "100px", fontSize: "11px", fontWeight: 900, display: "inline-block", marginBottom: "12px" }}>
+            🇸🇦 {isAr ? "ماشياً مع رؤية المملكة 2030" : "Aligned with Vision 2030"}
+          </span>
+          <h2 style={{ fontSize: "28px", fontWeight: 900, color: "#FFFFFF", marginBottom: "8px" }}>
+            {t.featureTitle}
+          </h2>
+          <p style={{ fontSize: "14px", color: "rgba(255,255,255,0.85)", lineHeight: "1.7" }}>
+            {t.featureDesc}
+          </p>
         </div>
       </div>
     </div>

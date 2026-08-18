@@ -1,25 +1,55 @@
+"use client";
+
+import { useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { Modal } from "@/components/ui/Modal";
 
 const TRANSACTIONS = [
   { id: "tx-1", date: "2026-08-15", desc: "رحلة مدائن صالح (حجز #RFQ-9042)", amountSar: 1530, type: "إيداع أرباح", status: "مكتمل" },
   { id: "tx-2", date: "2026-08-10", desc: "سحب إلى حساب البنك الأهلي السعودي (SA4210...)", amountSar: -5000, type: "تحويل IBAN", status: "معتمد" },
-] as const;
+];
 
 export default function GuideWalletPage() {
+  const [showPayoutModal, setShowPayoutModal] = useState(false);
+  const [payoutAmount, setPayoutAmount] = useState("5000");
+  const [toast, setToast] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 3500);
+  };
+
+  const handleRequestPayout = (e: React.FormEvent) => {
+    e.preventDefault();
+    setShowPayoutModal(false);
+    showToast(`تم تقديم طلب سحب مبلغ ${payoutAmount} ر.س إلى حسابك البنكي المعتمد بنجاح! 💸`);
+  };
+
   return (
     <div style={{ padding: "var(--space-6)" }}>
-      <div style={{ marginBottom: "var(--space-8)" }}>
-        <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 800 }}>المحفظة والأرباح 💰</h1>
-        <p style={{ color: "var(--color-text-muted)", fontSize: "var(--text-sm)" }}>عرض صافي الأرباح والرصيد المتاح وسجل المعاملات وطلبات السحب</p>
+      {toast && (
+        <div style={{ position: "fixed", bottom: "24px", left: "24px", background: "var(--color-modal-bg)", border: "1px solid var(--color-gold-heading)", color: "var(--color-text-primary)", padding: "14px 28px", borderRadius: "14px", boxShadow: "0 10px 30px rgba(0,0,0,0.25)", zIndex: 9999, fontWeight: 800, fontSize: "14px" }}>
+          {toast}
+        </div>
+      )}
+
+      {/* Header */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--space-8)" }}>
+        <div>
+          <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 900, color: "var(--color-text-primary)" }}>المحفظة والأرباح 💳</h1>
+          <p style={{ color: "var(--color-text-secondary)", marginTop: "var(--space-1)" }}>متابعة العوائد المالية، رصيد الضمان وعمليات السحب إلى الآيبان البنكي</p>
+        </div>
+        <Button variant="primary" size="lg" onClick={() => setShowPayoutModal(true)}>
+          طلب سحب أرباح 💸
+        </Button>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "var(--space-6)", marginBottom: "var(--space-8)" }}>
-        <div className="glass" style={{ padding: "var(--space-6)", borderRadius: "var(--radius-2xl)", border: "1px solid var(--color-saudi-green)" }}>
-          <span style={{ fontSize: "var(--text-xs)", color: "var(--color-text-muted)" }}>الرصيد المتاح للسحب</span>
-          <h2 style={{ fontSize: "var(--text-4xl)", fontWeight: 800, color: "var(--color-saudi-green)", marginBlock: "var(--space-2)" }}>9,250.00 ر.س</h2>
-          <Button variant="primary" size="sm" style={{ marginTop: "var(--space-3)" }}>
-            طلب سحب إلى الحساب البنكي
-          </Button>
+      {/* KPI Cards */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "var(--space-4)", marginBottom: "var(--space-8)" }}>
+        <div className="glass" style={{ padding: "var(--space-6)", borderRadius: "var(--radius-2xl)", border: "1px solid var(--color-gold-royal)" }}>
+          <span style={{ fontSize: "var(--text-xs)", color: "var(--color-text-muted)" }}>الرصيد المتاح للسحب الفوري</span>
+          <h2 style={{ fontSize: "var(--text-3xl)", fontWeight: 900, color: "var(--color-saudi-green)", marginBlock: "var(--space-2)" }}>9,250.00 ر.س</h2>
+          <p style={{ fontSize: "var(--text-xs)", color: "var(--color-text-secondary)" }}>جاهز للتحويل الفوري إلى حسابك البنكي</p>
         </div>
 
         <div className="glass" style={{ padding: "var(--space-6)", borderRadius: "var(--radius-2xl)" }}>
@@ -65,6 +95,58 @@ export default function GuideWalletPage() {
           </tbody>
         </table>
       </div>
+
+      {/* Payout Modal */}
+      <Modal
+        isOpen={showPayoutModal}
+        onClose={() => setShowPayoutModal(false)}
+        title="طلب سحب أرباح إلى الآيبان البنكي"
+        subtitle="الحساب المستهدف: مصرف الراجحي (SA80000000608010167519)"
+        maxWidth="480px"
+      >
+        <form onSubmit={handleRequestPayout}>
+          <div style={{ marginBottom: "20px" }}>
+            <label style={{ display: "block", fontSize: "12px", color: "var(--color-text-secondary)", marginBottom: "6px" }}>المبلغ المطلوب سحبه (ر.س)</label>
+            <input
+              type="number"
+              required
+              min={100}
+              max={9250}
+              value={payoutAmount}
+              onChange={(e) => setPayoutAmount(e.target.value)}
+              style={{ width: "100%", padding: "12px 14px", borderRadius: "10px", background: "var(--color-bg-secondary)", border: "1px solid var(--color-border)", color: "var(--color-text-primary)", fontSize: "18px", fontWeight: 900, outline: "none" }}
+            />
+            <span style={{ fontSize: "11px", color: "var(--color-text-muted)", marginTop: "4px", display: "block" }}>
+              الحد الأقصى للسحب: 9,250.00 ر.س (الحد الأدنى 100 ر.س)
+            </span>
+          </div>
+
+          <div
+            style={{
+              padding: "12px 16px",
+              background: "rgba(201, 162, 39, 0.08)",
+              borderRadius: "10px",
+              border: "1px solid rgba(201, 162, 39, 0.2)",
+              fontSize: "12px",
+              lineHeight: 1.6,
+            }}
+          >
+            <strong style={{ color: "var(--color-gold-royal)", display: "block", marginBottom: "4px" }}>
+              الحساب البنكي المستلم:
+            </strong>
+            البنك الأهلي السعودي (SNB) - SA4210000001234567890123
+          </div>
+
+          <div style={{ display: "flex", gap: "var(--space-3)", justifyContent: "flex-end", marginTop: "var(--space-2)" }}>
+            <Button variant="ghost" type="button" onClick={() => setShowPayoutModal(false)}>
+              إلغاء
+            </Button>
+            <Button variant="primary" type="submit">
+              تأكيد طلب السحب
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }
