@@ -107,8 +107,8 @@
   align-items: center;
   gap: var(--space-1);
   font-size: var(--text-xs);
-  color: var(--color-gold-dark);
-  font-weight: 600;
+  color: var(--color-gold-heading);
+  font-weight: 700;
 }
 
 .card__rating {
@@ -129,6 +129,7 @@
   margin-bottom: var(--space-3);
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -138,7 +139,7 @@
   align-items: center;
   gap: var(--space-4);
   font-size: var(--text-xs);
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
   margin-bottom: var(--space-4);
   padding-bottom: var(--space-3);
   border-bottom: 1px dashed var(--color-border);
@@ -160,7 +161,7 @@
   font-family: var(--font-heading);
   font-size: var(--text-xl);
   font-weight: 800;
-  color: var(--color-saudi-green);
+  color: var(--color-gold-heading);
 }
 
 .card__price-currency {

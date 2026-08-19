@@ -1,0 +1,90 @@
+"use client";
+
+import { DestinationItem } from "../types/destinations.types";
+
+export const DESTINATIONS_DATA: DestinationItem[] = [
+  {
+    slug: "alula",
+    nameAr: "العلا",
+    nameEn: "AlUla",
+    regionAr: "منطقة المدينة المنورة",
+    regionEn: "Al Madinah Region",
+    descriptionAr: "متحف مفتوح وتراث عالمي يمتد لآلاف السنين من صخور العُلا العجيبة إلى مدائن صالح.",
+    descriptionEn: "An open-air museum and UNESCO heritage site spanning thousands of years from Hegra to Elephant Rock.",
+    image: "/media/destinations/alula/01-alula-banner-five.2e16d0ba.fill-1920x1080-a03aa27a.jpg",
+    programsCount: 18,
+    badgeAr: "تراث عالمي اليونسكو",
+    badgeEn: "UNESCO World Heritage",
+  },
+  {
+    slug: "riyadh",
+    nameAr: "الرياض",
+    nameEn: "Riyadh",
+    regionAr: "منطقة الرياض",
+    regionEn: "Riyadh Region",
+    descriptionAr: "عاصمة المملكة الحيوية حيث يلتقي التراث النجدي بالأبراج الحديثة وسفاري الصحراء.",
+    descriptionEn: "The vibrant capital where Najdi heritage meets modern towers and desert safaris.",
+    image: "/media/destinations/riyadh/01-riyadh-banner-new.2e16d0ba.fill-1920x1080-be8fd66c.jpg",
+    programsCount: 24,
+    badgeAr: "العاصمة والترفيه",
+    badgeEn: "Capital & Entertainment",
+  },
+  {
+    slug: "jeddah",
+    nameAr: "جدة",
+    nameEn: "Jeddah",
+    regionAr: "منطقة مكة المكرمة",
+    regionEn: "Makkah Region",
+    descriptionAr: "عروس البحر الأحمر وبوابتها التاريخية — من أزقة البلد العتيقة إلى كورنيش جدة الفاخر.",
+    descriptionEn: "Bride of the Red Sea — from historic Al-Balad alleyways to modern corniche luxury.",
+    image: "/media/destinations/jeddah/01-jeddah-banner.2e16d0ba.fill-1920x1080-fc73dd1c.jpg",
+    programsCount: 15,
+    badgeAr: "ثقافة وبحر",
+    badgeEn: "Culture & Sea",
+  },
+  {
+    slug: "the-red-sea",
+    nameAr: "البحر الأحمر",
+    nameEn: "The Red Sea",
+    regionAr: "الساحل الغربي",
+    regionEn: "West Coast",
+    descriptionAr: "منتجعات فاخرة وشعاب مرجانية عذراء في أرخبيل الجزر الساحر.",
+    descriptionEn: "Pristine coral reefs and ultra-luxury resorts across a stunning island archipelago.",
+    image: "/media/destinations/the-red-sea/01-the-red-sea-luxury.2e16d0ba.fill-1920x1080-7d4731d3.jpg",
+    programsCount: 12,
+    badgeAr: "سياحة بيئية فاخرة",
+    badgeEn: "Eco-Luxury Tourism",
+  },
+  {
+    slug: "aseer",
+    nameAr: "عسير",
+    nameEn: "Aseer",
+    regionAr: "منطقة عسير",
+    regionEn: "Aseer Region",
+    descriptionAr: "قمم السودة الضبابية وطبيعة قمم الجنوب الساحرة وأزقة رجال ألمع الملونة.",
+    descriptionEn: "Foggy Soodah mountain peaks, breathtaking southern nature, and Rijal Almaa heritage.",
+    image: "/media/destinations/aseer/aseer-banner.jpg",
+    programsCount: 10,
+    badgeAr: "طبيعة وجبال",
+    badgeEn: "Nature & Mountains",
+  },
+  {
+    slug: "al-ahsa",
+    nameAr: "الأحساء",
+    nameEn: "Al Ahsa",
+    regionAr: "المنطقة الشرقية",
+    regionEn: "Eastern Province",
+    descriptionAr: "أكبر واحة نخيل مستقلة في العالم وجبل القارة العجيب.",
+    descriptionEn: "The world's largest self-contained palm oasis and ancient Al Qarah mountain caves.",
+    image: "/media/destinations/al-ahsa/al-ahsa-banner.jpg",
+    programsCount: 9,
+    badgeAr: "واحة تاريخية",
+    badgeEn: "Historic Oasis",
+  },
+];
+
+export function useDestinations() {
+  return {
+    destinations: DESTINATIONS_DATA,
+  };
+}

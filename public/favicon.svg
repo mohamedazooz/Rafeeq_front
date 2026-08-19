@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <!-- Navy Blue Gradient -->
+    <linearGradient id="navyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E4D6B" />
+      <stop offset="100%" stop-color="#0E2D44" />
+    </linearGradient>
+
+    <!-- Warm Desert Gold Gradient -->
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F3C368" />
+      <stop offset="50%" stop-color="#DCA048" />
+      <stop offset="100%" stop-color="#B87D28" />
+    </linearGradient>
+
+    <!-- Soft Glow Filter -->
+    <filter id="subtleGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#DCA048" flood-opacity="0.25" />
+    </filter>
+  </defs>
+
+  <!-- Embedded Image Reference for Ultra-High Precision with SVG container -->
+  <image href="/logo-emblem.png" x="16" y="16" width="480" height="480" filter="url(#subtleGlow)" />
+</svg>
