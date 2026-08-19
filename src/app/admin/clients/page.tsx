@@ -16,6 +16,7 @@ import {
   FileTextIcon,
   CreditCardIcon,
   CalendarIcon,
+  TrashIcon,
 } from "@/components/icons";
 
 interface ClientItem {
@@ -191,6 +192,18 @@ export default function AdminClientsPage() {
       setSelectedClient(null);
       showToast(isAr ? `تم حذف حساب المسافر (${client.name}) بنجاح.` : `Client deleted.`);
     }
+  };
+
+  const handleToggleStatus = (client: ClientItem) => {
+    const newStatus = client.status === "نشط" ? "محظور" : "نشط";
+    setClients(
+      clients.map((c) => (c.id === client.id ? { ...c, status: newStatus } : c))
+    );
+    showToast(
+      isAr
+        ? `تم تغير حالة المسافر (${client.name}) إلى ${newStatus}`
+        : `Client ${client.name} status updated to ${newStatus}`
+    );
   };
 
   return (

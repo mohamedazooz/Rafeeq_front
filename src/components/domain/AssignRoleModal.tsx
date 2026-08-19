@@ -18,7 +18,8 @@ export interface AvailableRole {
   readonly key: string;
   readonly nameAr: string;
   readonly nameEn: string;
-  readonly descriptionAr: string;
+  readonly descriptionAr?: string;
+  readonly description?: string;
   readonly permissionsCount: number;
   readonly require2fa: boolean;
 }
@@ -35,26 +36,32 @@ const DEFAULT_AVAILABLE_ROLES: readonly AvailableRole[] = [
 interface AssignRoleModalProps {
   readonly isOpen: boolean;
   readonly onClose: () => void;
-  readonly account: AccountForRoleAssignment | null;
+  readonly account?: AccountForRoleAssignment | null;
+  readonly targetAccount?: AccountForRoleAssignment | null;
   readonly availableRoles?: readonly AvailableRole[];
-  readonly onAssignSuccess: (accountId: string, newRoleKey: string, roleTitleAr: string) => void;
+  readonly onAssignSuccess?: (accountId: string, newRoleKey: string, roleTitleAr: string) => void;
+  readonly onRoleAssigned?: (accountId: string, newRoleKey: string, roleTitleAr: string) => void;
 }
 
 export function AssignRoleModal({
   isOpen,
   onClose,
   account,
+  targetAccount,
   availableRoles = DEFAULT_AVAILABLE_ROLES,
   onAssignSuccess,
+  onRoleAssigned,
 }: AssignRoleModalProps) {
+  const activeAccount = account ?? targetAccount ?? null;
+  const notifySuccess = onAssignSuccess ?? onRoleAssigned ?? (() => {});
   const { lang } = useLanguage();
   const isAr = lang === "ar";
 
-  const [selectedRoleKey, setSelectedRoleKey] = useState<string>(account?.currentRoleKey || "guide_approver");
+  const [selectedRoleKey, setSelectedRoleKey] = useState<string>(activeAccount?.currentRoleKey || "guide_approver");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [reason, setReason] = useState("");
 
-  if (!account) return null;
+  if (!activeAccount) return null;
 
   const selectedRole = availableRoles.find((r) => r.key === selectedRoleKey) || availableRoles[0];
 
@@ -63,7 +70,7 @@ export function AssignRoleModal({
     setIsSubmitting(true);
 
     setTimeout(() => {
-      onAssignSuccess(account.id, selectedRole.key, selectedRole.nameAr);
+      notifySuccess(activeAccount.id, selectedRole.key, selectedRole.nameAr);
       setIsSubmitting(false);
       onClose();
     }, 600);
@@ -94,9 +101,9 @@ export function AssignRoleModal({
               {isAr ? "الحساب المستهدف:" : "Target Account:"}
             </span>
             <h4 style={{ fontSize: "15px", fontWeight: 800, margin: "2px 0 0 0", color: "var(--color-text-primary)" }}>
-              {account.name}
+              {activeAccount.name}
             </h4>
-            <span style={{ fontSize: "12px", color: "var(--color-text-secondary)" }}>{account.email}</span>
+            <span style={{ fontSize: "12px", color: "var(--color-text-secondary)" }}>{activeAccount.email}</span>
           </div>
 
           <div style={{ textAlign: "end" }}>
@@ -116,7 +123,7 @@ export function AssignRoleModal({
                 marginTop: "4px",
               }}
             >
-              {account.currentRoleTitleAr}
+              {activeAccount.currentRoleTitleAr}
             </span>
           </div>
         </div>
@@ -162,7 +169,7 @@ export function AssignRoleModal({
                         )}
                       </div>
                       <p style={{ fontSize: "11px", color: "var(--color-text-secondary)", margin: "2px 0 0 0" }}>
-                        {role.descriptionAr}
+                        {role.descriptionAr || role.description || ""}
                       </p>
                     </div>
                   </div>
