@@ -1,41 +1,44 @@
 "use client";
 
 import React from "react";
-
-export const WHY_RAFEEQ_ITEMS = [
-  {
-    icon: "🛡️",
-    title: "حماية مالية وضمان Escrow",
-    description: "أموالك محفوظة في حساب ضمان آمن حتى اكتمال رحلتك بنجاح ورضاك الكامل عنها.",
-  },
-  {
-    icon: "📜",
-    title: "مرشدون سياحيون معتمدون",
-    description: "جميع مرشدينا مرخصون رسمياً من وزارة السياحة السعودية ومدربون على أعلى معايير الضيافة.",
-  },
-  {
-    icon: "⏳",
-    title: "تجميد المقعد الفوري (Soft-Lock)",
-    description: "نظام حجز يضمن مقعدك لمدة 15 دقيقة لتأكيد الدفع بكل أمان دون مزاحمة.",
-  },
-  {
-    icon: "💬",
-    title: "محادثة مباشرة ودعم 24/7",
-    description: "تواصل مباشر مع مرشدك للتنسيق، مع فريق دعم محلي جاهز لمساعدتك في أي لحظة.",
-  },
-];
+import { useLanguage } from "@/lib/language-provider";
 
 export const WhyRafeeqFeatures: React.FC = () => {
+  const { t } = useLanguage();
+
+  const items = [
+    {
+      icon: "🛡️",
+      title: t.home.whyRafeeq.escrowTitle,
+      description: t.home.whyRafeeq.escrowDesc,
+    },
+    {
+      icon: "📜",
+      title: t.home.whyRafeeq.guidesTitle,
+      description: t.home.whyRafeeq.guidesDesc,
+    },
+    {
+      icon: "⏳",
+      title: t.home.whyRafeeq.softLockTitle,
+      description: t.home.whyRafeeq.softLockDesc,
+    },
+    {
+      icon: "💬",
+      title: t.home.whyRafeeq.supportTitle,
+      description: t.home.whyRafeeq.supportDesc,
+    },
+  ];
+
   return (
     <section style={{ paddingBlock: "5rem 4rem" }}>
       <div className="container">
         {/* Header */}
         <div style={{ textAlign: "center", maxWidth: "650px", marginInline: "auto", marginBottom: "3.5rem" }}>
           <span style={{ color: "var(--color-gold-royal)", fontWeight: 700, fontSize: "var(--text-sm)" }}>
-            لماذا تختار رفيق؟
+            {t.home.whyRafeeq.badge}
           </span>
           <h2 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, fontFamily: "var(--font-heading)", marginTop: "0.25rem" }}>
-            تجربة سفر بمعايير الأمان والضيافة السعودية
+            {t.home.whyRafeeq.title}
           </h2>
         </div>
 
@@ -47,7 +50,7 @@ export const WhyRafeeqFeatures: React.FC = () => {
             gap: "1.75rem",
           }}
         >
-          {WHY_RAFEEQ_ITEMS.map((item, idx) => (
+          {items.map((item, idx) => (
             <div
               key={idx}
               style={{

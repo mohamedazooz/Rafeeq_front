@@ -3,8 +3,11 @@
 import React from "react";
 import Link from "next/link";
 import { Button } from "@/design-system/primitives";
+import { useLanguage } from "@/lib/language-provider";
 
 export const SaudiHeritageBanner: React.FC = () => {
+  const { isAr, t } = useLanguage();
+
   return (
     <section
       style={{
@@ -52,7 +55,7 @@ export const SaudiHeritageBanner: React.FC = () => {
               }}
             >
               <span>🇸🇦</span>
-              <span>رؤية المملكة 2030 وبوابة السياحة السعودية</span>
+              <span>{t.home.heritage.badge}</span>
             </span>
             <h2
               style={{
@@ -64,24 +67,36 @@ export const SaudiHeritageBanner: React.FC = () => {
                 lineHeight: 1.3,
               }}
             >
-              هل أنت مرشد سياحي محلي؟
-              <br />
-              شارك العالم أصالة كرم الضيافة السعودية
+              {isAr ? (
+                <>
+                  هل أنت مرشد سياحي محلي؟
+                  <br />
+                  شارك العالم أصالة كرم الضيافة السعودية
+                </>
+              ) : (
+                <>
+                  Are You a Local Tour Guide?
+                  <br />
+                  Share Authentic Saudi Hospitality with the World
+                </>
+              )}
             </h2>
             <p style={{ fontSize: "var(--text-base)", color: "rgba(255, 255, 255, 0.85)", lineHeight: 1.7 }}>
-              انضم إلى منصة رفيق المعتمدة، واستقبل المسافرين من مختلف دول العالم، ونظّم برامجك السياحية واستلم عوائدك المالية بكل أمان وموثوقية.
+              {isAr
+                ? "انضم إلى منصة رفيق المعتمدة، واستقبل المسافرين من مختلف دول العالم، ونظّم برامجك السياحية واستلم عوائدك المالية بكل أمان وموثوقية."
+                : "Join Rafeeq's verified platform, welcome domestic and international travelers from around the globe, and receive guaranteed payouts."}
             </p>
           </div>
 
           <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
             <Link href="/become-guide">
               <Button variant="gold" size="lg">
-                تقديم طلب انضمام كمرشد
+                {isAr ? "تقديم طلب انضمام كمرشد" : "Apply as a Tour Guide"}
               </Button>
             </Link>
             <Link href="/about">
               <Button variant="glass" size="lg">
-                تعرف على قصة رفيق
+                {isAr ? "تعرف على قصة رفيق" : "Discover Rafeeq Story"}
               </Button>
             </Link>
           </div>

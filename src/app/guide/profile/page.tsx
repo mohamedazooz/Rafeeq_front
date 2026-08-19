@@ -13,17 +13,21 @@ import {
 } from "@/components/icons";
 
 export default function GuideProfilePage() {
-  const { lang } = useLanguage();
-  const isAr = lang === "ar";
+  const { lang, isAr, t } = useLanguage();
   const { success } = useToast();
 
-  const [name, setName] = useState("عبد العزيز فهد الشمري");
+  const [name, setName] = useState(isAr ? "عبد العزيز فهد الشمري" : "Abdulaziz Fahad Al-Shammari");
   const [licenseNumber] = useState("TG-994021");
-  const [bio, setBio] = useState("مرشد سياحي مرخص من وزارة السياحة بخبرة أكثر من 6 سنوات في منطقة العلا وتاريخ مدائن صالح والبلدة القديمة.");
-  const [bankName, setBankName] = useState("مصرف الراجحي");
+  const [bio, setBio] = useState(
+    isAr
+      ? "مرشد سياحي مرخص من وزارة السياحة بخبرة أكثر من 6 سنوات في منطقة العلا وتاريخ مدائن صالح والبلدة القديمة."
+      : "Ministry of Tourism certified guide with over 6 years of experience in AlUla, Hegra archaeological sites, and heritage tours."
+  );
+  const [bankName, setBankName] = useState(isAr ? "مصرف الراجحي" : "Al Rajhi Bank");
   const [iban, setIban] = useState("SA4210000001234567890101");
-  const [cities, setCities] = useState("العلا، خيبر، تيماء");
-  const [languages, setLanguages] = useState("العربية، الإنجليزية");
+  const [cities, setCities] = useState(isAr ? "العلا، خيبر، تيماء" : "AlUla, Khaybar, Tayma");
+  const [languages, setLanguages] = useState(isAr ? "العربية، الإنجليزية، الفرنسية" : "Arabic, English, French");
+  const [vehicleType, setVehicleType] = useState("4x4");
   const [isSaving, setIsSaving] = useState(false);
 
   const handleSaveProfile = (e: React.FormEvent) => {
@@ -32,7 +36,7 @@ export default function GuideProfilePage() {
 
     setTimeout(() => {
       setIsSaving(false);
-      success("تم حفظ وتحديث ملفك الاحترافي وبيانات الحساب البنكي بنجاح! 🧭✓");
+      success(t.profiles.guide.saveSuccess);
     }, 500);
   };
 
@@ -41,10 +45,10 @@ export default function GuideProfilePage() {
       {/* Header */}
       <div>
         <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 900, fontFamily: "var(--font-heading)" }}>
-          الملف المهني للمرشد السياحي 🧭
+          {t.profiles.guide.title} 🧭
         </h1>
         <p style={{ color: "var(--color-text-muted)", fontSize: "var(--text-sm)", marginTop: "var(--space-1)" }}>
-          تحديث نبذة جولاتك، رخصة وزارة السياحة المعتمدة، وبيانات حساب الـ IBAN لتحويل الأرباح
+          {t.profiles.guide.subtitle}
         </p>
       </div>
 
@@ -62,20 +66,20 @@ export default function GuideProfilePage() {
             boxShadow: "0 4px 20px rgba(0,0,0,0.04)",
           }}
         >
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--color-border)", paddingBottom: "12px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--color-border)", paddingBottom: "12px", flexWrap: "wrap", gap: "8px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <CompassIcon size={18} color="var(--color-gold-heading)" />
-              <h3 style={{ fontSize: "16px", fontWeight: 800, margin: 0 }}>بيانات الاعتماد والرخصة السياحية</h3>
+              <h3 style={{ fontSize: "16px", fontWeight: 800, margin: 0 }}>{t.profiles.guide.licenseSection}</h3>
             </div>
             <span style={{ background: "rgba(16, 185, 129, 0.15)", color: "#10B981", fontSize: "11px", fontWeight: 800, padding: "3px 8px", borderRadius: "6px", display: "inline-flex", alignItems: "center", gap: "4px" }}>
               <ShieldCheckIcon size={14} />
-              <span>مرخص ومعتمد من وزارة السياحة</span>
+              <span>{t.profiles.guide.licenseVerifiedBadge}</span>
             </span>
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
             <div>
-              <label style={{ display: "block", fontSize: "12px", fontWeight: 700, marginBottom: "4px" }}>الاسم كما يظهر للمسافرين</label>
+              <label style={{ display: "block", fontSize: "12px", fontWeight: 700, marginBottom: "4px" }}>{t.profiles.guide.displayName}</label>
               <input
                 type="text"
                 value={name}
@@ -86,7 +90,7 @@ export default function GuideProfilePage() {
             </div>
 
             <div>
-              <label style={{ display: "block", fontSize: "12px", fontWeight: 700, marginBottom: "4px" }}>رقم ترخيص الإرشاد السياحي (وزارة السياحة)</label>
+              <label style={{ display: "block", fontSize: "12px", fontWeight: 700, marginBottom: "4px" }}>{t.profiles.guide.licenseNumber}</label>
               <input
                 type="text"
                 value={licenseNumber}
@@ -97,7 +101,7 @@ export default function GuideProfilePage() {
           </div>
 
           <div>
-            <label style={{ display: "block", fontSize: "12px", fontWeight: 700, marginBottom: "4px" }}>النبذة التعريفية للمسافرين</label>
+            <label style={{ display: "block", fontSize: "12px", fontWeight: 700, marginBottom: "4px" }}>{t.profiles.guide.bio}</label>
             <textarea
               value={bio}
               onChange={(e) => setBio(e.target.value)}
@@ -108,7 +112,7 @@ export default function GuideProfilePage() {
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
             <div>
-              <label style={{ display: "block", fontSize: "12px", fontWeight: 700, marginBottom: "4px" }}>الوجهات والمدن التي تغطيها</label>
+              <label style={{ display: "block", fontSize: "12px", fontWeight: 700, marginBottom: "4px" }}>{t.profiles.guide.coveredCities}</label>
               <input
                 type="text"
                 value={cities}
@@ -118,7 +122,7 @@ export default function GuideProfilePage() {
             </div>
 
             <div>
-              <label style={{ display: "block", fontSize: "12px", fontWeight: 700, marginBottom: "4px" }}>لغات تقديم الجولات</label>
+              <label style={{ display: "block", fontSize: "12px", fontWeight: 700, marginBottom: "4px" }}>{t.profiles.guide.tourLanguages}</label>
               <input
                 type="text"
                 value={languages}
@@ -126,6 +130,21 @@ export default function GuideProfilePage() {
                 style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--color-border)", background: "var(--color-bg-primary)", fontSize: "13px" }}
               />
             </div>
+          </div>
+
+          {/* Vehicle and Fleet Type */}
+          <div>
+            <label style={{ display: "block", fontSize: "12px", fontWeight: 700, marginBottom: "4px" }}>{t.profiles.guide.vehicleType}</label>
+            <select
+              value={vehicleType}
+              onChange={(e) => setVehicleType(e.target.value)}
+              style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--color-border)", background: "var(--color-bg-primary)", fontSize: "13px" }}
+            >
+              <option value="4x4">{t.profiles.guide.vehicle4x4}</option>
+              <option value="vip_van">{t.profiles.guide.vehicleVipVan}</option>
+              <option value="sedan">{t.profiles.guide.vehicleSedan}</option>
+              <option value="walking">{t.profiles.guide.vehicleWalkingOnly}</option>
+            </select>
           </div>
         </div>
 
@@ -144,33 +163,33 @@ export default function GuideProfilePage() {
         >
           <div style={{ display: "flex", alignItems: "center", gap: "8px", borderBottom: "1px solid var(--color-border)", paddingBottom: "12px" }}>
             <CreditCardIcon size={18} color="var(--color-gold-heading)" />
-            <h3 style={{ fontSize: "16px", fontWeight: 800, margin: 0 }}>الحساب البنكي لاستلام الأرباح (IBAN Payouts)</h3>
+            <h3 style={{ fontSize: "16px", fontWeight: 800, margin: 0 }}>{t.profiles.guide.bankSection}</h3>
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: "12px" }}>
             <div>
-              <label style={{ display: "block", fontSize: "12px", fontWeight: 700, marginBottom: "4px" }}>اسم البنك السعودي</label>
+              <label style={{ display: "block", fontSize: "12px", fontWeight: 700, marginBottom: "4px" }}>{t.profiles.guide.bankName}</label>
               <select
                 value={bankName}
                 onChange={(e) => setBankName(e.target.value)}
                 style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--color-border)", background: "var(--color-bg-primary)", fontSize: "13px" }}
               >
-                <option value="مصرف الراجحي">مصرف الراجحي</option>
-                <option value="البنك الأهلي السعودي (SNB)">البنك الأهلي السعودي (SNB)</option>
-                <option value="بنك الرياض">بنك الرياض</option>
-                <option value="مصرف الإنماء">مصرف الإنماء</option>
-                <option value="بنك البلاد">بنك البلاد</option>
+                <option value="Al Rajhi Bank">{isAr ? "مصرف الراجحي" : "Al Rajhi Bank"}</option>
+                <option value="Saudi National Bank (SNB)">{isAr ? "البنك الأهلي السعودي (SNB)" : "Saudi National Bank (SNB)"}</option>
+                <option value="Riyad Bank">{isAr ? "بنك الرياض" : "Riyad Bank"}</option>
+                <option value="Alinma Bank">{isAr ? "مصرف الإنماء" : "Alinma Bank"}</option>
+                <option value="Bank Albilad">{isAr ? "بنك البلاد" : "Bank Albilad"}</option>
               </select>
             </div>
 
             <div>
-              <label style={{ display: "block", fontSize: "12px", fontWeight: 700, marginBottom: "4px" }}>رقم الآيبان (IBAN)</label>
+              <label style={{ display: "block", fontSize: "12px", fontWeight: 700, marginBottom: "4px" }}>{t.profiles.guide.iban}</label>
               <input
                 type="text"
                 value={iban}
                 onChange={(e) => setIban(e.target.value)}
                 required
-                style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--color-border)", background: "var(--color-bg-primary)", fontSize: "13px", fontFamily: "monospace", direction: "ltr" }}
+                style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--color-border)", background: "var(--color-bg-primary)", fontSize: "13px", fontFamily: "monospace", direction: "ltr", textAlign: isAr ? "right" : "left" }}
               />
             </div>
           </div>
@@ -180,7 +199,7 @@ export default function GuideProfilePage() {
         <div style={{ display: "flex", justifyContent: "flex-end" }}>
           <Button variant="primary" size="lg" type="submit" disabled={isSaving}>
             <ShieldCheckIcon size={18} />
-            <span>{isSaving ? "جاري الحفظ..." : "حفظ التغييرات المهنية"}</span>
+            <span>{isSaving ? t.common.saving : t.common.saveChanges}</span>
           </Button>
         </div>
       </form>

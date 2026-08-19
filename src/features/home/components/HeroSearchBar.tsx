@@ -3,10 +3,11 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/design-system/primitives";
-import { MapPinIcon, CompassIcon } from "@/components/icons";
+import { useLanguage } from "@/lib/language-provider";
 
 export const HeroSearchBar: React.FC = () => {
   const router = useRouter();
+  const { isAr, t } = useLanguage();
   const [destination, setDestination] = useState("");
   const [category, setCategory] = useState("");
   const [date, setDate] = useState("");
@@ -22,12 +23,14 @@ export const HeroSearchBar: React.FC = () => {
   };
 
   return (
-    <div
+    <section
       style={{
         position: "relative",
         zIndex: 10,
-        marginTop: "1.5rem",
-        marginBottom: "3.5rem",
+        background: "var(--color-bg-primary)",
+        paddingTop: "3.5rem",
+        paddingBottom: "3.5rem",
+        borderBottom: "1px solid var(--color-border)",
       }}
     >
       <div className="container">
@@ -48,7 +51,7 @@ export const HeroSearchBar: React.FC = () => {
           {/* Destination Selector */}
           <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
             <label style={{ fontSize: "var(--text-xs)", fontWeight: 700, color: "var(--color-text-muted)" }}>
-              الوجهة السياحية
+              {t.home.search.destinationLabel}
             </label>
             <select
               value={destination}
@@ -64,20 +67,20 @@ export const HeroSearchBar: React.FC = () => {
                 cursor: "pointer",
               }}
             >
-              <option value="">كافة مناطق المملكة</option>
-              <option value="alula">العلا (مدائن صالح)</option>
-              <option value="riyadh">الرياض والدرعية</option>
-              <option value="jeddah">جدة التاريخية</option>
-              <option value="the-red-sea">البحر الأحمر وأمالا</option>
-              <option value="aseer">عسير والسودة</option>
-              <option value="al-ahsa">الأحساء وجبل القارة</option>
+              <option value="">{t.home.search.allDestinations}</option>
+              <option value="alula">{t.home.search.destAlula}</option>
+              <option value="riyadh">{t.home.search.destRiyadh}</option>
+              <option value="jeddah">{t.home.search.destJeddah}</option>
+              <option value="the-red-sea">{t.home.search.destRedSea}</option>
+              <option value="aseer">{t.home.search.destAseer}</option>
+              <option value="al-ahsa">{t.home.search.destAlAhsa}</option>
             </select>
           </div>
 
           {/* Category Selector */}
           <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
             <label style={{ fontSize: "var(--text-xs)", fontWeight: 700, color: "var(--color-text-muted)" }}>
-              نوع التجربة
+              {t.home.search.categoryLabel}
             </label>
             <select
               value={category}
@@ -93,19 +96,19 @@ export const HeroSearchBar: React.FC = () => {
                 cursor: "pointer",
               }}
             >
-              <option value="">جميع التجارب</option>
-              <option value="heritage">تراث وحضارة</option>
-              <option value="safari">سفاري ومغامرات</option>
-              <option value="sea-luxury">بحرية وغوص فاخر</option>
-              <option value="nature-hiking">طبيعة وهايكنج</option>
-              <option value="culinary">تذوق وأكلات شعبية</option>
+              <option value="">{t.home.search.allCategories}</option>
+              <option value="heritage">{t.home.search.catHeritage}</option>
+              <option value="safari">{t.home.search.catSafari}</option>
+              <option value="sea-luxury">{t.home.search.catSeaLuxury}</option>
+              <option value="nature-hiking">{t.home.search.catNatureHiking}</option>
+              <option value="culinary">{t.home.search.catCulinary}</option>
             </select>
           </div>
 
           {/* Date Picker */}
           <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
             <label style={{ fontSize: "var(--text-xs)", fontWeight: 700, color: "var(--color-text-muted)" }}>
-              تاريخ الرحلة
+              {t.home.search.dateLabel}
             </label>
             <input
               type="date"
@@ -127,11 +130,11 @@ export const HeroSearchBar: React.FC = () => {
           {/* Submit Button */}
           <div style={{ alignSelf: "flex-end" }}>
             <Button type="submit" variant="primary" size="md" fullWidth>
-              🔍 ابحث عن رحلة
+              {t.home.search.searchBtn}
             </Button>
           </div>
         </form>
       </div>
-    </div>
+    </section>
   );
 };

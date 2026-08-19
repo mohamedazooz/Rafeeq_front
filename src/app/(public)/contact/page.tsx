@@ -13,7 +13,7 @@ export default function ContactPage() {
       <section style={{ background: "var(--color-bg-primary)", paddingBlock: "100px 40px", textAlign: "center", borderBottom: "1px solid var(--color-border)" }}>
         <div className="container">
           <div style={{ marginBottom: "var(--space-6)", textAlign: isAr ? "right" : "left" }}>
-            <BackButton fallbackHref="/" labelAr="العودة للرئيسية" />
+            <BackButton fallbackHref="/" labelAr="العودة للرئيسية" labelEn="Back to Home" />
           </div>
 
           <h1 style={{ color: "var(--color-text-primary)", fontSize: "var(--text-4xl)", fontWeight: 900 }}>

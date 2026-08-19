@@ -1,46 +1,45 @@
 "use client";
 
-import React, { useState, useEffect, useTransition, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import { ProgramCard, type ProgramCardProps } from "@/components/domain/ProgramCard";
-import { Button, Skeleton, EmptyState, Badge } from "@/design-system/primitives";
+import React, { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
+import { ProgramCard } from "@/components/domain/ProgramCard";
+import { Button, Skeleton, EmptyState } from "@/design-system/primitives";
 import { BackButton } from "@/components/ui/BackButton";
 import { useLanguage } from "@/lib/language-provider";
-import { programsService } from "@/features/programs/services/programs.service";
 import { FEATURED_PROGRAMS } from "@/features/home/components/FeaturedProgramsSection";
 
 function ProgramsContent() {
-  const { lang } = useLanguage();
-  const isAr = lang === "ar";
+  const { lang, isAr, t } = useLanguage();
   const searchParams = useSearchParams();
-  const router = useRouter();
 
   const [query, setQuery] = useState(searchParams.get("q") || "");
   const [selectedDest, setSelectedDest] = useState(searchParams.get("destination_slug") || "");
   const [selectedCat, setSelectedCat] = useState(searchParams.get("category_slug") || "");
   const [sortBy, setSortBy] = useState<string>(searchParams.get("sort") || "popular");
   const [isLoading, setIsLoading] = useState(false);
-  const [programsList, setProgramsList] = useState<readonly ProgramCardProps[]>(FEATURED_PROGRAMS);
+  const [programsList, setProgramsList] = useState(FEATURED_PROGRAMS);
 
   const applyFilters = () => {
     setIsLoading(true);
-    // Filter programs locally and through API
     let filtered = [...FEATURED_PROGRAMS];
     if (selectedDest) {
       filtered = filtered.filter((p) => {
-        if (selectedDest === "alula") return p.location.includes("العلا");
-        if (selectedDest === "riyadh") return p.location.includes("الرياض");
-        if (selectedDest === "jeddah") return p.location.includes("جدة");
-        if (selectedDest === "red-sea" || selectedDest === "the-red-sea") return p.location.includes("البحر الأحمر");
-        if (selectedDest === "aseer") return p.location.includes("عسير");
-        if (selectedDest === "al-ahsa") return p.location.includes("الأحساء");
+        if (selectedDest === "alula") return p.locationAr.includes("العلا") || p.locationEn.toLowerCase().includes("alula");
+        if (selectedDest === "riyadh") return p.locationAr.includes("الرياض") || p.locationEn.toLowerCase().includes("riyadh");
+        if (selectedDest === "jeddah") return p.locationAr.includes("جدة") || p.locationEn.toLowerCase().includes("jeddah");
+        if (selectedDest === "red-sea" || selectedDest === "the-red-sea") return p.locationAr.includes("البحر الأحمر") || p.locationEn.toLowerCase().includes("red sea");
+        if (selectedDest === "aseer") return p.locationAr.includes("عسير") || p.locationEn.toLowerCase().includes("aseer");
+        if (selectedDest === "al-ahsa") return p.locationAr.includes("الأحساء") || p.locationEn.toLowerCase().includes("ahsa");
         return true;
       });
     }
     if (query) {
+      const q = query.toLowerCase();
       filtered = filtered.filter((p) =>
-        p.title.toLowerCase().includes(query.toLowerCase()) ||
-        p.location.toLowerCase().includes(query.toLowerCase())
+        p.titleAr.toLowerCase().includes(q) ||
+        p.titleEn.toLowerCase().includes(q) ||
+        p.locationAr.toLowerCase().includes(q) ||
+        p.locationEn.toLowerCase().includes(q)
       );
     }
     if (sortBy === "price_asc") {
@@ -54,7 +53,7 @@ function ProgramsContent() {
     setTimeout(() => {
       setProgramsList(filtered);
       setIsLoading(false);
-    }, 250);
+    }, 200);
   };
 
   useEffect(() => {
@@ -73,7 +72,7 @@ function ProgramsContent() {
       >
         <div className="container" style={{ position: "relative", zIndex: 2 }}>
           <div style={{ marginBottom: "var(--space-6)", textAlign: isAr ? "right" : "left" }}>
-            <BackButton fallbackHref="/" labelAr="العودة للرئيسية" />
+            <BackButton fallbackHref="/" labelAr="العودة للرئيسية" labelEn="Back to Home" />
           </div>
 
           <span
@@ -85,7 +84,7 @@ function ProgramsContent() {
               marginBottom: "var(--space-2)",
             }}
           >
-            🧭 {isAr ? "كتالوج البرامج السياحية المعتمدة" : "Verified Tourism Programs"}
+            🧭 {t.programs.pageTitle}
           </span>
           <h1
             style={{
@@ -96,7 +95,7 @@ function ProgramsContent() {
               fontFamily: "var(--font-heading)",
             }}
           >
-            {isAr ? "استكشف تجارب سياحية فريدة لا تُنسى" : "Explore Unique & Unforgettable Tours"}
+            {t.programs.pageSubtitle}
           </h1>
 
           {/* Search & Filter Bar */}
@@ -119,7 +118,7 @@ function ProgramsContent() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && applyFilters()}
-              placeholder={isAr ? "ابحث عن برنامج أو مدينة..." : "Search program or city..."}
+              placeholder={t.programs.searchPlaceholder}
               style={{
                 padding: "0.65rem 1rem",
                 borderRadius: "var(--radius-lg)",
@@ -145,13 +144,13 @@ function ProgramsContent() {
                 cursor: "pointer",
               }}
             >
-              <option value="">{isAr ? "جميع الوجهات" : "All Destinations"}</option>
-              <option value="alula">{isAr ? "العلا" : "AlUla"}</option>
-              <option value="riyadh">{isAr ? "الرياض" : "Riyadh"}</option>
-              <option value="jeddah">{isAr ? "جدة" : "Jeddah"}</option>
-              <option value="red-sea">{isAr ? "البحر الأحمر" : "The Red Sea"}</option>
-              <option value="aseer">{isAr ? "عسير" : "Asir"}</option>
-              <option value="al-ahsa">{isAr ? "الأحساء" : "Al Ahsa"}</option>
+              <option value="">{t.programs.allDestinations}</option>
+              <option value="alula">{t.home.search.destAlula}</option>
+              <option value="riyadh">{t.home.search.destRiyadh}</option>
+              <option value="jeddah">{t.home.search.destJeddah}</option>
+              <option value="the-red-sea">{t.home.search.destRedSea}</option>
+              <option value="aseer">{t.home.search.destAseer}</option>
+              <option value="al-ahsa">{t.home.search.destAlAhsa}</option>
             </select>
 
             <select
@@ -168,14 +167,14 @@ function ProgramsContent() {
                 cursor: "pointer",
               }}
             >
-              <option value="popular">{isAr ? "الأكثر طلباً" : "Most Popular"}</option>
-              <option value="rating">{isAr ? "الأعلى تقييماً" : "Highest Rated"}</option>
-              <option value="price_asc">{isAr ? "السعر: من الأقل للأعلى" : "Price: Low to High"}</option>
-              <option value="price_desc">{isAr ? "السعر: من الأعلى للأقل" : "Price: High to Low"}</option>
+              <option value="popular">{t.programs.sortPopular}</option>
+              <option value="rating">{t.programs.sortRating}</option>
+              <option value="price_asc">{t.programs.sortPriceAsc}</option>
+              <option value="price_desc">{t.programs.sortPriceDesc}</option>
             </select>
 
             <Button variant="primary" size="md" onClick={applyFilters}>
-              {isAr ? "تطبيق البحث" : "Apply Search"}
+              {t.programs.applySearch}
             </Button>
           </div>
         </div>
@@ -192,9 +191,9 @@ function ProgramsContent() {
             </div>
           ) : programsList.length === 0 ? (
             <EmptyState
-              title="لم يتم العثور على برامج تطابق بحثك"
-              description="جرب اختيار وجهة أخرى أو إزالة بعض الفلاتر لاستعراض كافة التجارب المتاحة."
-              actionLabel="إعادة تعيين الفلاتر"
+              title={t.programs.emptyTitle}
+              description={t.programs.emptyDesc}
+              actionLabel={t.programs.resetFilters}
               onAction={() => {
                 setQuery("");
                 setSelectedDest("");
@@ -211,7 +210,25 @@ function ProgramsContent() {
               }}
             >
               {programsList.map((program) => (
-                <ProgramCard key={program.id} {...program} />
+                <ProgramCard
+                  key={program.id}
+                  id={program.id}
+                  title={program.titleAr}
+                  titleEn={program.titleEn}
+                  location={program.locationAr}
+                  locationEn={program.locationEn}
+                  duration={program.durationAr}
+                  durationEn={program.durationEn}
+                  groupSize={program.groupSizeAr}
+                  groupSizeEn={program.groupSizeEn}
+                  rating={program.rating}
+                  reviewsCount={program.reviewsCount}
+                  priceSar={program.priceSar}
+                  priceHalalas={program.priceHalalas}
+                  image={program.image}
+                  badge={program.badgeAr}
+                  badgeEn={program.badgeEn}
+                />
               ))}
             </div>
           )}

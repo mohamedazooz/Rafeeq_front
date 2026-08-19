@@ -4,7 +4,8 @@ import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/design-system/primitives";
-import { springs, fadeInVariants, slideUpVariants } from "@/design-system/motion/variants";
+import { useLanguage } from "@/lib/language-provider";
+import { fadeInVariants, slideUpVariants } from "@/design-system/motion/variants";
 
 export interface DestinationVideo {
   readonly id: string;
@@ -14,7 +15,9 @@ export interface DestinationVideo {
   readonly badgeAr: string;
   readonly badgeEn: string;
   readonly titleAr: React.ReactNode;
+  readonly titleEn: React.ReactNode;
   readonly subtitleAr: string;
+  readonly subtitleEn: string;
   readonly programSlug: string;
 }
 
@@ -33,7 +36,15 @@ export const DESTINATION_PLAYLIST: readonly DestinationVideo[] = [
         وحضارة الأنباط الخالدة بالعلا
       </>
     ),
+    titleEn: (
+      <>
+        Discover <span style={{ color: "var(--color-gold-royal)" }}>Ancient Hegra</span>
+        <br />
+        & Nabataean Heritage in AlUla
+      </>
+    ),
     subtitleAr: "استكشف مقابر الأنباط النادرة المنحوتة في الصخر وقصر الفريد والبلدة القديمة برفقة مرشد محلي معتمد.",
+    subtitleEn: "Explore royal rock-carved tombs, Elephant Rock, and historic Old Town with an officially certified local guide.",
     programSlug: "alula",
   },
   {
@@ -50,7 +61,15 @@ export const DESTINATION_PLAYLIST: readonly DestinationVideo[] = [
         بين عراقة نجد وعاصمة المستقبل
       </>
     ),
+    titleEn: (
+      <>
+        Experience <span style={{ color: "var(--color-gold-royal)" }}>Riyadh</span>
+        <br />
+        From Heritage Diriyah to Future Metropolis
+      </>
+    ),
     subtitleAr: "من قصور الدرعية التاريخية والمصمك إلى كشتات صحراء الثمامة وتأمل النجوم تحت سماء نجد.",
+    subtitleEn: "From UNESCO At-Turaif castles to thrilling desert safaris and stargazing under pristine Arabian skies.",
     programSlug: "riyadh",
   },
   {
@@ -67,7 +86,15 @@ export const DESTINATION_PLAYLIST: readonly DestinationVideo[] = [
         وعروس البحر الأحمر الساحرة
       </>
     ),
+    titleEn: (
+      <>
+        Explore <span style={{ color: "var(--color-gold-royal)" }}>Historic Jeddah</span>
+        <br />
+        & Allure of the Red Sea Coast
+      </>
+    ),
     subtitleAr: "تجوّل في حارة البلد بين رواشين الخشب التاريخية واستمتع بالغوص والجولات البحرية الفاخرة.",
+    subtitleEn: "Wander historic coral-stone lanes with ancient Rawashin balconies or embark on luxury marine tours.",
     programSlug: "jeddah",
   },
   {
@@ -84,14 +111,22 @@ export const DESTINATION_PLAYLIST: readonly DestinationVideo[] = [
         وطبيعة الجنوب الخلابة
       </>
     ),
+    titleEn: (
+      <>
+        Embrace the Clouds in <span style={{ color: "var(--color-gold-royal)" }}>Aseer Peaks</span>
+        <br />
+        & Majestic Southern Highlands
+      </>
+    ),
     subtitleAr: "أجواء عليلة وقرى تراثية كرجال ألمع، ومسارات هايكنج جبلية بين غابات العرعر والغيوم.",
+    subtitleEn: "Crisp mountain air, heritage villages like Rijal Almaa, and scenic hiking trails amidst the clouds.",
     programSlug: "aseer",
   },
 ];
 
 export const HeroVideoPlaylist: React.FC = () => {
+  const { isAr, t } = useLanguage();
   const [activeIdx, setActiveIdx] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(true);
   const [progress, setProgress] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
   const current = DESTINATION_PLAYLIST[activeIdx];
@@ -157,7 +192,7 @@ export const HeroVideoPlaylist: React.FC = () => {
         style={{
           position: "absolute",
           inset: 0,
-          background: "linear-gradient(180deg, rgba(13, 27, 42, 0.35) 0%, rgba(13, 27, 42, 0.65) 60%, var(--color-bg-primary) 100%)",
+          background: "linear-gradient(180deg, rgba(13, 27, 42, 0.35) 0%, rgba(13, 27, 42, 0.6) 65%, rgba(13, 27, 42, 0.95) 100%)",
           zIndex: 1,
         }}
       />
@@ -169,7 +204,7 @@ export const HeroVideoPlaylist: React.FC = () => {
           position: "relative",
           zIndex: 2,
           paddingTop: "7.5rem",
-          paddingBottom: "2.5rem",
+          paddingBottom: "3rem",
           width: "100%",
           minHeight: "100vh",
           display: "flex",
@@ -200,7 +235,7 @@ export const HeroVideoPlaylist: React.FC = () => {
             }}
           >
             <span>🇸🇦</span>
-            <span>{current.badgeAr}</span>
+            <span>{isAr ? current.badgeAr : current.badgeEn}</span>
           </motion.div>
 
           {/* Headline */}
@@ -219,7 +254,7 @@ export const HeroVideoPlaylist: React.FC = () => {
               textShadow: "0 4px 20px rgba(0,0,0,0.6)",
             }}
           >
-            {current.titleAr}
+            {isAr ? current.titleAr : current.titleEn}
           </motion.h1>
 
           {/* Subtitle */}
@@ -237,19 +272,19 @@ export const HeroVideoPlaylist: React.FC = () => {
               textShadow: "0 2px 10px rgba(0,0,0,0.5)",
             }}
           >
-            {current.subtitleAr}
+            {isAr ? current.subtitleAr : current.subtitleEn}
           </motion.p>
 
           {/* Action Buttons */}
           <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
             <Link href={`/programs?destination_slug=${current.programSlug}`}>
               <Button variant="gold" size="lg">
-                استكشف تجارب {current.nameAr}
+                {isAr ? `استكشف تجارب ${current.nameAr}` : `Explore ${current.nameEn} Tours`}
               </Button>
             </Link>
             <Link href="/programs">
               <Button variant="glass" size="lg">
-                كافة البرامج السياحية
+                {t.home.hero.allPrograms}
               </Button>
             </Link>
           </div>
@@ -267,6 +302,8 @@ export const HeroVideoPlaylist: React.FC = () => {
         >
           {DESTINATION_PLAYLIST.map((item, idx) => {
             const isCurrent = idx === activeIdx;
+            const displayName = isAr ? item.nameAr : item.nameEn;
+            const badgeWord = isAr ? item.badgeAr.split(" ")[0] : item.badgeEn.split(" ")[0];
             return (
               <button
                 key={item.id}
@@ -285,10 +322,10 @@ export const HeroVideoPlaylist: React.FC = () => {
                   cursor: "pointer",
                   display: "flex",
                   flexDirection: "column",
-                  alignItems: "flex-start",
+                  alignItems: isAr ? "flex-start" : "flex-start",
                   gap: "0.25rem",
                   minWidth: "150px",
-                  textAlign: "right",
+                  textAlign: isAr ? "right" : "left",
                   transition: "all 0.25s ease",
                   overflow: "hidden",
                 }}
@@ -316,10 +353,10 @@ export const HeroVideoPlaylist: React.FC = () => {
                   </div>
                 )}
                 <span style={{ fontSize: "var(--text-xs)", color: isCurrent ? "var(--color-gold-royal)" : "rgba(255,255,255,0.6)", fontWeight: 600 }}>
-                  {item.badgeAr.split(" ")[0]}
+                  {badgeWord}
                 </span>
                 <span style={{ fontSize: "var(--text-base)", fontWeight: 800 }}>
-                  {item.nameAr}
+                  {displayName}
                 </span>
               </button>
             );

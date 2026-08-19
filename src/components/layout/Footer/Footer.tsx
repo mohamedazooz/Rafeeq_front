@@ -5,8 +5,7 @@ import { useLanguage } from "@/lib/language-provider";
 import { RafeeqLogo } from "@/components/brand";
 
 export function Footer() {
-  const { lang } = useLanguage();
-  const isAr = lang === "ar";
+  const { isAr, t } = useLanguage();
 
   return (
     <footer
@@ -31,26 +30,26 @@ export function Footer() {
         <div style={{ display: "flex", alignItems: "center", gap: "14px", flexWrap: "wrap" }}>
           <RafeeqLogo variant="horizontal" size={32} animated={false} />
           <span style={{ fontSize: "12px", color: "var(--color-text-secondary)" }}>
-            {isAr ? "© 2026 رفيق. جميع الحقوق محفوظة — منصة السياحة السعودية المرخصة 🇸🇦" : "© 2026 Rafeeq. Licensed Saudi Tourism Platform 🇸🇦"}
+            {t.footer.copyright}
           </span>
         </div>
 
         {/* Compact Essential Links */}
         <div style={{ display: "flex", alignItems: "center", gap: "20px", flexWrap: "wrap" }}>
           <Link href="/programs" style={{ fontSize: "13px", fontWeight: 700, color: "var(--color-text-primary)", textDecoration: "none" }}>
-            {isAr ? "البرامج" : "Programs"}
+            {t.nav.programs}
           </Link>
           <Link href="/guides" style={{ fontSize: "13px", fontWeight: 700, color: "var(--color-text-primary)", textDecoration: "none" }}>
-            {isAr ? "المرشدون" : "Guides"}
+            {t.nav.guides}
           </Link>
           <Link href="/become-guide" style={{ fontSize: "13px", fontWeight: 700, color: "var(--color-text-primary)", textDecoration: "none" }}>
-            {isAr ? "انضم كمرشد" : "Become a Guide"}
+            {t.nav.becomeGuide}
           </Link>
           <Link href="/about" style={{ fontSize: "13px", fontWeight: 700, color: "var(--color-text-primary)", textDecoration: "none" }}>
-            {isAr ? "من نحن" : "About"}
+            {t.nav.about}
           </Link>
           <Link href="/contact" style={{ fontSize: "13px", fontWeight: 700, color: "var(--color-text-primary)", textDecoration: "none" }}>
-            {isAr ? "تواصل" : "Contact"}
+            {t.nav.contact}
           </Link>
         </div>
       </div>
