@@ -114,7 +114,7 @@ export const HeroVideoPlaylist: React.FC = () => {
     <div
       style={{
         position: "relative",
-        minHeight: "85vh",
+        minHeight: "100vh",
         display: "flex",
         alignItems: "center",
         overflow: "hidden",
@@ -157,7 +157,7 @@ export const HeroVideoPlaylist: React.FC = () => {
         style={{
           position: "absolute",
           inset: 0,
-          background: "linear-gradient(180deg, rgba(13, 27, 42, 0.4) 0%, rgba(13, 27, 42, 0.75) 75%, var(--color-bg-primary) 100%)",
+          background: "linear-gradient(180deg, rgba(13, 27, 42, 0.35) 0%, rgba(13, 27, 42, 0.65) 60%, var(--color-bg-primary) 100%)",
           zIndex: 1,
         }}
       />
@@ -168,12 +168,16 @@ export const HeroVideoPlaylist: React.FC = () => {
         style={{
           position: "relative",
           zIndex: 2,
-          paddingTop: "6rem",
-          paddingBottom: "4rem",
+          paddingTop: "7.5rem",
+          paddingBottom: "2.5rem",
           width: "100%",
+          minHeight: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
         }}
       >
-        <div style={{ maxWidth: "780px" }}>
+        <div style={{ maxWidth: "800px", marginBlock: "auto", paddingTop: "1rem" }}>
           {/* Badge */}
           <motion.div
             key={`badge-${current.id}`}
@@ -256,7 +260,7 @@ export const HeroVideoPlaylist: React.FC = () => {
           style={{
             display: "flex",
             gap: "0.75rem",
-            marginTop: "3.5rem",
+            marginTop: "1.5rem",
             overflowX: "auto",
             paddingBottom: "0.5rem",
           }}

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import styles from "./Header.module.css";
 import { Button } from "@/components/ui/Button";
@@ -9,23 +8,9 @@ import { useTheme } from "@/lib/theme-provider";
 import { useLanguage } from "@/lib/language-provider";
 import { RafeeqLogo } from "@/components/brand";
 
-interface NavLink {
-  readonly href: string;
-  readonly labelAr: string;
-  readonly labelEn: string;
-}
-
-const NAV_LINKS: readonly NavLink[] = [
-  { href: "/programs", labelAr: "البرامج", labelEn: "Programs" },
-  { href: "/guides", labelAr: "المرشدون", labelEn: "Guides" },
-  { href: "/become-guide", labelAr: "انضم كمرشد", labelEn: "Become a Guide" },
-  { href: "/about", labelAr: "من نحن", labelEn: "About" },
-  { href: "/contact", labelAr: "تواصل", labelEn: "Contact" },
-];
-
 export function Header() {
   const { theme, isAuto, toggleTheme } = useTheme();
-  const { lang, toggleLanguage } = useLanguage();
+  const { lang, isAr, t, toggleLanguage } = useLanguage();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -53,6 +38,14 @@ export function Header() {
     isMobileOpen ? styles["header__menu-btn--open"] : "",
   ].join(" ");
 
+  const navLinks = [
+    { href: "/programs", label: t.nav.programs },
+    { href: "/guides", label: t.nav.guides },
+    { href: "/become-guide", label: t.nav.becomeGuide },
+    { href: "/about", label: t.nav.about },
+    { href: "/contact", label: t.nav.contact },
+  ];
+
   return (
     <header className={headerClass}>
       <div className={styles.header__inner}>
@@ -61,13 +54,13 @@ export function Header() {
 
         {/* Desktop Nav */}
         <nav className={styles.header__nav}>
-          {NAV_LINKS.map((link) => (
+          {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
               className={styles.header__link}
             >
-              {lang === "ar" ? link.labelAr : link.labelEn}
+              {link.label}
             </Link>
           ))}
         </nav>
@@ -91,7 +84,7 @@ export function Header() {
               alignItems: "center",
               gap: "5px",
             }}
-            title={isAuto ? (lang === "ar" ? "تلقائي حسب الوقت (كل 12 ساعة)" : "Auto 12h Time Mode") : (lang === "ar" ? "وضع يدوي" : "Manual Mode")}
+            title={isAuto ? (isAr ? "تلقائي حسب الوقت (كل 12 ساعة)" : "Auto (12h Day/Night Cycle)") : (isAr ? "وضع يدوي" : "Manual Mode")}
           >
             {theme === "dark" ? (
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C8A96E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
@@ -125,7 +118,7 @@ export function Header() {
             }}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-            <span>{lang === "ar" ? "English" : "العربية"}</span>
+            <span>{t.common.switchLang}</span>
           </button>
 
           {/* Persistent Auth State & User Profile Button */}
@@ -158,19 +151,19 @@ export function Header() {
                 }}>
                   👤
                 </div>
-                <span>{lang === "ar" ? "لوحة التحكم" : "Dashboard"}</span>
+                <span>{t.common.dashboard}</span>
               </div>
             </Link>
           ) : (
             <>
               <Link href="/login">
                 <Button variant="outline" size="sm">
-                  {lang === "ar" ? "دخول" : "Login"}
+                  {t.common.login}
                 </Button>
               </Link>
               <Link href="/register">
                 <Button variant="primary" size="sm">
-                  {lang === "ar" ? "سجل الآن" : "Sign Up"}
+                  {t.common.signUp}
                 </Button>
               </Link>
             </>
@@ -198,33 +191,33 @@ export function Header() {
           isMobileOpen ? styles["header__mobile-menu--open"] : "",
         ].join(" ")}
       >
-        {NAV_LINKS.map((link) => (
+        {navLinks.map((link) => (
           <Link
             key={link.href}
             href={link.href}
             className={styles["header__mobile-link"]}
             onClick={() => setIsMobileOpen(false)}
           >
-            {lang === "ar" ? link.labelAr : link.labelEn}
+            {link.label}
           </Link>
         ))}
         <div style={{ marginTop: "auto", display: "flex", gap: "var(--space-3)" }}>
           {isLoggedIn ? (
             <Link href="/client/dashboard" style={{ flexGrow: 1 }}>
               <Button variant="primary" fullWidth onClick={() => setIsMobileOpen(false)}>
-                {lang === "ar" ? "لوحة التحكم" : "Dashboard"}
+                {t.common.dashboard}
               </Button>
             </Link>
           ) : (
             <>
               <Link href="/login" style={{ flexGrow: 1 }}>
                 <Button variant="outline" fullWidth onClick={() => setIsMobileOpen(false)}>
-                  دخول
+                  {t.common.login}
                 </Button>
               </Link>
               <Link href="/register" style={{ flexGrow: 1 }}>
                 <Button variant="primary" fullWidth onClick={() => setIsMobileOpen(false)}>
-                  سجل الآن
+                  {t.common.signUp}
                 </Button>
               </Link>
             </>

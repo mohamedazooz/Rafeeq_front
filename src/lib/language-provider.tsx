@@ -1,17 +1,22 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
-
-export type Language = "ar" | "en";
+import React, { createContext, useContext, useEffect, useState, useMemo } from "react";
+import { getDictionary, Language, TranslationDictionary } from "./i18n";
 
 interface LanguageContextType {
   lang: Language;
+  isAr: boolean;
+  dir: "rtl" | "ltr";
+  t: TranslationDictionary;
   setLang: (lang: Language) => void;
   toggleLanguage: () => void;
 }
 
 const LanguageContext = createContext<LanguageContextType>({
   lang: "ar",
+  isAr: true,
+  dir: "rtl",
+  t: getDictionary("ar"),
   setLang: () => {},
   toggleLanguage: () => {},
 });
@@ -27,8 +32,9 @@ export function LanguageProvider({ children }: { readonly children: React.ReactN
   }, []);
 
   useEffect(() => {
+    const dir = lang === "ar" ? "rtl" : "ltr";
     document.documentElement.setAttribute("lang", lang);
-    document.documentElement.setAttribute("dir", lang === "ar" ? "rtl" : "ltr");
+    document.documentElement.setAttribute("dir", dir);
   }, [lang]);
 
   const setLang = (newLang: Language) => {
@@ -41,11 +47,19 @@ export function LanguageProvider({ children }: { readonly children: React.ReactN
     setLang(next);
   };
 
+  const isAr = lang === "ar";
+  const dir = isAr ? "rtl" : "ltr";
+  const t = useMemo(() => getDictionary(lang), [lang]);
+
   return (
-    <LanguageContext.Provider value={{ lang, setLang, toggleLanguage }}>
+    <LanguageContext.Provider value={{ lang, isAr, dir, t, setLang, toggleLanguage }}>
       {children}
     </LanguageContext.Provider>
   );
 }
 
 export const useLanguage = () => useContext(LanguageContext);
+export const useTranslation = () => {
+  const { t, lang, isAr, dir } = useContext(LanguageContext);
+  return { t, lang, isAr, dir };
+};
