@@ -1,9 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
-import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/Button";
 import { useLanguage } from "@/lib/language-provider";
 
@@ -30,8 +28,6 @@ export default function GuidePendingPage() {
 
   return (
     <>
-      <Header />
-
       <main style={{ minHeight: "90vh", background: "var(--color-bg-primary)", display: "flex", alignItems: "center", justifyContent: "center", padding: "120px 24px 60px" }}>
         <div style={{ maxWidth: "680px", width: "100%", textAlign: "center", background: "var(--color-bg-card)", border: "1px solid var(--color-border)", borderRadius: "28px", padding: "48px 36px", boxShadow: "var(--shadow-xl)" }}>
           

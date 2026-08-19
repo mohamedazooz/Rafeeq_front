@@ -1,7 +1,5 @@
 import React from "react";
 import type { Metadata } from "next";
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
 import { HeroVideoPlaylist } from "@/features/home/components/HeroVideoPlaylist";
 import { HeroSearchBar } from "@/features/home/components/HeroSearchBar";
 import { DestinationsShowcase } from "@/features/home/components/DestinationsShowcase";
@@ -24,36 +22,30 @@ export const metadata: Metadata = {
 
 export default function HomePage() {
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-      <Header />
+    <main style={{ minHeight: "100vh" }}>
+      {/* 1. Hero Dynamic Video Playlist */}
+      <HeroVideoPlaylist />
 
-      <main style={{ flex: 1 }}>
-        {/* 1. Hero Dynamic Video Playlist */}
-        <HeroVideoPlaylist />
+      {/* 2. Instant Search & Filters Bar */}
+      <HeroSearchBar />
 
-        {/* 2. Instant Search & Filters Bar */}
-        <HeroSearchBar />
+      {/* 3. Destinations & UNESCO Sites Showcase */}
+      <DestinationsShowcase />
 
-        {/* 3. Destinations & UNESCO Sites Showcase */}
-        <DestinationsShowcase />
+      {/* 4. Featured Curated Tourism Programs */}
+      <FeaturedProgramsSection />
 
-        {/* 4. Featured Curated Tourism Programs */}
-        <FeaturedProgramsSection />
+      {/* 5. Why Rafeeq & Escrow Protection */}
+      <WhyRafeeqFeatures />
 
-        {/* 5. Why Rafeeq & Escrow Protection */}
-        <WhyRafeeqFeatures />
+      {/* 6. Saudi Heritage & Vision 2030 Banner */}
+      <SaudiHeritageBanner />
 
-        {/* 6. Saudi Heritage & Vision 2030 Banner */}
-        <SaudiHeritageBanner />
+      {/* 7. Top Verified Tour Guides */}
+      <TopGuidesSection />
 
-        {/* 7. Top Verified Tour Guides */}
-        <TopGuidesSection />
-
-        {/* 8. Verified Traveler Testimonials */}
-        <TestimonialsMarquee />
-      </main>
-
-      <Footer />
-    </div>
+      {/* 8. Verified Traveler Testimonials */}
+      <TestimonialsMarquee />
+    </main>
   );
 }

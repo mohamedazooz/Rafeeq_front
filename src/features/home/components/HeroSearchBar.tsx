@@ -26,8 +26,8 @@ export const HeroSearchBar: React.FC = () => {
       style={{
         position: "relative",
         zIndex: 10,
-        marginTop: "-2.5rem",
-        marginBottom: "3rem",
+        marginTop: "1.5rem",
+        marginBottom: "3.5rem",
       }}
     >
       <div className="container">

@@ -4,7 +4,6 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/Button";
 import { BackButton } from "@/components/ui/BackButton";
 import { useLanguage } from "@/lib/language-provider";
@@ -135,8 +134,6 @@ export default function BecomeGuidePage() {
 
   return (
     <>
-      <Header />
-
       {/* Hero Header */}
       <section style={{ background: "var(--color-bg-primary)", paddingBlock: "110px 32px", borderBottom: "1px solid var(--color-border)" }}>
         <div className="container">

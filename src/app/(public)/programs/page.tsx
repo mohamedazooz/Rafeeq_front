@@ -2,8 +2,6 @@
 
 import React, { useState, useEffect, useTransition, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
 import { ProgramCard, type ProgramCardProps } from "@/components/domain/ProgramCard";
 import { Button, Skeleton, EmptyState, Badge } from "@/design-system/primitives";
 import { BackButton } from "@/components/ui/BackButton";
@@ -225,14 +223,10 @@ function ProgramsContent() {
 
 export default function ProgramsPage() {
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-      <Header />
-      <main style={{ flex: 1 }}>
-        <Suspense fallback={<div className="container" style={{ padding: "4rem" }}><Skeleton height="400px" /></div>}>
-          <ProgramsContent />
-        </Suspense>
-      </main>
-      <Footer />
-    </div>
+    <main style={{ minHeight: "100vh" }}>
+      <Suspense fallback={<div className="container" style={{ padding: "4rem" }}><Skeleton height="400px" /></div>}>
+        <ProgramsContent />
+      </Suspense>
+    </main>
   );
 }

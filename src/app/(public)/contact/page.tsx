@@ -1,6 +1,5 @@
 "use client";
 
-import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/Button";
 import { BackButton } from "@/components/ui/BackButton";
 import { useLanguage } from "@/lib/language-provider";
@@ -11,8 +10,6 @@ export default function ContactPage() {
 
   return (
     <>
-      <Header />
-
       <section style={{ background: "var(--color-bg-primary)", paddingBlock: "100px 40px", textAlign: "center", borderBottom: "1px solid var(--color-border)" }}>
         <div className="container">
           <div style={{ marginBottom: "var(--space-6)", textAlign: isAr ? "right" : "left" }}>

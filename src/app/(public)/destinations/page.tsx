@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Header } from "@/components/layout/Header";
 import { BackButton } from "@/components/ui/BackButton";
 import { useLanguage } from "@/lib/language-provider";
 
@@ -93,8 +92,6 @@ export default function DestinationsPage() {
 
   return (
     <>
-      <Header />
-
       {/* Header Banner */}
       <section
         style={{

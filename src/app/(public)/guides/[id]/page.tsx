@@ -2,8 +2,6 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
-import { Header } from "@/components/layout/Header";
 import { ProgramCard } from "@/components/domain/ProgramCard";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
@@ -97,8 +95,6 @@ export default function PublicGuideProfilePage() {
 
   return (
     <>
-      <Header />
-
       {toast && (
         <div style={{ position: "fixed", bottom: "24px", left: "24px", background: "#10B981", color: "#fff", padding: "14px 28px", borderRadius: "14px", boxShadow: "0 10px 30px rgba(0,0,0,0.5)", zIndex: 9999, fontWeight: 800, fontSize: "14px" }}>
           {toast}
