@@ -94,7 +94,7 @@ export default function GuideDashboardPage() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "var(--space-4)" }}>
         <div>
           <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 900, fontFamily: "var(--font-heading)" }}>
-            {isAr ? "لوحة الأداء — المرشد السياحي 🧭" : "Tour Guide Performance Dashboard 🧭"}
+            {isAr ? "لوحة الأداء — المرشد السياحي" : "Tour Guide Performance Dashboard"}
           </h1>
           <p style={{ color: "var(--color-text-muted)", fontSize: "var(--text-sm)", marginTop: "var(--space-1)" }}>
             {isAr
@@ -260,7 +260,7 @@ export default function GuideDashboardPage() {
                   {isAr ? "جولة مدائن صالح والبلدة القديمة بالعلا" : "Hegra UNESCO & AlUla Old Town"}
                 </h4>
                 <p style={{ fontSize: "12px", color: "var(--color-text-muted)", margin: "2px 0 0 0" }}>
-                  {isAr ? "العميل:" : "Client:"} <strong>{isAr ? "محمد العتيبي" : "Mohammed Al-Otaibi"}</strong> • 📅 {isAr ? "24 أكتوبر 2026 (مشاركين 2)" : "Oct 24, 2026 (2 Guests)"}
+                  {isAr ? "العميل:" : "Client:"} <strong>{isAr ? "محمد العتيبي" : "Mohammed Al-Otaibi"}</strong> • {isAr ? "24 أكتوبر 2026 (مشاركين 2)" : "Oct 24, 2026 (2 Guests)"}
                 </p>
               </div>
 
@@ -269,7 +269,7 @@ export default function GuideDashboardPage() {
                   {recentTripNet} ({isAr ? "صافي" : "Net"})
                 </span>
                 <span style={{ fontSize: "11px", color: "var(--color-gold-royal)", fontWeight: 700 }}>
-                  {isAr ? "محجوز في Escrow 🔒" : "Held in Escrow 🔒"}
+                  {isAr ? "محجوز في Escrow" : "Held in Escrow"}
                 </span>
               </div>
             </div>

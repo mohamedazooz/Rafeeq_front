@@ -45,7 +45,7 @@ export default function GuideProfilePage() {
       {/* Header */}
       <div>
         <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 900, fontFamily: "var(--font-heading)" }}>
-          {t.profiles.guide.title} 🧭
+          {t.profiles.guide.title}
         </h1>
         <p style={{ color: "var(--color-text-muted)", fontSize: "var(--text-sm)", marginTop: "var(--space-1)" }}>
           {t.profiles.guide.subtitle}

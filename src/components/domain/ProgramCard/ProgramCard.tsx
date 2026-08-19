@@ -6,6 +6,7 @@ import styles from "./ProgramCard.module.css";
 import { Button } from "@/components/ui/Button";
 import { useLanguage } from "@/lib/language-provider";
 import { formatPrice } from "@/lib/utils/currency";
+import { MapPinIcon, StarIcon, ClockIcon, UsersIcon } from "@/components/icons";
 
 export interface ProgramCardProps {
   readonly id: string;
@@ -46,18 +47,24 @@ export function ProgramCard({
 }: ProgramCardProps) {
   const { lang, isAr, t } = useLanguage();
 
-  const displayTitle = !isAr && titleEn ? titleEn : title;
-  const displayLocation = !isAr && locationEn ? locationEn : location;
-  const displayDuration = !isAr && durationEn ? durationEn : duration;
-  const displayGroupSize = !isAr && groupSizeEn ? groupSizeEn : groupSize;
-  const displayBadge = !isAr && badgeEn ? badgeEn : badge;
+  const displayTitle = (isAr ? title : titleEn) || title;
+  const displayLocation = (isAr ? location : locationEn) || location;
+  const displayDuration = (isAr ? duration : durationEn) || duration;
+  const displayGroupSize = (isAr ? groupSize : groupSizeEn) || groupSize;
+  const displayBadge = (isAr ? badge : badgeEn) || badge;
 
-  const halalas = priceHalalas || BigInt(priceSar * 100);
-  const formattedPrice = formatPrice(halalas, lang, true);
+  const halalas =
+    priceHalalas !== undefined
+      ? typeof priceHalalas === "bigint"
+        ? Number(priceHalalas)
+        : priceHalalas
+      : priceSar * 100;
+
+  const formattedPrice = formatPrice(halalas, lang);
 
   return (
-    <div className={styles.card}>
-      <div className={styles["card__image-wrap"]}>
+    <article className={styles.card}>
+      <div className={styles.card__imageWrapper}>
         <Image
           src={image}
           alt={displayTitle}
@@ -71,15 +78,19 @@ export function ProgramCard({
           type="button"
           aria-label={isAr ? "إضافة للمفضلة" : "Add to wishlist"}
         >
-          ♡
+          <StarIcon size={14} color="var(--color-gold-heading)" />
         </button>
       </div>
 
       <div className={styles.card__content}>
         <div className={styles.card__meta}>
-          <span className={styles.card__location}>📍 {displayLocation}</span>
-          <span className={styles.card__rating}>
-            ⭐ {rating.toFixed(1)} ({reviewsCount})
+          <span className={styles.card__location} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+            <MapPinIcon size={12} color="var(--color-saudi-green)" />
+            <span>{displayLocation}</span>
+          </span>
+          <span className={styles.card__rating} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+            <StarIcon size={12} color="#F59E0B" />
+            <span>{rating.toFixed(1)} ({reviewsCount})</span>
           </span>
         </div>
 
@@ -89,9 +100,15 @@ export function ProgramCard({
           </Link>
         </h3>
 
-        <div className={styles.card__info}>
-          <span>⏱️ {displayDuration}</span>
-          <span>👥 {displayGroupSize}</span>
+        <div className={styles.card__info} style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+            <ClockIcon size={13} color="var(--color-text-muted)" />
+            <span>{displayDuration}</span>
+          </span>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+            <UsersIcon size={13} color="var(--color-text-muted)" />
+            <span>{displayGroupSize}</span>
+          </span>
         </div>
 
         <div className={styles.card__footer}>
@@ -109,6 +126,6 @@ export function ProgramCard({
           </Link>
         </div>
       </div>
-    </div>
+    </article>
   );
 }

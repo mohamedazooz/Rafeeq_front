@@ -377,7 +377,31 @@ export const ChevronRightIcon: React.FC<IconProps> = ({ size, color, strokeWidth
   </svg>
 );
 
-// 43. Rafeeq Brand Emblem Icon (SVG)
+// 43. Clock / Time
+export const ClockIcon: React.FC<IconProps> = ({ size, color, strokeWidth, ...props }) => (
+  <svg {...baseStyle(color, size, strokeWidth)} {...props}>
+    <circle cx="12" cy="12" r="10" />
+    <polyline points="12 6 12 12 16 14" />
+  </svg>
+);
+
+// 44. Arrow Right
+export const ArrowRightIcon: React.FC<IconProps> = ({ size, color, strokeWidth, ...props }) => (
+  <svg {...baseStyle(color, size, strokeWidth)} {...props}>
+    <line x1="5" y1="12" x2="19" y2="12" />
+    <polyline points="12 5 19 12 12 19" />
+  </svg>
+);
+
+// 45. Arrow Left
+export const ArrowLeftIcon: React.FC<IconProps> = ({ size, color, strokeWidth, ...props }) => (
+  <svg {...baseStyle(color, size, strokeWidth)} {...props}>
+    <line x1="19" y1="12" x2="5" y2="12" />
+    <polyline points="12 19 5 12 12 5" />
+  </svg>
+);
+
+// 46. Rafeeq Brand Emblem Icon (SVG)
 export const RafeeqBrandIcon: React.FC<{ size?: number | string; className?: string }> = ({
   size = 24,
   className,
@@ -394,5 +418,14 @@ export const RafeeqBrandIcon: React.FC<{ size?: number | string; className?: str
     <image href="/logo-emblem.png" width="512" height="512" />
   </svg>
 );
+
+// 47. Heart / Wishlist
+export const HeartIcon: React.FC<IconProps> = ({ size, color, strokeWidth, ...props }) => (
+  <svg {...baseStyle(color, size, strokeWidth)} {...props}>
+    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+  </svg>
+);
+
+
 
 

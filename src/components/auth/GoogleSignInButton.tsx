@@ -264,7 +264,7 @@ export const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({
                       whiteSpace: "nowrap",
                     }}
                   >
-                    {isAr ? "دخول 🚀" : "Sign In 🚀"}
+                    {isAr ? "دخول" : "Sign In"}
                   </button>
                 </div>
               </div>
@@ -290,7 +290,7 @@ export const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({
                     cursor: "pointer",
                   }}
                 >
-                  👤 {isAr ? "عميل Google سياحي" : "Tourist Client"}
+                  {isAr ? "عميل Google سياحي" : "Tourist Client"}
                 </button>
                 <button
                   type="button"
@@ -306,12 +306,12 @@ export const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({
                     cursor: "pointer",
                   }}
                 >
-                  🧭 {isAr ? "مرشد Google معتمد" : "Certified Guide"}
+                  {isAr ? "مرشد Google معتمد" : "Certified Guide"}
                 </button>
               </div>
 
               <div style={{ marginTop: "10px", padding: "10px", borderRadius: "10px", background: "rgba(0, 108, 53, 0.08)", border: "1px solid rgba(0, 108, 53, 0.2)", fontSize: "11px", color: "var(--color-text-secondary)" }}>
-                💡 <strong>{isAr ? "ملاحظة إنتاجية:" : "Production Note:"}</strong>{" "}
+                <strong>{isAr ? "ملاحظة إنتاجية:" : "Production Note:"}</strong>{" "}
                 {isAr
                   ? "لربط نافذة Google المنبثقة الحقيقية، أضف معرف العميل في ملف `.env.local` تحت المتغير `NEXT_PUBLIC_GOOGLE_CLIENT_ID`."
                   : "To connect real Google One-Tap Popup, set `NEXT_PUBLIC_GOOGLE_CLIENT_ID` in `.env.local`."}

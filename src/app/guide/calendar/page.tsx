@@ -104,7 +104,7 @@ export default function GuideCalendarPage() {
     }
 
     setSelectedDay(null);
-    success(`تم تحديث توافر وتسعير يوم (${selectedDay.day} أكتوبر) بنجاح! 🗓️✓`);
+    success(`تم تحديث توافر وتسعير يوم (${selectedDay.day} أكتوبر) بنجاح.`);
   };
 
   const handleApplyWeekendRates = async () => {
@@ -133,7 +133,7 @@ export default function GuideCalendarPage() {
       // Optimistic
     }
 
-    success("تم تطبيق تسعيرة عطلة نهاية الأسبوع (950 ر.س) لجميع أيام الجمعة والسبت وحفظها بالخادم بنجاح! ⚡");
+    success("تم تطبيق تسعيرة عطلة نهاية الأسبوع (950 ر.س) لجميع أيام الجمعة والسبت وحفظها بالخادم بنجاح.");
   };
 
   return (
@@ -142,7 +142,7 @@ export default function GuideCalendarPage() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "var(--space-4)" }}>
         <div>
           <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 900, fontFamily: "var(--font-heading)" }}>
-            تقويم التوافر والتسعير الذكي 🗓️
+            تقويم التوافر والتسعير الذكي
           </h1>
           <p style={{ color: "var(--color-text-muted)", fontSize: "var(--text-sm)", marginTop: "var(--space-1)" }}>
             التحكم بأيام العمل، إغلاق أو فتح التواريخ، وتحديد أسعار المواسم وعطلات نهاية الأسبوع
@@ -151,7 +151,7 @@ export default function GuideCalendarPage() {
 
         <div style={{ display: "flex", gap: "10px" }}>
           <Button variant="outline" size="md" onClick={handleApplyWeekendRates}>
-            <span>⚡ تطبيق تسعيرة الويكند (الجمعة والسبت)</span>
+            <span>تطبيق تسعيرة الويكند (الجمعة والسبت)</span>
           </Button>
         </div>
       </div>

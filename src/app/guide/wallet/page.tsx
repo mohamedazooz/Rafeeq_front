@@ -65,6 +65,7 @@ export default function GuideWalletPage() {
 
   const [availableBalance, setAvailableBalance] = useState(9250);
   const [escrowBalance] = useState(3400);
+  const totalEarnings = 42800;
   const [transactions, setTransactions] = useState<GuideTransaction[]>(INITIAL_TRANSACTIONS);
   const [showPayoutModal, setShowPayoutModal] = useState(false);
   const [payoutAmount, setPayoutAmount] = useState("5000");
@@ -92,7 +93,7 @@ export default function GuideWalletPage() {
     setAvailableBalance((prev) => prev - amount);
     setTransactions([newTx, ...transactions]);
     setShowPayoutModal(false);
-    success(`تم تقديم طلب سحب مبلغ ${amount.toLocaleString("en-US")} ر.س إلى حسابك البنكي بنجاح! 💸✓`);
+    success(`تم تقديم طلب سحب مبلغ ${amount.toLocaleString("en-US")} ر.س إلى حسابك البنكي بنجاح.`);
   };
 
   const columns: DataTableColumn<GuideTransaction>[] = [
@@ -179,7 +180,7 @@ export default function GuideWalletPage() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "var(--space-4)" }}>
         <div>
           <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 900, fontFamily: "var(--font-heading)" }}>
-            محفظة الأرباح والـ Escrow 💳
+            محفظة الأرباح والـ Escrow
           </h1>
           <p style={{ color: "var(--color-text-muted)", fontSize: "var(--text-sm)", marginTop: "var(--space-1)" }}>
             متابعة العوائد المالية المحررة، رصيد الضمان المعلق، وطلب التحويل المباشر للآيبان البنكي
@@ -199,18 +200,21 @@ export default function GuideWalletPage() {
             background: "var(--color-bg-card)",
             border: "1px solid var(--color-gold-royal)",
             borderRadius: "var(--radius-2xl)",
-            padding: "24px",
-            boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
+            padding: "var(--space-6)",
+            display: "flex",
+            flexDirection: "column",
+            gap: "var(--space-2)",
+            boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
           }}
         >
-          <span style={{ fontSize: "11px", color: "var(--color-text-muted)", fontWeight: 700 }}>
+          <span style={{ fontSize: "var(--text-xs)", color: "var(--color-text-muted)", fontWeight: 700 }}>
             الرصيد المتاح للسحب الفوري
           </span>
-          <h2 style={{ fontSize: "32px", fontWeight: 900, color: "var(--color-saudi-green)", margin: "8px 0 4px 0" }}>
-            {availableBalance.toLocaleString("en-US")}.00 ر.س
-          </h2>
-          <span style={{ fontSize: "12px", color: "var(--color-text-secondary)" }}>
-            محرر بالكامل وجاهز للتحويل الفوري إلى حسابك في مصرف الراجحي
+          <div style={{ fontSize: "var(--text-3xl)", fontWeight: 900, color: "var(--color-saudi-green)" }}>
+            {availableBalance.toLocaleString("en-US")} ر.س
+          </div>
+          <span style={{ fontSize: "var(--text-xs)", color: "var(--color-text-secondary)" }}>
+            محول بالكامل ومحرر بعد انتهاء فترة الـ Escrow
           </span>
         </div>
 
@@ -219,62 +223,96 @@ export default function GuideWalletPage() {
             background: "var(--color-bg-card)",
             border: "1px solid var(--color-border)",
             borderRadius: "var(--radius-2xl)",
-            padding: "24px",
-            boxShadow: "0 4px 20px rgba(0,0,0,0.04)",
+            padding: "var(--space-6)",
+            display: "flex",
+            flexDirection: "column",
+            gap: "var(--space-2)",
           }}
         >
-          <span style={{ fontSize: "11px", color: "var(--color-text-muted)", fontWeight: 700 }}>
-            رصيد الضمان المعلق (Escrow Funds)
+          <span style={{ fontSize: "var(--text-xs)", color: "var(--color-text-muted)", fontWeight: 700 }}>
+            رصيد الضمان المعلق (Held in Escrow)
           </span>
-          <h2 style={{ fontSize: "32px", fontWeight: 900, color: "var(--color-gold-heading)", margin: "8px 0 4px 0" }}>
-            {escrowBalance.toLocaleString("en-US")}.00 ر.س
-          </h2>
-          <span style={{ fontSize: "12px", color: "var(--color-text-secondary)" }}>
-            يتحرر تلقائياً إلى رصيدك المتاح فور اكتمال الجولات المؤكدة
+          <div style={{ fontSize: "var(--text-3xl)", fontWeight: 900, color: "#F59E0B" }}>
+            {escrowBalance.toLocaleString("en-US")} ر.س
+          </div>
+          <span style={{ fontSize: "var(--text-xs)", color: "var(--color-text-secondary)" }}>
+            مبالغ 4 رحلات قادمة سيتم تحريرها بعد اكتمال الجولة بـ 3 أيام
+          </span>
+        </div>
+
+        <div
+          style={{
+            background: "var(--color-bg-card)",
+            border: "1px solid var(--color-border)",
+            borderRadius: "var(--radius-2xl)",
+            padding: "var(--space-6)",
+            display: "flex",
+            flexDirection: "column",
+            gap: "var(--space-2)",
+          }}
+        >
+          <span style={{ fontSize: "var(--text-xs)", color: "var(--color-text-muted)", fontWeight: 700 }}>
+            إجمالي الأرباح منذ الانضمام
+          </span>
+          <div style={{ fontSize: "var(--text-3xl)", fontWeight: 900, color: "var(--color-gold-royal)" }}>
+            {totalEarnings.toLocaleString("en-US")} ر.س
+          </div>
+          <span style={{ fontSize: "var(--text-xs)", color: "var(--color-text-secondary)" }}>
+            صافي مستحقاتك بعد خصم عمولة المنصة
           </span>
         </div>
       </div>
 
-      {/* Transactions Ledger */}
-      <div>
-        <h3 style={{ fontSize: "16px", fontWeight: 800, marginBottom: "12px" }}>سجل المعاملات والتحويلات المالية</h3>
-        <DataTable
-          data={transactions}
-          columns={columns}
-          searchPlaceholder="بحث في المعاملات المالية..."
-          searchFilter={(row, query) => row.desc.toLowerCase().includes(query)}
-        />
-      </div>
+      {/* Transactions History */}
+      <DataTable
+        data={transactions}
+        columns={columns}
+        searchPlaceholder="بحث في بيان المعاملات، الحوالات..."
+        searchFilter={(row, query) =>
+          row.desc.toLowerCase().includes(query) ||
+          row.type.toLowerCase().includes(query) ||
+          row.status.toLowerCase().includes(query)
+        }
+      />
 
-      {/* Modal: Request Payout */}
-      <Modal isOpen={showPayoutModal} onClose={() => setShowPayoutModal(false)} title="طلب سحب أرباح إلى الآيبان البنكي (IBAN)" maxWidth="500px">
+      {/* Payout Request Modal */}
+      <Modal isOpen={showPayoutModal} onClose={() => setShowPayoutModal(false)} title="طلب سحب الأرباح إلى الحساب البنكي (SARIE)" maxWidth="480px">
         <form onSubmit={handleRequestPayout} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
           <div style={{ background: "var(--color-bg-secondary)", padding: "14px", borderRadius: "10px", border: "1px solid var(--color-border)" }}>
-            <span style={{ fontSize: "11px", color: "var(--color-text-muted)" }}>الحساب البنكي المعتمد:</span>
-            <h4 style={{ fontSize: "14px", fontWeight: 800, margin: "4px 0" }}>مصرف الراجحي (Al Rajhi Bank)</h4>
-            <span style={{ fontSize: "12px", color: "var(--color-text-secondary)", fontFamily: "monospace", direction: "ltr", display: "block" }}>
-              SA4210000001234567890101
-            </span>
+            <span style={{ fontSize: "12px", color: "var(--color-text-muted)" }}>الحساب البنكي المعتمد:</span>
+            <h4 style={{ fontSize: "14px", fontWeight: 800, margin: "4px 0" }}>مصرف الراجحي — SA42 1000 0001 2345 6789 0101</h4>
+            <span style={{ fontSize: "11px", color: "#10B981", fontWeight: 700 }}>آيبان سعودي موثق ومربوط بنظام سريع</span>
           </div>
 
           <div>
             <label style={{ display: "block", fontSize: "12px", fontWeight: 700, marginBottom: "4px" }}>
-              المبلغ المطلوب سحبه (ر.س) — الحد الأقصى: {availableBalance.toLocaleString("en-US")} ر.س
+              المبلغ المطلوب سحبه (SAR):
             </label>
             <input
               type="number"
-              min="100"
+              min={100}
               max={availableBalance}
               value={payoutAmount}
               onChange={(e) => setPayoutAmount(e.target.value)}
-              required
-              style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid var(--color-border)", background: "var(--color-bg-primary)", fontSize: "16px", fontWeight: 900, color: "var(--color-saudi-green)" }}
+              style={{
+                width: "100%",
+                padding: "10px 14px",
+                borderRadius: "8px",
+                border: "1px solid var(--color-border)",
+                background: "var(--color-bg-primary)",
+                fontSize: "14px",
+                fontWeight: 800,
+                color: "var(--color-gold-royal)",
+              }}
             />
+            <span style={{ fontSize: "11px", color: "var(--color-text-muted)", marginTop: "4px", display: "block" }}>
+              الحد الأقصى المتاح: {availableBalance.toLocaleString("en-US")} ر.س (الحد الأدنى 100 ر.س)
+            </span>
           </div>
 
           <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "8px" }}>
             <Button variant="ghost" size="md" onClick={() => setShowPayoutModal(false)} type="button">إلغاء</Button>
-            <Button variant="primary" size="md" type="submit">تأكيد طلب السحب 💸</Button>
+            <Button variant="primary" size="md" type="submit">تأكيد طلب السحب</Button>
           </div>
         </form>
       </Modal>

@@ -88,24 +88,24 @@ export default function AdminCatalogPage() {
     setCategories((prev) =>
       prev.map((c) => (c.id === id ? { ...c, isActive: !c.isActive } : c))
     );
-    showToast(isAr ? "تم تحديث حالة القسم بنجاح! ✓" : "Category status updated.");
+    showToast(isAr ? "تم تحديث حالة القسم بنجاح." : "Category status updated.");
   };
 
   const deleteCategory = (id: string) => {
     setCategories((prev) => prev.filter((c) => c.id !== id));
-    showToast(isAr ? "تم حذف القسم من الكتالوج!" : "Category deleted.");
+    showToast(isAr ? "تم حذف القسم من الكتالوج." : "Category deleted.");
   };
 
   const toggleDestinationStatus = (id: string) => {
     setDestinations((prev) =>
       prev.map((d) => (d.id === id ? { ...d, isActive: !d.isActive } : d))
     );
-    showToast(isAr ? "تم تحديث حالة الوجهة بنجاح! ✓" : "Destination status updated.");
+    showToast(isAr ? "تم تحديث حالة الوجهة بنجاح." : "Destination status updated.");
   };
 
   const deleteDestination = (id: string) => {
     setDestinations((prev) => prev.filter((d) => d.id !== id));
-    showToast(isAr ? "تم حذف الوجهة من الكتالوج!" : "Destination deleted.");
+    showToast(isAr ? "تم حذف الوجهة من الكتالوج." : "Destination deleted.");
   };
 
   const handleCreateCategory = (e: React.FormEvent) => {
@@ -129,7 +129,7 @@ export default function AdminCatalogPage() {
     setCatNameEn("");
     setCatSlug("");
     setCatDesc("");
-    showToast(isAr ? "تمت إضافة القسم السياحي الجديد بنجاح! 🏷️✓" : "Category created.");
+    showToast(isAr ? "تمت إضافة القسم السياحي الجديد بنجاح." : "Category created.");
   };
 
   const handleCreateDestination = (e: React.FormEvent) => {
@@ -153,7 +153,7 @@ export default function AdminCatalogPage() {
     setDestNameEn("");
     setDestSlug("");
     setDestRegion("");
-    showToast(isAr ? "تمت إضافة الوجهة السياحية الجديدة بنجاح! 📍✓" : "Destination created.");
+    showToast(isAr ? "تمت إضافة الوجهة السياحية الجديدة بنجاح." : "Destination created.");
   };
 
   const categoryColumns: DataTableColumn<CategoryItem>[] = [
@@ -202,7 +202,7 @@ export default function AdminCatalogPage() {
             fontWeight: 800,
           }}
         >
-          {row.isActive ? "ظاهر بالكتالوج ✓" : "مخفي"}
+          {row.isActive ? "ظاهر بالكتالوج" : "مخفي"}
         </span>
       ),
     },
@@ -214,9 +214,9 @@ export default function AdminCatalogPage() {
       render: (row) => (
         <div style={{ display: "flex", gap: "6px", justifyContent: "center" }}>
           <Button variant={row.isActive ? "outline" : "primary"} size="sm" onClick={() => toggleCategoryStatus(row.id)}>
-            {row.isActive ? "إخفاء" : "تفعيل"}
+            <span>{row.isActive ? "إخفاء" : "إظهار"}</span>
           </Button>
-          <IconButton icon={<TrashIcon size={14} />} title="حذف" size="sm" variant="ghost" onClick={() => deleteCategory(row.id)} />
+          <IconButton icon={<TrashIcon size={14} />} title="حذف" size="sm" variant="ghost" onClick={() => deleteCategory(row.id)} style={{ color: "#EF4444" }} />
         </div>
       ),
     },
@@ -230,7 +230,7 @@ export default function AdminCatalogPage() {
       render: (row) => (
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-            <MapPinIcon size={16} color="#10B981" />
+            <MapPinIcon size={16} color="var(--color-gold-heading)" />
             <span style={{ fontWeight: 800, fontSize: "13px" }}>{row.nameAr}</span>
           </div>
           <span style={{ fontSize: "11px", color: "var(--color-text-muted)" }}>{row.nameEn} • /{row.slug}</span>
@@ -268,7 +268,7 @@ export default function AdminCatalogPage() {
             fontWeight: 800,
           }}
         >
-          {row.isActive ? "نشط بالكتالوج ✓" : "مخفي"}
+          {row.isActive ? "نشط بالكتالوج" : "مخفي"}
         </span>
       ),
     },
@@ -280,9 +280,9 @@ export default function AdminCatalogPage() {
       render: (row) => (
         <div style={{ display: "flex", gap: "6px", justifyContent: "center" }}>
           <Button variant={row.isActive ? "outline" : "primary"} size="sm" onClick={() => toggleDestinationStatus(row.id)}>
-            {row.isActive ? "إخفاء" : "تفعيل"}
+            <span>{row.isActive ? "إخفاء" : "إظهار"}</span>
           </Button>
-          <IconButton icon={<TrashIcon size={14} />} title="حذف" size="sm" variant="ghost" onClick={() => deleteDestination(row.id)} />
+          <IconButton icon={<TrashIcon size={14} />} title="حذف" size="sm" variant="ghost" onClick={() => deleteDestination(row.id)} style={{ color: "#EF4444" }} />
         </div>
       ),
     },
@@ -316,7 +316,7 @@ export default function AdminCatalogPage() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "var(--space-4)" }}>
         <div>
           <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 900, fontFamily: "var(--font-heading)" }}>
-            الكتالوج والأقسام والوجهات السياحية 📁
+            الكتالوج والأقسام والوجهات السياحية
           </h1>
           <p style={{ color: "var(--color-text-muted)", fontSize: "var(--text-sm)", marginTop: "var(--space-1)" }}>
             التحكم بهيكل تصنيف البرامج، الوجهات السياحية، وترتيب ظهورها في الصفحة الرئيسية والبحث

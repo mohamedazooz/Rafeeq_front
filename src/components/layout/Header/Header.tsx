@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { useTheme } from "@/lib/theme-provider";
 import { useLanguage } from "@/lib/language-provider";
 import { RafeeqLogo } from "@/components/brand";
+import { UserIcon } from "@/components/icons";
 
 export function Header() {
   const { theme, isAuto, toggleTheme } = useTheme();
@@ -141,15 +142,13 @@ export function Header() {
                   width: "24px",
                   height: "24px",
                   borderRadius: "50%",
-                  background: "#0f172a",
-                  color: "#FFDF9E",
+                  background: "var(--color-bg-secondary)",
+                  color: "var(--color-gold-heading)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontSize: "12px",
-                  fontWeight: 900
                 }}>
-                  👤
+                  <UserIcon size={14} color="var(--color-gold-heading)" />
                 </div>
                 <span>{t.common.dashboard}</span>
               </div>

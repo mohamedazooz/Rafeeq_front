@@ -5,6 +5,7 @@ import Image from "next/image";
 import { BackButton } from "@/components/ui/BackButton";
 import { ProgramBookingSidebar } from "@/features/programs/components/ProgramBookingSidebar";
 import { useLanguage } from "@/lib/language-provider";
+import { MapPinIcon, StarIcon } from "@/components/icons";
 
 interface ProgramDetail {
   readonly id: string;
@@ -154,9 +155,15 @@ export default function ProgramDetailPage({
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr)) 380px", gap: "var(--space-12)", alignItems: "start" }}>
             {/* Left Content */}
             <div>
-              <div style={{ display: "flex", gap: "var(--space-3)", marginBottom: "var(--space-3)" }}>
-                <span style={{ fontSize: "var(--text-xs)", color: "var(--color-gold-dark)", fontWeight: 600 }}>📍 {location}</span>
-                <span style={{ fontSize: "var(--text-xs)", fontWeight: 700 }}>⭐ {prog.rating} ({prog.reviewsCount} {t.programDetails.reviewsCount})</span>
+              <div style={{ display: "flex", gap: "var(--space-3)", marginBottom: "var(--space-3)", alignItems: "center" }}>
+                <span style={{ fontSize: "var(--text-xs)", color: "var(--color-gold-heading)", fontWeight: 700, display: "flex", alignItems: "center", gap: "4px" }}>
+                  <MapPinIcon size={12} color="var(--color-saudi-green)" />
+                  <span>{location}</span>
+                </span>
+                <span style={{ fontSize: "var(--text-xs)", fontWeight: 700, display: "flex", alignItems: "center", gap: "4px" }}>
+                  <StarIcon size={12} color="#F59E0B" />
+                  <span>{prog.rating} ({prog.reviewsCount} {t.programDetails.reviewsCount})</span>
+                </span>
               </div>
 
               <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, marginBottom: "var(--space-6)", lineHeight: "var(--leading-tight)" }}>
@@ -226,7 +233,7 @@ export default function ProgramDetailPage({
               </p>
 
               {/* Itinerary Timeline */}
-              <h2 style={{ fontSize: "var(--text-xl)", fontWeight: 800, marginBottom: "var(--space-6)" }}>📋 {t.programDetails.itinerary}</h2>
+              <h2 style={{ fontSize: "var(--text-xl)", fontWeight: 800, marginBottom: "var(--space-6)" }}>{t.programDetails.itinerary}</h2>
               <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-6)", marginBottom: "var(--space-10)" }}>
                 {prog.itinerary.map((step) => {
                   const stepTitle = isAr ? step.titleAr : step.titleEn;

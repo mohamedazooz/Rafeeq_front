@@ -1,90 +1,42 @@
-/* ═══════════════════════════════════════════════════════════════
-   Rafeeq Programs, Catalog & Search Service
-   ═══════════════════════════════════════════════════════════════ */
+import { ProgramItem, ProgramsFilterParams } from "../types/programs.types";
+import { FEATURED_PROGRAMS } from "@/features/home/components/FeaturedProgramsSection";
 
-import { apiClient } from "@/core/http/api-client";
-import type {
-  ApiResponse,
-  PaginatedResponse,
-  Program,
-  ProgramSearchQuery,
-  ProgramPriceQuote,
-  CreateProgramDto,
-  Destination,
-  Category,
-} from "@/types";
+export class ProgramsService {
+  static async getPrograms(params?: ProgramsFilterParams): Promise<ProgramItem[]> {
+    let filtered = [...FEATURED_PROGRAMS];
 
-export const programsService = {
-  // Public Catalog & Home
-  async getHomeFeed(): Promise<ApiResponse<{
-    readonly destinations: readonly Destination[];
-    readonly categories: readonly Category[];
-    readonly featuredPrograms: readonly Program[];
-  }>> {
-    return apiClient.get<ApiResponse<{
-      destinations: readonly Destination[];
-      categories: readonly Category[];
-      featuredPrograms: readonly Program[];
-    }>>("/catalog/home");
-  },
+    if (params?.destinationSlug) {
+      const dest = params.destinationSlug;
+      filtered = filtered.filter((p) => {
+        if (dest === "alula") return p.locationAr.includes("العلا") || p.locationEn.toLowerCase().includes("alula");
+        if (dest === "riyadh") return p.locationAr.includes("الرياض") || p.locationEn.toLowerCase().includes("riyadh");
+        if (dest === "jeddah") return p.locationAr.includes("جدة") || p.locationEn.toLowerCase().includes("jeddah");
+        if (dest === "red-sea" || dest === "the-red-sea") return p.locationAr.includes("البحر الأحمر") || p.locationEn.toLowerCase().includes("red sea");
+        if (dest === "aseer") return p.locationAr.includes("عسير") || p.locationEn.toLowerCase().includes("aseer");
+        if (dest === "al-ahsa") return p.locationAr.includes("الأحساء") || p.locationEn.toLowerCase().includes("ahsa");
+        return true;
+      });
+    }
 
-  async searchPrograms(query: ProgramSearchQuery): Promise<ApiResponse<PaginatedResponse<Program>>> {
-    return apiClient.get<ApiResponse<PaginatedResponse<Program>>>("/search", {
-      params: {
-        q: query.query,
-        destination_slug: query.destinationSlug,
-        destination_id: query.destinationId,
-        category_slug: query.categorySlug,
-        category_id: query.categoryId,
-        min_price: query.minPriceSar,
-        max_price: query.maxPriceSar,
-        min_rating: query.minRating,
-        difficulty: query.difficulty,
-        date: query.date,
-        page: query.page ?? 1,
-        limit: query.limit ?? 12,
-        sort: query.sortBy,
-      },
-    });
-  },
+    if (params?.query) {
+      const q = params.query.toLowerCase();
+      filtered = filtered.filter(
+        (p) =>
+          p.titleAr.toLowerCase().includes(q) ||
+          p.titleEn.toLowerCase().includes(q) ||
+          p.locationAr.toLowerCase().includes(q) ||
+          p.locationEn.toLowerCase().includes(q)
+      );
+    }
 
-  async getProgramDetail(slugOrId: string): Promise<ApiResponse<Program>> {
-    return apiClient.get<ApiResponse<Program>>(`/programs/${slugOrId}`);
-  },
+    if (params?.sortBy === "price_asc") {
+      filtered.sort((a, b) => a.priceSar - b.priceSar);
+    } else if (params?.sortBy === "price_desc") {
+      filtered.sort((a, b) => b.priceSar - a.priceSar);
+    } else if (params?.sortBy === "rating") {
+      filtered.sort((a, b) => b.rating - a.rating);
+    }
 
-  async getProgramQuote(programId: string, date: string, participants: number): Promise<ApiResponse<ProgramPriceQuote>> {
-    return apiClient.get<ApiResponse<ProgramPriceQuote>>(`/programs/${programId}/quote`, {
-      params: { date, participants },
-    });
-  },
-
-  // Favorites
-  async getMyFavorites(): Promise<ApiResponse<readonly Program[]>> {
-    return apiClient.get<ApiResponse<readonly Program[]>>("/me/favorites");
-  },
-
-  async toggleFavorite(programId: string): Promise<ApiResponse<{ isFavorite: boolean }>> {
-    return apiClient.post<ApiResponse<{ isFavorite: boolean }>>(`/me/favorites/${programId}`);
-  },
-
-  // Guide Program Management
-  async getGuidePrograms(): Promise<ApiResponse<readonly Program[]>> {
-    return apiClient.get<ApiResponse<readonly Program[]>>("/guide/programs");
-  },
-
-  async createProgram(dto: CreateProgramDto): Promise<ApiResponse<Program>> {
-    return apiClient.post<ApiResponse<Program>>("/guide/programs", dto);
-  },
-
-  async updateProgram(id: string, dto: Partial<CreateProgramDto>): Promise<ApiResponse<Program>> {
-    return apiClient.patch<ApiResponse<Program>>(`/guide/programs/${id}`, dto);
-  },
-
-  async submitProgramForReview(id: string): Promise<ApiResponse<{ submitted: boolean }>> {
-    return apiClient.post<ApiResponse<{ submitted: boolean }>>(`/guide/programs/${id}/submit`);
-  },
-
-  async deleteProgram(id: string): Promise<ApiResponse<{ deleted: boolean }>> {
-    return apiClient.delete<ApiResponse<{ deleted: boolean }>>(`/guide/programs/${id}`);
-  },
-};
+    return filtered;
+  }
+}

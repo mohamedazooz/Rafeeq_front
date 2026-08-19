@@ -8,6 +8,7 @@ import { Button } from "@/design-system/primitives";
 import { cardHoverVariants } from "@/design-system/motion/variants";
 import { useLanguage } from "@/lib/language-provider";
 import { formatPrice } from "@/lib/utils/currency";
+import { MapPinIcon, ClockIcon, UsersIcon } from "@/components/icons";
 
 export const FEATURED_PROGRAMS = [
   {
@@ -239,7 +240,8 @@ export const FeaturedProgramsSection: React.FC = () => {
                       gap: "0.3rem",
                     }}
                   >
-                    📍 {location}
+                    <MapPinIcon size={12} color="var(--color-saudi-green)" />
+                    <span>{location}</span>
                   </span>
                 </div>
 
@@ -273,10 +275,16 @@ export const FeaturedProgramsSection: React.FC = () => {
                   </h3>
 
                   {/* Trip Specs */}
-                  <div style={{ display: "flex", gap: "0.75rem", fontSize: "var(--text-xs)", color: "var(--color-text-muted)", marginBottom: "1.25rem" }}>
-                    <span>⏱ {duration}</span>
+                  <div style={{ display: "flex", gap: "0.75rem", fontSize: "var(--text-xs)", color: "var(--color-text-muted)", marginBottom: "1.25rem", alignItems: "center" }}>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                      <ClockIcon size={13} color="var(--color-text-muted)" />
+                      <span>{duration}</span>
+                    </span>
                     <span>•</span>
-                    <span>👥 {groupSize}</span>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                      <UsersIcon size={13} color="var(--color-text-muted)" />
+                      <span>{groupSize}</span>
+                    </span>
                   </div>
 
                   {/* Footer Price & CTA */}

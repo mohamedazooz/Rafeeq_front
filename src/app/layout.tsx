@@ -95,6 +95,7 @@ import { HeaderShell } from "@/components/layout/HeaderShell";
 import { FooterShell } from "@/components/layout/FooterShell";
 import { ThemeProvider } from "@/lib/theme-provider";
 import { LanguageProvider } from "@/lib/language-provider";
+import { DashboardMetricsProvider } from "@/lib/dashboard-metrics";
 import { ToastProvider } from "@/design-system/primitives";
 
 export default function RootLayout({
@@ -111,11 +112,13 @@ export default function RootLayout({
       <body className={cairo.className}>
         <LanguageProvider>
           <ThemeProvider>
-            <ToastProvider>
-              <HeaderShell />
-              {children}
-              <FooterShell />
-            </ToastProvider>
+            <DashboardMetricsProvider>
+              <ToastProvider>
+                <HeaderShell />
+                {children}
+                <FooterShell />
+              </ToastProvider>
+            </DashboardMetricsProvider>
           </ThemeProvider>
         </LanguageProvider>
       </body>

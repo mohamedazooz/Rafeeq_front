@@ -193,7 +193,7 @@ export default function CheckoutPage({
           <BackButton fallbackHref={`/programs/${id}`} labelAr="العودة لتفاصيل البرنامج" labelEn="Back to Program Details" />
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <span style={{ fontSize: "var(--text-xs)", color: "var(--color-text-muted)" }}>{t.checkout.sslBadge}:</span>
-            <Badge variant="success">🔒 SSL 256-bit</Badge>
+            <Badge variant="success">SSL 256-bit</Badge>
           </div>
         </div>
 
@@ -294,7 +294,7 @@ export default function CheckoutPage({
                       cursor: "pointer",
                     }}
                   >
-                    🇸🇦 {isAr ? "مواطن / مقيم" : "Domestic / Resident"}
+                    {isAr ? "مواطن / مقيم" : "Domestic / Resident"}
                   </button>
                   <button
                     type="button"
@@ -310,7 +310,7 @@ export default function CheckoutPage({
                       cursor: "pointer",
                     }}
                   >
-                    🌍 {isAr ? "سائح دولي" : "International Tourist"}
+                    {isAr ? "سائح دولي" : "International Tourist"}
                   </button>
                 </div>
               </div>
@@ -535,7 +535,7 @@ export default function CheckoutPage({
             {/* Payment Method Selector */}
             <div className="glass" style={{ padding: "var(--space-6)", borderRadius: "var(--radius-2xl)", border: "1px solid var(--color-border)" }}>
               <h3 style={{ fontSize: "var(--text-lg)", fontWeight: 800, marginBottom: "var(--space-4)" }}>
-                {t.checkout.paymentMethod} 💳
+                {t.checkout.paymentMethod}
               </h3>
 
               <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "var(--space-6)" }}>
@@ -580,7 +580,7 @@ export default function CheckoutPage({
                     <input type="radio" name="pay" checked={paymentMethod === "apple_pay"} readOnly style={{ accentColor: "var(--color-gold-royal)" }} />
                     <span style={{ fontWeight: 800, fontSize: "var(--text-sm)" }}>{t.checkout.payApplePay}</span>
                   </div>
-                  <span style={{ fontSize: "var(--text-xs)", fontWeight: 700 }}> Pay</span>
+                  <span style={{ fontSize: "var(--text-xs)", fontWeight: 700 }}>Apple Pay</span>
                 </label>
 
                 {/* Visa / Master */}
@@ -645,7 +645,7 @@ export default function CheckoutPage({
               }}
             >
               <h3 style={{ fontSize: "var(--text-lg)", fontWeight: 900, marginBottom: "var(--space-4)", color: "var(--color-gold-heading)" }}>
-                {t.checkout.invoiceSummary} 🧾
+                {t.checkout.invoiceSummary}
               </h3>
 
               <div style={{ display: "flex", flexDirection: "column", gap: "10px", fontSize: "var(--text-sm)", marginBottom: "var(--space-6)" }}>

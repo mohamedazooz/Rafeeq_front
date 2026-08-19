@@ -6,6 +6,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { cardHoverVariants } from "@/design-system/motion/variants";
 import { useLanguage } from "@/lib/language-provider";
+import { MapPinIcon } from "@/components/icons";
 
 export const TOP_GUIDES = [
   {
@@ -154,8 +155,9 @@ export const TopGuidesSection: React.FC = () => {
                 <h3 style={{ fontSize: "var(--text-lg)", fontWeight: 800, fontFamily: "var(--font-heading)", margin: "0 0 0.25rem" }}>
                   {name}
                 </h3>
-                <p style={{ fontSize: "var(--text-xs)", color: "var(--color-text-muted)", margin: "0 0 1rem" }}>
-                  📍 {location} • {specialty}
+                <p style={{ fontSize: "var(--text-xs)", color: "var(--color-text-muted)", margin: "0 0 1rem", display: "flex", alignItems: "center", justifyContent: "center", gap: "4px" }}>
+                  <MapPinIcon size={12} color="var(--color-saudi-green)" />
+                  <span>{location} • {specialty}</span>
                 </p>
 
                 {/* Stats */}

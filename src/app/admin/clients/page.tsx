@@ -1,25 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { IconButton } from "@/components/ui/IconButton";
 import { Modal } from "@/components/ui/Modal";
 import { useLanguage } from "@/lib/language-provider";
 import { dispatchDualActionNotification } from "@/lib/action-dispatcher";
 import {
   UserIcon,
   SearchIcon,
-  FilterIcon,
   PlusIcon,
   EyeIcon,
-  EditIcon,
-  TrashIcon,
   BanIcon,
-  KeyIcon,
-  MailIcon,
   ShieldCheckIcon,
-  XCircleIcon,
+  CheckCircleIcon,
+  FileTextIcon,
   CreditCardIcon,
+  CalendarIcon,
 } from "@/components/icons";
 
 interface ClientItem {
@@ -28,6 +24,14 @@ interface ClientItem {
   email: string;
   phone: string;
   nationality: string;
+  nationalityEn: string;
+  documentType: "National ID" | "Passport";
+  documentNumber: string;
+  documentExpiry: string;
+  emergencyContactName: string;
+  emergencyContactPhone: string;
+  dietaryPreferences: string;
+  medicalNotes: string;
   bookingsCount: number;
   totalSpent: string;
   status: "نشط" | "محظور";
@@ -39,8 +43,16 @@ const INITIAL_CLIENTS: ClientItem[] = [
     id: "cl-1",
     name: "عبد الله الخالدي",
     email: "abdullah.khaldi@example.com",
-    phone: "+966501122334",
-    nationality: "سعودي 🇸🇦",
+    phone: "+966 50 112 2334",
+    nationality: "سعودي",
+    nationalityEn: "Saudi",
+    documentType: "National ID",
+    documentNumber: "1089234101",
+    documentExpiry: "2029-05-12",
+    emergencyContactName: "خالد الخالدي (الأخ)",
+    emergencyContactPhone: "+966 50 998 8776",
+    dietaryPreferences: "وجبات حلال قياسية",
+    medicalNotes: "لا توجد حالات صحية خاصة",
     bookingsCount: 8,
     totalSpent: "14,800 ر.س",
     status: "نشط",
@@ -50,8 +62,16 @@ const INITIAL_CLIENTS: ClientItem[] = [
     id: "cl-2",
     name: "James Wilson",
     email: "james.wilson@uk-tours.co.uk",
-    phone: "+447911123456",
-    nationality: "بريطاني 🇬🇧",
+    phone: "+44 79 1112 3456",
+    nationality: "بريطاني",
+    nationalityEn: "British",
+    documentType: "Passport",
+    documentNumber: "GB99201482",
+    documentExpiry: "2031-10-24",
+    emergencyContactName: "Emma Wilson (Spouse)",
+    emergencyContactPhone: "+44 79 4445 6677",
+    dietaryPreferences: "Vegetarian (نباتي)",
+    medicalNotes: "Mild asthma (حساسية صدر خفيفة)",
     bookingsCount: 3,
     totalSpent: "6,200 ر.س",
     status: "نشط",
@@ -61,8 +81,16 @@ const INITIAL_CLIENTS: ClientItem[] = [
     id: "cl-3",
     name: "سارة محمد العتيبي",
     email: "sara.otaibi@example.com",
-    phone: "+966554433221",
-    nationality: "سعودية 🇸🇦",
+    phone: "+966 55 443 3221",
+    nationality: "سعودية",
+    nationalityEn: "Saudi",
+    documentType: "National ID",
+    documentNumber: "1077123992",
+    documentExpiry: "2028-11-19",
+    emergencyContactName: "محمد العتيبي (الوالد)",
+    emergencyContactPhone: "+966 55 111 2233",
+    dietaryPreferences: "خالٍ من الجلوتين (Gluten Free)",
+    medicalNotes: "حساسية من المكسرات",
     bookingsCount: 14,
     totalSpent: "29,500 ر.س",
     status: "نشط",
@@ -72,8 +100,16 @@ const INITIAL_CLIENTS: ClientItem[] = [
     id: "cl-4",
     name: "Marc Dupont",
     email: "marc.dupont@voyage.fr",
-    phone: "+33612345678",
-    nationality: "فرنسي 🇫🇷",
+    phone: "+33 6 1234 5678",
+    nationality: "فرنسي",
+    nationalityEn: "French",
+    documentType: "Passport",
+    documentNumber: "FR88301928",
+    documentExpiry: "2027-03-14",
+    emergencyContactName: "Sophie Dupont (Sister)",
+    emergencyContactPhone: "+33 6 9876 5432",
+    dietaryPreferences: "Standard",
+    medicalNotes: "None",
     bookingsCount: 1,
     totalSpent: "1,200 ر.س",
     status: "محظور",
@@ -89,8 +125,8 @@ export default function AdminClientsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
 
-  // Modal states
   const [selectedClient, setSelectedClient] = useState<ClientItem | null>(null);
+  const [activeDossierTab, setActiveDossierTab] = useState<"personal" | "passport" | "health_emergency" | "history">("personal");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
@@ -98,7 +134,9 @@ export default function AdminClientsPage() {
   const [newName, setNewName] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [newPhone, setNewPhone] = useState("");
-  const [newNationality, setNewNationality] = useState("سعودي 🇸🇦");
+  const [newNationality, setNewNationality] = useState("سعودي");
+  const [newDocType, setNewDocType] = useState<"National ID" | "Passport">("National ID");
+  const [newDocNum, setNewDocNum] = useState("");
 
   const showToast = (msg: string) => {
     setToastMsg(msg);
@@ -110,7 +148,7 @@ export default function AdminClientsPage() {
       c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.phone.includes(searchQuery) ||
-      c.nationality.includes(searchQuery);
+      c.documentNumber.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === "ALL" || c.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -123,6 +161,14 @@ export default function AdminClientsPage() {
       email: newEmail,
       phone: newPhone,
       nationality: newNationality,
+      nationalityEn: newNationality,
+      documentType: newDocType,
+      documentNumber: newDocNum || "1000000000",
+      documentExpiry: "2030-01-01",
+      emergencyContactName: "جهة اتصال عائلية",
+      emergencyContactPhone: newPhone,
+      dietaryPreferences: "قياسي",
+      medicalNotes: "لا يوجد",
       bookingsCount: 0,
       totalSpent: "0.00 ر.س",
       status: "نشط",
@@ -134,63 +180,16 @@ export default function AdminClientsPage() {
     setNewName("");
     setNewEmail("");
     setNewPhone("");
+    setNewDocNum("");
 
-    dispatchDualActionNotification({
-      title: "إنشاء حساب عميل ومسافر جديد",
-      message: `تم إنشاء حساب المسافر (${newClient.name}) بنجاح. أهلاً بك في رفيق!`,
-      actionType: "CREATE",
-      targetEmail: newClient.email,
-      targetName: newClient.name,
-      targetRole: "Client",
-    });
-
-    showToast(isAr ? `تم إنشاء حساب العميل (${newClient.name}) وإرسال بريد الترحيب!` : `Client account created!`);
-  };
-
-  const handleToggleStatus = (client: ClientItem) => {
-    const nextStatus = client.status === "نشط" ? "محظور" : "نشط";
-    setClients(clients.map((c) => (c.id === client.id ? { ...c, status: nextStatus } : c)));
-
-    dispatchDualActionNotification({
-      title: nextStatus === "محظور" ? "تجميد حساب العميل بالمنصة" : "إلغاء تجميد وتنشيط حساب العميل",
-      message: `تم تحديث حالة حسابك إلى (${nextStatus}) بواسطة إدارة منصة رفيق.`,
-      actionType: "BAN",
-      targetEmail: client.email,
-      targetName: client.name,
-      targetRole: "Client",
-    });
-
-    showToast(isAr ? `تم تحديث حالة العميل (${client.name}) إلى (${nextStatus}) مع إشعار وبريد فوري.` : `Client status updated to ${nextStatus}`);
-  };
-
-  const handleReset2FA = (client: ClientItem) => {
-    dispatchDualActionNotification({
-      title: "إعادة ضبط المصادقة الثنائية وكلمة المرور",
-      message: `تم إرسال رابط تأميني مؤقت لإعادة ضبط المصادقة وكلمة المرور لحسابك.`,
-      actionType: "RESET_2FA",
-      targetEmail: client.email,
-      targetName: client.name,
-      targetRole: "Client",
-    });
-
-    showToast(isAr ? `تم إرسال رابط إعادة ضبط 2FA للعميل (${client.name}) بنجاح.` : `2FA reset link dispatched!`);
+    showToast(isAr ? `تم إنشاء حساب العميل (${newClient.name}) بنجاح.` : `Client created successfully.`);
   };
 
   const handleDeleteClient = (client: ClientItem) => {
-    if (confirm(isAr ? `هل أنت متأكد من حذف العميل (${client.name}) نهائياً؟` : `Delete client ${client.name}?`)) {
+    if (confirm(isAr ? `هل أنت متأكد من حذف حساب المسافر (${client.name}) نهائياً؟` : `Delete client ${client.name}?`)) {
       setClients(clients.filter((c) => c.id !== client.id));
       setSelectedClient(null);
-
-      dispatchDualActionNotification({
-        title: "حذف حساب العميل",
-        message: `تم حذف حسابك نهائياً من قاعدة بيانات منصة رفيق بناءً على طلب إداري.`,
-        actionType: "DELETE",
-        targetEmail: client.email,
-        targetName: client.name,
-        targetRole: "Client",
-      });
-
-      showToast(isAr ? `تم حذف حساب العميل (${client.name}) بنجاح.` : `Client deleted.`);
+      showToast(isAr ? `تم حذف حساب المسافر (${client.name}) بنجاح.` : `Client deleted.`);
     }
   };
 
@@ -198,24 +197,58 @@ export default function AdminClientsPage() {
     <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
       {/* Toast */}
       {toastMsg && (
-        <div style={{ position: "fixed", bottom: "24px", left: "24px", background: "var(--color-bg-card)", border: "1px solid var(--color-gold-heading)", color: "var(--color-text-primary)", padding: "14px 24px", borderRadius: "14px", boxShadow: "0 10px 30px rgba(0,0,0,0.6)", zIndex: 9999, fontWeight: 800, fontSize: "13px", display: "flex", alignItems: "center", gap: "10px" }}>
-          <ShieldCheckIcon size={18} color="#10B981" />
+        <div
+          style={{
+            position: "fixed",
+            bottom: "24px",
+            left: "24px",
+            background: "var(--color-bg-card)",
+            border: "1px solid var(--color-gold-heading)",
+            color: "var(--color-text-primary)",
+            padding: "14px 24px",
+            borderRadius: "14px",
+            boxShadow: "var(--shadow-xl)",
+            zIndex: 9999,
+            fontWeight: 800,
+            fontSize: "13px",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+          }}
+        >
+          <CheckCircleIcon size={18} color="#10B981" />
           <span>{toastMsg}</span>
         </div>
       )}
 
-      {/* Header Banner */}
+      {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
         <div>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "rgba(59, 130, 246, 0.15)", border: "1px solid rgba(59, 130, 246, 0.3)", padding: "4px 12px", borderRadius: "100px", color: "#3B82F6", fontSize: "11px", fontWeight: 800, marginBottom: "8px" }}>
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              background: "rgba(59, 130, 246, 0.12)",
+              border: "1px solid rgba(59, 130, 246, 0.25)",
+              padding: "4px 12px",
+              borderRadius: "100px",
+              color: "#3B82F6",
+              fontSize: "11px",
+              fontWeight: 800,
+              marginBottom: "8px",
+            }}
+          >
             <UserIcon size={14} color="#3B82F6" />
-            {isAr ? "قسم إدارة العملاء والمسافرين الدوليين والمحليين" : "Clients & Travelers Directory"}
+            <span>{isAr ? "قسم إدارة العملاء والمسافرين" : "Clients & Travelers Directory"}</span>
           </div>
-          <h1 style={{ fontSize: "26px", fontWeight: 900, color: "var(--color-text-primary)" }}>
-            {isAr ? "العملاء والمسافرون 🎒" : "Clients & Travelers Directory"}
+          <h1 style={{ fontSize: "24px", fontWeight: 900, color: "var(--color-text-primary)" }}>
+            {isAr ? "العملاء والمسافرون" : "Clients & Travelers Directory"}
           </h1>
           <p style={{ color: "var(--color-text-secondary)", fontSize: "13px", marginTop: "2px" }}>
-            {isAr ? "سجل كافة المسافرين، تاريخ الحجوزات، المدفوعات المحمية، وإدارة الأمان." : "Directory of all registered travelers, booking history, spent SAR, and account controls."}
+            {isAr
+              ? "سجل المسافرين الدوليين والمحليين، وثائق السفر، جهات الطوارئ، وتاريخ الحجوزات الموثقة."
+              : "Directory of registered travelers, travel documents, emergency contacts, and booking history."}
           </p>
         </div>
 
@@ -230,7 +263,7 @@ export default function AdminClientsPage() {
         <div style={{ flex: "1 1 280px", position: "relative" }}>
           <input
             type="text"
-            placeholder={isAr ? "بحث باسم العميل، البريد، الجوال أو الجنسية..." : "Search by name, email, phone or nationality..."}
+            placeholder={isAr ? "بحث باسم العميل، البريد، الجوال أو رقم الهوية..." : "Search name, email, phone or ID..."}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             style={{ width: "100%", padding: "10px 14px", paddingInlineStart: "38px", borderRadius: "10px", background: "var(--color-bg-secondary)", border: "1px solid var(--color-border)", color: "var(--color-text-primary)", fontSize: "13px", outline: "none" }}
@@ -251,41 +284,55 @@ export default function AdminClientsPage() {
         </select>
       </div>
 
-      {/* Clients Table */}
-      <div style={{ background: "var(--color-bg-card)", borderRadius: "20px", border: "1px solid var(--color-border)", overflow: "hidden", boxShadow: "var(--shadow-md)" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "start", fontSize: "13px" }}>
+      {/* Clients Data Table */}
+      <div className="rafeeq-table-wrapper">
+        <table className="rafeeq-table">
           <thead>
-            <tr style={{ background: "var(--color-bg-secondary)", borderBottom: "1px solid var(--color-border)", color: "var(--color-text-secondary)" }}>
-              <th style={{ padding: "14px 16px" }}>{isAr ? "العميل" : "Client Name"}</th>
-              <th style={{ padding: "14px 16px" }}>{isAr ? "الجنسية" : "Nationality"}</th>
-              <th style={{ padding: "14px 16px" }}>{isAr ? "الحجوزات" : "Bookings"}</th>
-              <th style={{ padding: "14px 16px" }}>{isAr ? "إجمالي الإنفاق" : "Total Spent"}</th>
-              <th style={{ padding: "14px 16px" }}>{isAr ? "تاريخ التسجيل" : "Registered"}</th>
-              <th style={{ padding: "14px 16px" }}>{isAr ? "الحالة" : "Status"}</th>
-              <th style={{ padding: "14px 16px", textAlign: "end" }}>{isAr ? "إجراءات التحكم السريع" : "Actions"}</th>
+            <tr>
+              <th>{isAr ? "اسم العميل المسافر" : "Client"}</th>
+              <th>{isAr ? "الجنسية ووثيقة السفر" : "Nationality & Document"}</th>
+              <th>{isAr ? "الحجوزات المكتملة" : "Bookings"}</th>
+              <th>{isAr ? "إجمالي الإنفاق" : "Total Spent"}</th>
+              <th>{isAr ? "تاريخ التسجيل" : "Registered"}</th>
+              <th>{isAr ? "الحالة" : "Status"}</th>
+              <th style={{ textAlign: "end" }}>{isAr ? "الإجراءات" : "Actions"}</th>
             </tr>
           </thead>
           <tbody>
             {filteredClients.length === 0 ? (
               <tr>
                 <td colSpan={7} style={{ padding: "40px", textAlign: "center", color: "var(--color-text-secondary)" }}>
-                  {isAr ? "لا يوجد عملاء يطابقون معايير البحث." : "No clients found."}
+                  {isAr ? "لا يوجد عملاء يطابقون معايير البحث." : "No clients match search criteria."}
                 </td>
               </tr>
             ) : (
               filteredClients.map((client) => (
-                <tr key={client.id} style={{ borderBottom: "1px solid var(--color-border)" }}>
-                  <td style={{ padding: "14px 16px" }}>
+                <tr key={client.id}>
+                  <td>
                     <div style={{ fontWeight: 800, color: "var(--color-text-primary)" }}>{client.name}</div>
-                    <div style={{ fontSize: "11px", color: "var(--color-text-secondary)", marginTop: "2px" }}>{client.email} • <span style={{ direction: "ltr", display: "inline-block" }}>{client.phone}</span></div>
+                    <div style={{ fontSize: "11px", color: "var(--color-text-secondary)", marginTop: "2px" }}>
+                      {client.email} • <span style={{ direction: "ltr", display: "inline-block" }}>{client.phone}</span>
+                    </div>
                   </td>
 
-                  <td style={{ padding: "14px 16px", fontWeight: 700 }}>{client.nationality}</td>
-                  <td style={{ padding: "14px 16px", fontWeight: 700 }}>{client.bookingsCount} رحلات</td>
-                  <td style={{ padding: "14px 16px", fontWeight: 800, color: "#10B981" }}>{client.totalSpent}</td>
-                  <td style={{ padding: "14px 16px", color: "var(--color-text-secondary)", fontSize: "12px" }}>{client.registeredDate}</td>
+                  <td>
+                    <div style={{ fontWeight: 700 }}>{isAr ? client.nationality : client.nationalityEn}</div>
+                    <div style={{ fontSize: "11px", color: "var(--color-text-secondary)", fontFamily: "monospace" }}>
+                      {client.documentType}: {client.documentNumber}
+                    </div>
+                  </td>
 
-                  <td style={{ padding: "14px 16px" }}>
+                  <td>
+                    <span style={{ fontWeight: 800 }}>{client.bookingsCount} {isAr ? "رحلات" : "tours"}</span>
+                  </td>
+
+                  <td>
+                    <span style={{ fontWeight: 900, color: "var(--color-gold-heading)" }}>{client.totalSpent}</span>
+                  </td>
+
+                  <td style={{ fontSize: "12px", color: "var(--color-text-secondary)" }}>{client.registeredDate}</td>
+
+                  <td>
                     <span
                       style={{
                         padding: "3px 10px",
@@ -300,40 +347,52 @@ export default function AdminClientsPage() {
                     </span>
                   </td>
 
-                  <td style={{ padding: "14px 16px", textAlign: "end" }}>
-                    <div style={{ display: "inline-flex", gap: "6px", alignItems: "center" }}>
-                      <IconButton
-                        variant="gold"
-                        size="sm"
-                        title={isAr ? "معاينة سجل الحساب والحجوزات" : "Inspect Client"}
-                        icon={<EyeIcon size={15} />}
+                  <td style={{ textAlign: "end" }}>
+                    <div style={{ display: "inline-flex", gap: "6px", flexWrap: "nowrap" }}>
+                      <button
+                        type="button"
                         onClick={() => setSelectedClient(client)}
-                      />
+                        className="rafeeq-action-btn"
+                        title={isAr ? "فتح الملف الشامل 360°" : "Full 360° Dossier"}
+                      >
+                        <EyeIcon size={14} color="var(--color-gold-heading)" />
+                        <span>{isAr ? "الملف الكامل" : "Dossier"}</span>
+                      </button>
 
-                      <IconButton
-                        variant="outline"
-                        size="sm"
-                        title={isAr ? "إعادة ضبط المصادقة الثنائية 2FA" : "Reset 2FA"}
-                        icon={<KeyIcon size={15} />}
-                        onClick={() => handleReset2FA(client)}
-                      />
+                      <a
+                        href={`/admin/messages?clientId=${client.id}`}
+                        className="rafeeq-action-btn"
+                        title={isAr ? "مراسلة العميل" : "Message Client"}
+                        style={{ textDecoration: "none" }}
+                      >
+                        <FileTextIcon size={14} color="#3B82F6" />
+                        <span>{isAr ? "مراسلة" : "Message"}</span>
+                      </a>
 
-                      <IconButton
-                        variant={client.status === "نشط" ? "danger" : "secondary"}
-                        size="sm"
-                        title={client.status === "نشط" ? (isAr ? "حظر وتجميد الحساب" : "Ban Client") : (isAr ? "إلغاء الحظر وتنشيط الحساب" : "Activate Client")}
-                        icon={<BanIcon size={15} />}
+                      <button
+                        type="button"
                         onClick={() => handleToggleStatus(client)}
-                      />
+                        className="rafeeq-action-btn"
+                        style={{
+                          background: client.status === "نشط" ? "rgba(239, 68, 68, 0.1)" : "rgba(16, 185, 129, 0.15)",
+                          borderColor: client.status === "نشط" ? "rgba(239, 68, 68, 0.25)" : "rgba(16, 185, 129, 0.3)",
+                          color: client.status === "نشط" ? "#EF4444" : "#10B981",
+                        }}
+                      >
+                        <BanIcon size={14} color={client.status === "نشط" ? "#EF4444" : "#10B981"} />
+                        <span>{client.status === "نشط" ? (isAr ? "تجميد" : "Suspend") : isAr ? "تنشيط" : "Activate"}</span>
+                      </button>
 
-                      <IconButton
-                        variant="ghost"
-                        size="sm"
-                        title={isAr ? "حذف الحساب نهائياً" : "Delete Client"}
-                        icon={<TrashIcon size={15} />}
+                      <button
+                        type="button"
                         onClick={() => handleDeleteClient(client)}
-                        style={{ color: "#EF4444" }}
-                      />
+                        className="rafeeq-action-btn"
+                        style={{ background: "rgba(239, 68, 68, 0.08)", borderColor: "rgba(239, 68, 68, 0.2)", color: "#EF4444" }}
+                        title={isAr ? "حذف الحساب" : "Delete Client"}
+                      >
+                        <TrashIcon size={14} color="#EF4444" />
+                        <span>{isAr ? "حذف" : "Delete"}</span>
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -343,73 +402,133 @@ export default function AdminClientsPage() {
         </table>
       </div>
 
-      {/* Client Detail Modal */}
-      <Modal
-        isOpen={!!selectedClient}
-        onClose={() => setSelectedClient(null)}
-        title={selectedClient ? (isAr ? `ملف المسافر: ${selectedClient.name}` : `Traveler Profile: ${selectedClient.name}`) : ""}
-        subtitle={selectedClient ? `${selectedClient.nationality} • ${selectedClient.email}` : ""}
-        maxWidth="540px"
-      >
-        {selectedClient && (
-          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-            <div className="rafeeq-modal-box" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
-              <div><span style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>{isAr ? "البريد" : "Email"}</span><div style={{ fontSize: "13px", fontWeight: 700 }}>{selectedClient.email}</div></div>
-              <div><span style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>{isAr ? "الجوال" : "Phone"}</span><div style={{ fontSize: "13px", fontWeight: 700, direction: "ltr", textAlign: "start" }}>{selectedClient.phone}</div></div>
-              <div><span style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>{isAr ? "إجمالي الإنفاق" : "Total Spent"}</span><div style={{ fontSize: "14px", fontWeight: 900, color: "#10B981" }}>{selectedClient.totalSpent}</div></div>
-              <div><span style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>{isAr ? "عدد الرحلات" : "Trips Booked"}</span><div style={{ fontSize: "13px", fontWeight: 700 }}>{selectedClient.bookingsCount}</div></div>
+      {/* 360° Client Dossier Modal */}
+      {selectedClient && (
+        <Modal
+          isOpen={!!selectedClient}
+          onClose={() => setSelectedClient(null)}
+          title={isAr ? `الملف الشامل للمسافر: ${selectedClient.name}` : `Traveler Dossier: ${selectedClient.name}`}
+          subtitle={`${isAr ? selectedClient.nationality : selectedClient.nationalityEn} • ${selectedClient.email}`}
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: "16px", fontSize: "13px" }}>
+            {/* Tabs */}
+            <div style={{ display: "flex", gap: "8px", borderBottom: "1px solid var(--color-border)", paddingBottom: "10px" }}>
+              {[
+                { key: "personal", labelAr: "البيانات والاتصال", labelEn: "Personal & Contact" },
+                { key: "passport", labelAr: "وثيقة السفر والهوية", labelEn: "Travel Document" },
+                { key: "health_emergency", labelAr: "الطوارئ والتفضيلات الصحية", labelEn: "Emergency & Health" },
+                { key: "history", labelAr: "الإنفاق والحجوزات", labelEn: "History & Spend" },
+              ].map((tab) => (
+                <button
+                  key={tab.key}
+                  type="button"
+                  onClick={() => setActiveDossierTab(tab.key as typeof activeDossierTab)}
+                  style={{
+                    padding: "6px 14px",
+                    borderRadius: "8px",
+                    fontSize: "12px",
+                    fontWeight: 800,
+                    cursor: "pointer",
+                    border: "none",
+                    background: activeDossierTab === tab.key ? "var(--color-bg-secondary)" : "transparent",
+                    color: activeDossierTab === tab.key ? "var(--color-gold-heading)" : "var(--color-text-secondary)",
+                  }}
+                >
+                  {isAr ? tab.labelAr : tab.labelEn}
+                </button>
+              ))}
             </div>
 
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+            {/* Tab 1 */}
+            {activeDossierTab === "personal" && (
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", background: "var(--color-bg-secondary)", padding: "16px", borderRadius: "12px" }}>
+                <div><span style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>{isAr ? "البريد الإلكتروني" : "Email"}</span><p style={{ fontWeight: 800 }}>{selectedClient.email}</p></div>
+                <div><span style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>{isAr ? "رقم الجوال الدولي" : "Phone"}</span><p style={{ fontWeight: 800, direction: "ltr", textAlign: "start" }}>{selectedClient.phone}</p></div>
+                <div><span style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>{isAr ? "الجنسية" : "Nationality"}</span><p style={{ fontWeight: 800 }}>{isAr ? selectedClient.nationality : selectedClient.nationalityEn}</p></div>
+                <div><span style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>{isAr ? "تاريخ الانضمام" : "Join Date"}</span><p style={{ fontWeight: 800 }}>{selectedClient.registeredDate}</p></div>
+              </div>
+            )}
+
+            {/* Tab 2 */}
+            {activeDossierTab === "passport" && (
+              <div style={{ display: "flex", flexDirection: "column", gap: "12px", background: "var(--color-bg-secondary)", padding: "16px", borderRadius: "12px" }}>
+                <div>
+                  <span style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>{isAr ? "نوع الوثيقة الثبوتية" : "Document Type"}</span>
+                  <p style={{ fontWeight: 800 }}>{selectedClient.documentType === "National ID" ? (isAr ? "بطاقة الهوية الوطنية" : "National ID") : (isAr ? "جواز سفر دولي" : "International Passport")}</p>
+                </div>
+                <div>
+                  <span style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>{isAr ? "رقم الوثيقة" : "Document Number"}</span>
+                  <p style={{ fontWeight: 900, color: "var(--color-gold-heading)", fontFamily: "monospace", fontSize: "14px" }}>{selectedClient.documentNumber}</p>
+                </div>
+                <div>
+                  <span style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>{isAr ? "تاريخ الصلاحية والانتهاء" : "Expiry Date"}</span>
+                  <p style={{ fontWeight: 800 }}>{selectedClient.documentExpiry}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Tab 3 */}
+            {activeDossierTab === "health_emergency" && (
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", background: "var(--color-bg-secondary)", padding: "16px", borderRadius: "12px" }}>
+                <div><span style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>{isAr ? "جهة اتصال الطوارئ" : "Emergency Contact"}</span><p style={{ fontWeight: 800 }}>{selectedClient.emergencyContactName}</p></div>
+                <div><span style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>{isAr ? "رقم هاتف الطوارئ" : "Emergency Phone"}</span><p style={{ fontWeight: 800, direction: "ltr", textAlign: "start" }}>{selectedClient.emergencyContactPhone}</p></div>
+                <div><span style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>{isAr ? "التفضيلات الغذائية" : "Dietary Preferences"}</span><p style={{ fontWeight: 800 }}>{selectedClient.dietaryPreferences}</p></div>
+                <div><span style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>{isAr ? "الملاحظات الصحية والبدنية" : "Medical Notes"}</span><p style={{ fontWeight: 800 }}>{selectedClient.medicalNotes}</p></div>
+              </div>
+            )}
+
+            {/* Tab 4 */}
+            {activeDossierTab === "history" && (
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", background: "var(--color-bg-secondary)", padding: "16px", borderRadius: "12px" }}>
+                <div><span style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>{isAr ? "إجمالي الحجوزات المنفذة" : "Completed Tours"}</span><p style={{ fontWeight: 900, fontSize: "16px" }}>{selectedClient.bookingsCount} {isAr ? "رحلات" : "tours"}</p></div>
+                <div><span style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>{isAr ? "إجمالي الإنفاق المدفوع" : "Total SAR Spent"}</span><p style={{ fontWeight: 900, color: "var(--color-gold-heading)", fontSize: "16px" }}>{selectedClient.totalSpent}</p></div>
+              </div>
+            )}
+
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", paddingTop: "14px", borderTop: "1px solid var(--color-border)" }}>
               <Button variant="outline" size="sm" onClick={() => setSelectedClient(null)}>{isAr ? "إغلاق" : "Close"}</Button>
             </div>
           </div>
-        )}
-      </Modal>
+        </Modal>
+      )}
 
       {/* Create Client Modal */}
       <Modal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
-        title={isAr ? "إضافة عميل / مسافر جديد" : "Create New Client"}
-        subtitle={isAr ? "تسجيل بيانات المسافر وتفعيل الحساب" : "Register traveler and activate account"}
-        maxWidth="500px"
+        title={isAr ? "إضافة مسافر / عميل جديد" : "Add New Client"}
       >
-        <form onSubmit={handleCreateClient}>
-          <div style={{ display: "flex", flexDirection: "column", gap: "14px", marginBottom: "20px" }}>
+        <form onSubmit={handleCreateClient} style={{ display: "flex", flexDirection: "column", gap: "12px", fontSize: "13px" }}>
+          <div>
+            <label style={{ display: "block", fontSize: "11px", color: "var(--color-text-secondary)", marginBottom: "4px" }}>{isAr ? "اسم العميل المسافر" : "Client Name"}</label>
+            <input type="text" required value={newName} onChange={(e) => setNewName(e.target.value)} style={{ width: "100%", padding: "8px 12px", borderRadius: "8px", background: "var(--color-bg-secondary)", border: "1px solid var(--color-border)", color: "var(--color-text-primary)", outline: "none" }} />
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
             <div>
-              <label style={{ display: "block", fontSize: "12px", color: "var(--color-text-secondary)", marginBottom: "4px" }}>{isAr ? "الاسم الكامل" : "Full Name"}</label>
-              <input type="text" required value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="عبد الله الخالدي" style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", background: "var(--color-bg-secondary)", border: "1px solid var(--color-border)", color: "var(--color-text-primary)", fontSize: "13px", outline: "none" }} />
+              <label style={{ display: "block", fontSize: "11px", color: "var(--color-text-secondary)", marginBottom: "4px" }}>{isAr ? "البريد الإلكتروني" : "Email"}</label>
+              <input type="email" required value={newEmail} onChange={(e) => setNewEmail(e.target.value)} style={{ width: "100%", padding: "8px 12px", borderRadius: "8px", background: "var(--color-bg-secondary)", border: "1px solid var(--color-border)", color: "var(--color-text-primary)", outline: "none" }} />
             </div>
-
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
-              <div>
-                <label style={{ display: "block", fontSize: "12px", color: "var(--color-text-secondary)", marginBottom: "4px" }}>{isAr ? "البريد الإلكتروني" : "Email"}</label>
-                <input type="email" required value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="client@example.com" style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", background: "var(--color-bg-secondary)", border: "1px solid var(--color-border)", color: "var(--color-text-primary)", fontSize: "13px", outline: "none" }} />
-              </div>
-              <div>
-                <label style={{ display: "block", fontSize: "12px", color: "var(--color-text-secondary)", marginBottom: "4px" }}>{isAr ? "رقم الجوال" : "Phone"}</label>
-                <input type="tel" required value={newPhone} onChange={(e) => setNewPhone(e.target.value)} placeholder="+966501122334" style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", background: "var(--color-bg-secondary)", border: "1px solid var(--color-border)", color: "var(--color-text-primary)", fontSize: "13px", outline: "none" }} />
-              </div>
-            </div>
-
             <div>
-              <label style={{ display: "block", fontSize: "12px", color: "var(--color-text-secondary)", marginBottom: "4px" }}>{isAr ? "الجنسية" : "Nationality"}</label>
-              <select value={newNationality} onChange={(e) => setNewNationality(e.target.value)} style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", background: "var(--color-bg-secondary)", border: "1px solid var(--color-border)", color: "var(--color-text-primary)", fontSize: "13px", outline: "none" }}>
-                <option value="سعودي 🇸🇦">سعودي 🇸🇦</option>
-                <option value="خليجي 🇰🇼">خليجي 🇰🇼 🇦🇪 🇶🇦 🇧🇭 🇴🇲</option>
-                <option value="بريطاني 🇬🇧">بريطاني 🇬🇧</option>
-                <option value="أمريكي 🇺🇸">أمريكي 🇺🇸</option>
-                <option value="فرنسي 🇫🇷">فرنسي 🇫🇷</option>
-                <option value="ألماني 🇩🇪">ألماني 🇩🇪</option>
-                <option value="صيني 🇨🇳">صيني 🇨🇳</option>
-              </select>
+              <label style={{ display: "block", fontSize: "11px", color: "var(--color-text-secondary)", marginBottom: "4px" }}>{isAr ? "رقم الجوال" : "Phone"}</label>
+              <input type="tel" required value={newPhone} onChange={(e) => setNewPhone(e.target.value)} style={{ width: "100%", padding: "8px 12px", borderRadius: "8px", background: "var(--color-bg-secondary)", border: "1px solid var(--color-border)", color: "var(--color-text-primary)", outline: "none" }} />
             </div>
           </div>
-
-          <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
-            <Button variant="ghost" size="md" type="button" onClick={() => setShowCreateModal(false)}>{isAr ? "إلغاء" : "Cancel"}</Button>
-            <Button variant="primary" size="md" type="submit">{isAr ? "إنشاء الحساب 🚀" : "Create Client"}</Button>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+            <div>
+              <label style={{ display: "block", fontSize: "11px", color: "var(--color-text-secondary)", marginBottom: "4px" }}>{isAr ? "نوع الوثيقة" : "Document Type"}</label>
+              <select value={newDocType} onChange={(e) => setNewDocType(e.target.value as "National ID" | "Passport")} style={{ width: "100%", padding: "8px 12px", borderRadius: "8px", background: "var(--color-bg-secondary)", border: "1px solid var(--color-border)", color: "var(--color-text-primary)", outline: "none" }}>
+                <option value="National ID">{isAr ? "هوية وطنية / إقامة" : "National ID"}</option>
+                <option value="Passport">{isAr ? "جواز سفر دولي" : "Passport"}</option>
+              </select>
+            </div>
+            <div>
+              <label style={{ display: "block", fontSize: "11px", color: "var(--color-text-secondary)", marginBottom: "4px" }}>{isAr ? "رقم الوثيقة" : "Document No"}</label>
+              <input type="text" required value={newDocNum} onChange={(e) => setNewDocNum(e.target.value)} style={{ width: "100%", padding: "8px 12px", borderRadius: "8px", background: "var(--color-bg-secondary)", border: "1px solid var(--color-border)", color: "var(--color-text-primary)", outline: "none" }} />
+            </div>
+          </div>
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "10px" }}>
+            <Button variant="outline" size="sm" type="button" onClick={() => setShowCreateModal(false)}>{isAr ? "إلغاء" : "Cancel"}</Button>
+            <Button variant="primary" size="sm" type="submit">{isAr ? "إنشاء الحساب" : "Create Client"}</Button>
           </div>
         </form>
       </Modal>

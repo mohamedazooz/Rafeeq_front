@@ -2,28 +2,34 @@
 
 import React from "react";
 import { useLanguage } from "@/lib/language-provider";
+import {
+  ShieldCheckIcon,
+  FileTextIcon,
+  ClockIcon,
+  MessageSquareIcon,
+} from "@/components/icons";
 
 export const WhyRafeeqFeatures: React.FC = () => {
   const { t } = useLanguage();
 
   const items = [
     {
-      icon: "🛡️",
+      icon: <ShieldCheckIcon size={24} color="var(--color-saudi-green)" />,
       title: t.home.whyRafeeq.escrowTitle,
       description: t.home.whyRafeeq.escrowDesc,
     },
     {
-      icon: "📜",
+      icon: <FileTextIcon size={24} color="var(--color-gold-heading)" />,
       title: t.home.whyRafeeq.guidesTitle,
       description: t.home.whyRafeeq.guidesDesc,
     },
     {
-      icon: "⏳",
+      icon: <ClockIcon size={24} color="var(--color-saudi-green)" />,
       title: t.home.whyRafeeq.softLockTitle,
       description: t.home.whyRafeeq.softLockDesc,
     },
     {
-      icon: "💬",
+      icon: <MessageSquareIcon size={24} color="var(--color-gold-heading)" />,
       title: t.home.whyRafeeq.supportTitle,
       description: t.home.whyRafeeq.supportDesc,
     },
@@ -70,11 +76,10 @@ export const WhyRafeeqFeatures: React.FC = () => {
                   width: "52px",
                   height: "52px",
                   borderRadius: "var(--radius-xl)",
-                  background: "rgba(0, 108, 53, 0.1)",
+                  background: "rgba(0, 108, 53, 0.08)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontSize: "1.5rem",
                 }}
               >
                 {item.icon}

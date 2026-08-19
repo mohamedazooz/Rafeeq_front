@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { IconButton } from "@/components/ui/IconButton";
 import { Modal } from "@/components/ui/Modal";
 import { useLanguage } from "@/lib/language-provider";
+import { useDashboardMetrics } from "@/lib/dashboard-metrics";
 import { dispatchDualActionNotification } from "@/lib/action-dispatcher";
 import {
   FileTextIcon,
@@ -13,49 +13,67 @@ import {
   EditIcon,
   XCircleIcon,
   ShieldCheckIcon,
+  MapPinIcon,
+  ClockIcon,
   FolderIcon,
 } from "@/components/icons";
 
 interface ProgramToReview {
   id: string;
+  code: string;
   title: string;
+  titleEn: string;
   guide: string;
   guideEmail: string;
   price: string;
   imagesCount: number;
   duration: string;
   city: string;
+  category: string;
   description: string;
+  meetingPoint: string;
+  inclusions: string[];
 }
 
 const INITIAL_PROGRAMS: ProgramToReview[] = [
   {
     id: "prog-1",
+    code: "PRG-8812",
     title: "رحلة جبل القارة والواحة بالأحساء",
+    titleEn: "Al-Qarah Mountain & Al-Ahsa Oasis Discovery",
     guide: "خالد الحربي",
     guideEmail: "khaled.harbi@example.com",
     price: "380 ر.س",
     imagesCount: 5,
-    duration: "يوم كامل (8 ساعات)",
+    duration: "8 ساعات",
     city: "الأحساء",
-    description: "جولة استكشافية مغامرة لكهوف جبل القارة الطبيعية وزيارة الواحة ومزارع النخيل مع وجبة غداء تراثية أحسائية.",
+    category: "تراث ومغامرة",
+    description: "جولة استكشافية لكهوف جبل القارة الطبيعية وزيارة الواحة ومزارع النخيل مع وجبة غداء تراثية أحسائية ومشروبات باردة.",
+    meetingPoint: "مركز زوار جبل القارة، الهفوف",
+    inclusions: ["المرشد السياحي المرخص", "وجبة غداء شعبية", "رسوم دخول الكهوف", "المواصلات الداخلية"],
   },
   {
     id: "prog-2",
+    code: "PRG-9941",
     title: "جولة الغوص واستكشاف شعب حقل البحرية",
+    titleEn: "Haql Coral Reefs & Shipwreck Diving Expedition",
     guide: "ريم العلي",
     guideEmail: "reem.ali@example.com",
     price: "550 ر.س",
     imagesCount: 8,
     duration: "6 ساعات",
     city: "حقل / تبوك",
+    category: "غوص وبحري",
     description: "رحلة غوص احترافية مع مرشد غوص معتمد لرؤية السفينة الغارقة والحيوانات البحرية النادرة في خليج العقبة.",
+    meetingPoint: "مرسى حقل السياحي، منطقة تبوك",
+    inclusions: ["معدات الغوص الكاملة", "مدرب غوص مرخص", "قارب بحري سريع", "تصوير تحت الماء"],
   },
 ];
 
 export default function AdminProgramsReviewPage() {
   const { lang } = useLanguage();
   const isAr = lang === "ar";
+  const { decrementProgramsQueue } = useDashboardMetrics();
 
   const [programs, setPrograms] = useState<ProgramToReview[]>(INITIAL_PROGRAMS);
   const [selectedProg, setSelectedProg] = useState<ProgramToReview | null>(null);
@@ -69,147 +87,342 @@ export default function AdminProgramsReviewPage() {
   const handlePublish = (prog: ProgramToReview) => {
     setPrograms((prev) => prev.filter((p) => p.id !== prog.id));
     setSelectedProg(null);
+    decrementProgramsQueue();
 
     dispatchDualActionNotification({
-      title: "اعتماد ونشر البرنامج السياحي",
-      message: `تم اعتماد ونشر برنامجك (${prog.title}) في الكتالوج العام لمنصة رفيق وهو متاح للحجز الآن!`,
+      title: isAr ? "اعتماد ونشر البرنامج السياحي" : "Tour Program Published",
+      message: isAr
+        ? `تم اعتماد ونشر برنامجك (${prog.title}) في الكتالوج العام لمنصة رفيق وهو متاح للحجز الآن!`
+        : `Your tour (${prog.titleEn}) has been verified and published to the public catalog.`,
       actionType: "APPROVE",
       targetEmail: prog.guideEmail,
       targetName: prog.guide,
       targetRole: "Guide",
     });
 
-    showToast(isAr ? `تم نشر البرنامج السياحي (${prog.title}) وإرسال إشعار للمرشد!` : `Program published successfully.`);
+    showToast(
+      isAr
+        ? `تم اعتماد ونشر (${prog.title}) بنجاح وتحديث الكتالوج والسايد بار فورياً.`
+        : `Program (${prog.titleEn}) approved and published successfully.`
+    );
   };
 
   const handleRequestChanges = (prog: ProgramToReview) => {
     setPrograms((prev) => prev.filter((p) => p.id !== prog.id));
     setSelectedProg(null);
+    decrementProgramsQueue();
 
     dispatchDualActionNotification({
-      title: "طلب تعديل وتحديث بيانات البرنامج السياحي",
-      message: `يرجى مراجعة تفاصيل برنامجك (${prog.title}) وإضافة صور إضافية أو تدقيق المسار.`,
+      title: isAr ? "طلب تعديل وتحديث بيانات البرنامج السياحي" : "Changes Requested on Tour Program",
+      message: isAr
+        ? `يرجى مراجعة تفاصيل برنامجك (${prog.title}) وإضافة تفاصيل المحطات ومطابقة اشتراطات السلامة.`
+        : `Please update your tour (${prog.titleEn}) with safety protocols and itinerary stops.`,
       actionType: "REJECT",
       targetEmail: prog.guideEmail,
       targetName: prog.guide,
       targetRole: "Guide",
     });
 
-    showToast(isAr ? `تم طلب التعديل على البرنامج (${prog.title}) وإرسال الملاحظات للمرشد.` : `Changes requested from guide.`);
+    showToast(
+      isAr
+        ? `تم إرسال طلب التعديل لبريد المرشد (${prog.guide}).`
+        : `Changes requested from guide.`
+    );
   };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-      {/* Toast */}
+      {/* Toast Notification */}
       {toast && (
-        <div style={{ position: "fixed", bottom: "24px", left: "24px", background: "var(--color-bg-card)", border: "1px solid var(--color-gold-heading)", color: "var(--color-text-primary)", padding: "14px 24px", borderRadius: "14px", boxShadow: "0 10px 30px rgba(0,0,0,0.6)", zIndex: 9999, fontWeight: 800, fontSize: "13px", display: "flex", alignItems: "center", gap: "10px" }}>
-          <ShieldCheckIcon size={18} color="#10B981" />
+        <div
+          style={{
+            position: "fixed",
+            bottom: "24px",
+            left: "24px",
+            background: "var(--color-bg-card)",
+            border: "1px solid var(--color-gold-heading)",
+            color: "var(--color-text-primary)",
+            padding: "14px 24px",
+            borderRadius: "14px",
+            boxShadow: "var(--shadow-xl)",
+            zIndex: 9999,
+            fontWeight: 800,
+            fontSize: "13px",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+          }}
+        >
+          <CheckCircleIcon size={18} color="#10B981" />
           <span>{toast}</span>
         </div>
       )}
 
       {/* Header */}
       <div>
-        <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "rgba(200, 169, 110, 0.15)", border: "1px solid rgba(200, 169, 110, 0.3)", padding: "4px 12px", borderRadius: "100px", color: "var(--color-gold-heading)", fontSize: "11px", fontWeight: 800, marginBottom: "8px" }}>
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "6px",
+            background: "rgba(200, 169, 110, 0.15)",
+            border: "1px solid rgba(200, 169, 110, 0.3)",
+            padding: "4px 12px",
+            borderRadius: "100px",
+            color: "var(--color-gold-heading)",
+            fontSize: "11px",
+            fontWeight: 800,
+            marginBottom: "8px",
+          }}
+        >
           <FileTextIcon size={14} color="var(--color-gold-heading)" />
-          {isAr ? "طابور اعتماد الجولات والبرامج الجديدة" : "Tour Review Queue"}
+          <span>{isAr ? "طابور مراجعة واعتماد البرامج السياحية" : "Tour Program Review Queue"}</span>
         </div>
-        <h1 style={{ fontSize: "26px", fontWeight: 900, color: "var(--color-text-primary)" }}>
-          {isAr ? "مراجعة ونشر البرامج السياحية 📋" : "Program Approvals & Publishing"}
+        <h1 style={{ fontSize: "24px", fontWeight: 900, color: "var(--color-text-primary)" }}>
+          {isAr ? "مراجعة ونشر البرامج السياحية" : "Program Approvals & Publishing"}
         </h1>
         <p style={{ color: "var(--color-text-secondary)", fontSize: "13px", marginTop: "2px" }}>
-          {isAr ? "تدقيق جودة المحتوى، المحطات، المشتملات، والصور المرفقة لضمان معايير الجودة قبل إتاحة الحجز." : "Audit itinerary details, inclusions, pricing, and images before making tours publicly bookable."}
+          {isAr
+            ? "تدقيق جودة المحتوى، المحطات، المشتملات، ونقاط التجمع قبل إتاحة الحجز في الكتالوج العام."
+            : "Audit itinerary details, inclusions, pricing, and meeting points before making tours bookable."}
         </p>
       </div>
 
-      {/* Programs List */}
+      {/* Structured Data Table */}
       {programs.length === 0 ? (
-        <div style={{ padding: "48px", textAlign: "center", borderRadius: "20px", background: "var(--color-bg-card)", border: "1px solid var(--color-border)" }}>
-          <div style={{ width: "64px", height: "64px", borderRadius: "50%", background: "rgba(16, 185, 129, 0.15)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
-            <CheckCircleIcon size={32} color="#10B981" />
+        <div
+          style={{
+            padding: "48px",
+            textAlign: "center",
+            borderRadius: "18px",
+            background: "var(--color-bg-card)",
+            border: "1px solid var(--color-border)",
+          }}
+        >
+          <div
+            style={{
+              width: "60px",
+              height: "60px",
+              borderRadius: "50%",
+              background: "rgba(16, 185, 129, 0.12)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              margin: "0 auto 16px",
+            }}
+          >
+            <CheckCircleIcon size={30} color="#10B981" />
           </div>
-          <h3 style={{ fontSize: "18px", fontWeight: 800, color: "var(--color-text-primary)", marginBottom: "4px" }}>
+          <h3 style={{ fontSize: "17px", fontWeight: 800, color: "var(--color-text-primary)", marginBottom: "4px" }}>
             {isAr ? "كافة البرامج معتمدة ومنشورة" : "All Programs Published"}
           </h3>
           <p style={{ color: "var(--color-text-secondary)", fontSize: "13px" }}>
-            {isAr ? "جميع البرامج المرفوعة من المرشدين تمت مراجعتها ونشرها بالكتالوج." : "All pending programs have been audited."}
+            {isAr
+              ? "جميع البرامج المرفوعة من المرشدين تمت مراجعتها بنجاح ولا توجد طلبات معلقة."
+              : "All pending programs have been audited and approved."}
           </p>
         </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-          {programs.map((p) => (
-            <div key={p.id} style={{ padding: "20px 24px", borderRadius: "18px", background: "var(--color-bg-card)", border: "1px solid var(--color-border)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
-              <div>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <FolderIcon size={18} color="var(--color-gold-heading)" />
-                  <h3 style={{ fontSize: "16px", fontWeight: 900, color: "var(--color-text-primary)" }}>{p.title}</h3>
-                </div>
-                <p style={{ fontSize: "12px", color: "var(--color-text-secondary)", marginTop: "6px" }}>
-                  {isAr ? `المرشد: ${p.guide} • المدينة: ${p.city} • السعر: ${p.price} • الصور: ${p.imagesCount} صور` : `Guide: ${p.guide} • City: ${p.city} • Price: ${p.price} • Images: ${p.imagesCount}`}
-                </p>
-              </div>
+        <div className="rafeeq-table-wrapper">
+          <table className="rafeeq-table">
+            <thead>
+              <tr>
+                <th>{isAr ? "رمز البرنامج" : "Tour Code"}</th>
+                <th>{isAr ? "عنوان البرنامج السياحي" : "Program Title"}</th>
+                <th>{isAr ? "المرشد المسؤول" : "Tour Guide"}</th>
+                <th>{isAr ? "المدينة والتصنيف" : "City & Category"}</th>
+                <th>{isAr ? "المدة والسعر" : "Duration & Price"}</th>
+                <th>{isAr ? "الصور المرفقة" : "Photos"}</th>
+                <th style={{ textAlign: "end" }}>{isAr ? "الإجراءات والقرار" : "Actions"}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {programs.map((p) => (
+                <tr key={p.id}>
+                  <td style={{ fontWeight: 800, fontFamily: "monospace", color: "var(--color-gold-heading)" }}>
+                    {p.code}
+                  </td>
+                  <td>
+                    <div style={{ fontWeight: 900, color: "var(--color-text-primary)", fontSize: "13px" }}>
+                      {isAr ? p.title : p.titleEn}
+                    </div>
+                    <div style={{ fontSize: "11px", color: "var(--color-text-secondary)", marginTop: "2px" }}>
+                      {p.meetingPoint}
+                    </div>
+                  </td>
+                  <td>
+                    <div style={{ fontWeight: 700, color: "var(--color-text-primary)" }}>{p.guide}</div>
+                    <div style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>{p.guideEmail}</div>
+                  </td>
+                  <td>
+                    <span
+                      style={{
+                        fontSize: "11px",
+                        padding: "2px 8px",
+                        borderRadius: "6px",
+                        background: "var(--color-bg-secondary)",
+                        border: "1px solid var(--color-border)",
+                        fontWeight: 700,
+                      }}
+                    >
+                      {p.city} • {p.category}
+                    </span>
+                  </td>
+                  <td>
+                    <div style={{ fontWeight: 800, color: "var(--color-gold-heading)" }}>{p.price}</div>
+                    <div style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>{p.duration}</div>
+                  </td>
+                  <td>
+                    <span
+                      style={{
+                        fontSize: "11px",
+                        fontWeight: 800,
+                        color: "var(--color-text-secondary)",
+                      }}
+                    >
+                      {p.imagesCount} {isAr ? "صور عالية الدقة" : "HQ Photos"}
+                    </span>
+                  </td>
+                  <td style={{ textAlign: "end" }}>
+                    <div style={{ display: "inline-flex", gap: "6px" }}>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedProg(p)}
+                        className="rafeeq-action-btn"
+                        title={isAr ? "معاينة تفاصيل البرنامج" : "View Details"}
+                      >
+                        <EyeIcon size={14} color="var(--color-gold-heading)" />
+                        <span>{isAr ? "معاينة" : "Review"}</span>
+                      </button>
 
-              <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                <IconButton
-                  variant="gold"
-                  size="md"
-                  title={isAr ? "معاينة تفاصيل البرنامج" : "Inspect Program"}
-                  icon={<EyeIcon size={16} />}
-                  onClick={() => setSelectedProg(p)}
-                />
-                <IconButton
-                  variant="success"
-                  size="md"
-                  title={isAr ? "نشر البرنامج فوراً في الكتالوج" : "Publish Program"}
-                  icon={<CheckCircleIcon size={16} />}
-                  onClick={() => handlePublish(p)}
-                />
-                <IconButton
-                  variant="danger"
-                  size="md"
-                  title={isAr ? "طلب تعديلات من المرشد" : "Request Changes"}
-                  icon={<EditIcon size={16} />}
-                  onClick={() => handleRequestChanges(p)}
-                />
-              </div>
-            </div>
-          ))}
+                      <button
+                        type="button"
+                        onClick={() => handlePublish(p)}
+                        className="rafeeq-action-btn"
+                        style={{
+                          background: "rgba(16, 185, 129, 0.15)",
+                          borderColor: "rgba(16, 185, 129, 0.3)",
+                          color: "#10B981",
+                        }}
+                      >
+                        <CheckCircleIcon size={14} color="#10B981" />
+                        <span>{isAr ? "اعتماد ونشر" : "Publish"}</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleRequestChanges(p)}
+                        className="rafeeq-action-btn"
+                        style={{
+                          background: "rgba(239, 68, 68, 0.1)",
+                          borderColor: "rgba(239, 68, 68, 0.25)",
+                          color: "#EF4444",
+                        }}
+                      >
+                        <XCircleIcon size={14} color="#EF4444" />
+                        <span>{isAr ? "طلب تعديل" : "Request Edit"}</span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
 
-      {/* Program Details Modal */}
-      <Modal
-        isOpen={!!selectedProg}
-        onClose={() => setSelectedProg(null)}
-        title={selectedProg?.title}
-        subtitle={selectedProg ? `${selectedProg.guide} • ${selectedProg.city}` : ""}
-        maxWidth="580px"
-      >
-        {selectedProg && (
-          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-            <div className="rafeeq-modal-box" style={{ fontSize: "13px" }}>
-              <h4 style={{ fontSize: "12px", color: "var(--color-text-secondary)", marginBottom: "6px" }}>{isAr ? "الوصف الشامل للجولة:" : "Full Itinerary Description:"}</h4>
-              <p style={{ lineHeight: 1.6, color: "var(--color-text-primary)" }}>{selectedProg.description}</p>
-              <div style={{ marginTop: "14px", display: "flex", justifyContent: "space-between", fontSize: "12px", fontWeight: 800, color: "#10B981" }}>
-                <span>{isAr ? `سعر الشخص: ${selectedProg.price}` : `Price: ${selectedProg.price}`}</span>
-                <span>{isAr ? `المدة: ${selectedProg.duration}` : `Duration: ${selectedProg.duration}`}</span>
+      {/* Program Detailed Audit Modal */}
+      {selectedProg && (
+        <Modal
+          isOpen={!!selectedProg}
+          onClose={() => setSelectedProg(null)}
+          title={isAr ? selectedProg.title : selectedProg.titleEn}
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: "16px", fontSize: "13px" }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                gap: "12px",
+                background: "var(--color-bg-secondary)",
+                padding: "16px",
+                borderRadius: "12px",
+                border: "1px solid var(--color-border)",
+              }}
+            >
+              <div>
+                <span style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>{isAr ? "المرشد:" : "Guide:"}</span>
+                <p style={{ fontWeight: 800 }}>{selectedProg.guide}</p>
+              </div>
+              <div>
+                <span style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>{isAr ? "المدينة:" : "City:"}</span>
+                <p style={{ fontWeight: 800 }}>{selectedProg.city}</p>
+              </div>
+              <div>
+                <span style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>{isAr ? "السعر للشخص:" : "Price/Person:"}</span>
+                <p style={{ fontWeight: 900, color: "var(--color-gold-heading)" }}>{selectedProg.price}</p>
+              </div>
+              <div>
+                <span style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>{isAr ? "المدة:" : "Duration:"}</span>
+                <p style={{ fontWeight: 800 }}>{selectedProg.duration}</p>
               </div>
             </div>
 
-            <div style={{ display: "flex", justifyContent: "space-between", gap: "10px", marginTop: "8px" }}>
-              <Button variant="primary" size="md" onClick={() => handlePublish(selectedProg)}>
-                {isAr ? "نشر البرنامج على المنصة 🚀" : "Publish Program"}
+            <div>
+              <h4 style={{ fontWeight: 800, marginBottom: "6px", color: "var(--color-gold-heading)" }}>
+                {isAr ? "الوصف التفصيلي للجولة:" : "Tour Itinerary & Overview:"}
+              </h4>
+              <p style={{ lineHeight: 1.6, color: "var(--color-text-primary)" }}>{selectedProg.description}</p>
+            </div>
+
+            <div>
+              <h4 style={{ fontWeight: 800, marginBottom: "6px", color: "var(--color-gold-heading)" }}>
+                {isAr ? "مشتملات البرنامج السياحي:" : "Included Amenities:"}
+              </h4>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                {selectedProg.inclusions.map((inc, i) => (
+                  <span
+                    key={i}
+                    style={{
+                      background: "rgba(16, 185, 129, 0.12)",
+                      color: "#10B981",
+                      padding: "4px 10px",
+                      borderRadius: "8px",
+                      fontSize: "12px",
+                      fontWeight: 700,
+                      border: "1px solid rgba(16, 185, 129, 0.2)",
+                    }}
+                  >
+                    ✓ {inc}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div
+              style={{
+                marginTop: "12px",
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: "10px",
+                paddingTop: "16px",
+                borderTop: "1px solid var(--color-border)",
+              }}
+            >
+              <Button
+                variant="outline"
+                onClick={() => handleRequestChanges(selectedProg)}
+                style={{ borderColor: "#EF4444", color: "#EF4444" }}
+              >
+                {isAr ? "طلب تعديلات من المرشد" : "Request Changes"}
               </Button>
-              <Button variant="outline" size="sm" onClick={() => handleRequestChanges(selectedProg)}>
-                {isAr ? "طلب تعديلات" : "Request Changes"}
-              </Button>
-              <Button variant="ghost" size="sm" onClick={() => setSelectedProg(null)}>
-                {isAr ? "إغلاق" : "Close"}
+              <Button variant="primary" onClick={() => handlePublish(selectedProg)}>
+                {isAr ? "اعتماد ونشر في الكتالوج" : "Approve & Publish"}
               </Button>
             </div>
           </div>
-        )}
-      </Modal>
+        </Modal>
+      )}
     </div>
   );
 }

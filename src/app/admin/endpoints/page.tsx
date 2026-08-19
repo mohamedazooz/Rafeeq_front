@@ -166,7 +166,7 @@ export default function AdminEndpointsPage() {
       render: (row) => (
         <Button variant="outline" size="sm" onClick={() => handleTestPing(row)}>
           <ActivityIcon size={14} />
-          <span>Live Ping ⚡</span>
+          <span>Live Ping</span>
         </Button>
       ),
     },
@@ -177,7 +177,7 @@ export default function AdminEndpointsPage() {
       {/* Header */}
       <div>
         <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 900, fontFamily: "var(--font-heading)" }}>
-          فهرس ومختبر الـ API Endpoints ⚡
+          فهرس ومختبر الـ API Endpoints
         </h1>
         <p style={{ color: "var(--color-text-muted)", fontSize: "var(--text-sm)", marginTop: "var(--space-1)" }}>
           دليل واجهات برمجة التطبيقات الكامل لمنظومة رفيق، الصلاحيات المطلوبة، واختبار استجابة الخوادم المباشرة
@@ -222,7 +222,7 @@ export default function AdminEndpointsPage() {
             <div style={{ background: "#050B18", border: "1px solid var(--color-border)", borderRadius: "10px", padding: "16px", color: "#10B981", fontFamily: "monospace", fontSize: "12px", minHeight: "160px", overflowX: "auto" }}>
               {isTesting ? (
                 <div style={{ color: "var(--color-gold-heading)", display: "flex", alignItems: "center", gap: "8px" }}>
-                  <span>جاري إرسال الطلب وقياس زمن الاستجابة... ⏳</span>
+                  <span>جاري إرسال الطلب وقياس زمن الاستجابة...</span>
                 </div>
               ) : (
                 <pre style={{ margin: 0, whiteSpace: "pre-wrap" }}>{testResult}</pre>
@@ -231,7 +231,7 @@ export default function AdminEndpointsPage() {
 
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <span style={{ fontSize: "11px", color: "#10B981", fontWeight: 700 }}>
-                ✓ تم التحقق بنجاح من سلامة الـ Endpoint وقواعد الصلاحيات RBAC
+                تم التحقق بنجاح من سلامة الـ Endpoint وقواعد الصلاحيات RBAC
               </span>
               <Button variant="primary" size="md" onClick={() => setSelectedEndpoint(null)}>إغلاق</Button>
             </div>

@@ -128,12 +128,12 @@ export default function AdminContentPagesPage() {
     );
 
     setSelectedPage(null);
-    showToast(isAr ? "تم حفظ وتحديث محتوى الصفحة بنجاح! 📄✓" : "Content page updated.");
+    showToast(isAr ? "تم حفظ وتحديث محتوى الصفحة بنجاح." : "Content page updated.");
   };
 
   const handleSaveLandingCms = (e: React.FormEvent) => {
     e.preventDefault();
-    showToast(isAr ? "تم حفظ ونشر تحديثات محتوى الصفحة الرئيسية (Landing Page) بنجاح! 🌐✓" : "Landing CMS published.");
+    showToast(isAr ? "تم حفظ ونشر تحديثات محتوى الصفحة الرئيسية (Landing Page) بنجاح." : "Landing CMS published.");
   };
 
   const pageColumns: DataTableColumn<ContentPageItem>[] = [
@@ -157,7 +157,7 @@ export default function AdminContentPagesPage() {
       headerEn: "Status",
       render: (row) => (
         <span style={{ background: "rgba(16, 185, 129, 0.12)", color: "#10B981", padding: "3px 8px", borderRadius: "6px", fontSize: "11px", fontWeight: 800 }}>
-          {row.isPublished ? "منشورة ومحدثة ✓" : "مسودة"}
+          {row.isPublished ? "منشورة ومحدثة" : "مسودة"}
         </span>
       ),
     },
@@ -208,7 +208,7 @@ export default function AdminContentPagesPage() {
       {/* Header */}
       <div>
         <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 900, fontFamily: "var(--font-heading)" }}>
-          إدارة المحتوى واللاندينج (Landing CMS & Pages) 🌐
+          إدارة المحتوى واللاندينج (Landing CMS & Pages)
         </h1>
         <p style={{ color: "var(--color-text-muted)", fontSize: "var(--text-sm)", marginTop: "var(--space-1)" }}>
           التحكم الكامل بنصوص وصور وبانرات الصفحة الرئيسية، وإدارة صفحات الشروط والسياسات العامة
@@ -402,7 +402,7 @@ export default function AdminContentPagesPage() {
           <div style={{ display: "flex", justifyContent: "flex-end" }}>
             <Button variant="primary" size="lg" type="submit">
               <ShieldCheckIcon size={18} />
-              <span>نشر وحفظ تعديلات اللاندينج 🌐✓</span>
+              <span>نشر وحفظ تعديلات اللاندينج</span>
             </Button>
           </div>
         </form>

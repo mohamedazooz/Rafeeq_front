@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   Rafeeq Domain Types & DTOs
+   Rafeeq Domain Types & DTOs — Synchronized with Prisma Backend
    ═══════════════════════════════════════════════════════════════ */
 
 export type UserRole = "Client" | "Guide" | "Admin";
@@ -13,6 +13,24 @@ export interface UserProfile {
   readonly avatarUrl?: string;
   readonly isApprovedGuide?: boolean;
   readonly createdAt: string;
+  // Expanded 360 traveler & client fields
+  readonly nationality?: string;
+  readonly countryOfResidence?: string;
+  readonly documentType?: string;
+  readonly documentNumber?: string;
+  readonly documentExpiry?: string;
+  readonly saudiVisaType?: string;
+  readonly visaNumber?: string;
+  readonly arrivalAirport?: string;
+  readonly arrivalFlightNo?: string;
+  readonly hotelInSaudi?: string;
+  readonly dietaryPreferences?: string;
+  readonly medicalNotes?: string;
+  readonly emergencyContactName?: string;
+  readonly emergencyContactPhone?: string;
+  readonly emergencyRelation?: string;
+  readonly insuranceProvider?: string;
+  readonly insurancePolicyNumber?: string;
 }
 
 export interface ProgramDto {
@@ -27,13 +45,19 @@ export interface ProgramDto {
   readonly category: string;
   readonly durationText: string;
   readonly maxParticipants: number;
+  readonly minParticipants?: number;
   readonly priceHalalas: number; // Stored in halalas (bigint in backend)
   readonly priceSar: number;     // Computed for UI
+  readonly childPriceSar?: number;
+  readonly groupDiscountPct?: number;
   readonly images: readonly string[];
+  readonly promoVideoUrl?: string;
+  readonly cancellationPolicy?: string;
   readonly inclusions: readonly string[];
   readonly exclusions: readonly string[];
   readonly itinerary: readonly {
     readonly dayNumber: number;
+    readonly time?: string;
     readonly title: string;
     readonly description: string;
   }[];
@@ -55,6 +79,18 @@ export interface BookingDto {
   readonly totalSar: number;
   readonly status: "PENDING_PAYMENT" | "CONFIRMED" | "COMPLETED" | "CANCELLED" | "REFUNDED";
   readonly createdAt: string;
+  // Traveler booking fields
+  readonly travelerType?: "domestic" | "international";
+  readonly nationalId?: string;
+  readonly passportNumber?: string;
+  readonly passportExpiry?: string;
+  readonly saudiVisaType?: string;
+  readonly visaNumber?: string;
+  readonly arrivalAirport?: string;
+  readonly hotelInSaudi?: string;
+  readonly dietaryPreference?: string;
+  readonly emergencyPhone?: string;
+  readonly specialNotes?: string;
 }
 
 export interface WalletSummaryDto {
@@ -70,6 +106,13 @@ export interface GuideApplicationDto {
   readonly fullName: string;
   readonly nationalId: string;
   readonly licenseNumber: string;
+  readonly licenseExpiresAt?: string;
+  readonly vehicleInfo?: string;
+  readonly customCommissionPct?: number;
+  readonly firstAidCertNumber?: string;
+  readonly firstAidExpiresAt?: string;
+  readonly policeClearanceStatus?: string;
+  readonly emergencyContact?: string;
   readonly idDocumentUrl: string;
   readonly licenseDocumentUrl: string;
   readonly status: "PENDING" | "APPROVED" | "REJECTED";

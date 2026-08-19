@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Button } from "./Button";
+import { CompassIcon } from "@/components/icons";
 
 export interface EmptyStateProps {
   readonly title: string;
@@ -29,7 +30,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         padding: "3.5rem 1.5rem",
         background: "var(--color-bg-secondary)",
         borderRadius: "var(--radius-2xl)",
-        border: "1px dashed var(--color-border-strong)",
+        border: "1px dashed var(--color-border)",
       }}
     >
       <div
@@ -42,11 +43,10 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          fontSize: "1.75rem",
           marginBottom: "1rem",
         }}
       >
-        {icon || "🏜️"}
+        {icon || <CompassIcon size={28} color="var(--color-gold-heading)" />}
       </div>
 
       <h4

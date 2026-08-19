@@ -99,7 +99,7 @@ export default function AdminAuditLogsPage() {
   };
 
   const handleExportCsv = () => {
-    showToast(isAr ? "تم تصدير سجل التدقيق والرقابة (CSV Audit Report) بنجاح! 📥" : "Audit log exported to CSV.");
+    showToast(isAr ? "تم تصدير سجل التدقيق والرقابة (CSV Audit Report) بنجاح." : "Audit log exported to CSV.");
   };
 
   const filteredLogs = logs.filter(
@@ -109,9 +109,9 @@ export default function AdminAuditLogsPage() {
   const getSeverityBadge = (sev: AuditLog["severity"]) => {
     switch (sev) {
       case "CRITICAL":
-        return <span style={{ background: "rgba(239, 68, 68, 0.15)", color: "#EF4444", padding: "2px 8px", borderRadius: "6px", fontSize: "11px", fontWeight: 800 }}>حرج (Critical) 🚨</span>;
+        return <span style={{ background: "rgba(239, 68, 68, 0.15)", color: "#EF4444", padding: "2px 8px", borderRadius: "6px", fontSize: "11px", fontWeight: 800 }}>حرج (Critical)</span>;
       case "HIGH":
-        return <span style={{ background: "rgba(245, 158, 11, 0.15)", color: "#F59E0B", padding: "2px 8px", borderRadius: "6px", fontSize: "11px", fontWeight: 800 }}>مرتفع (High) ⚠️</span>;
+        return <span style={{ background: "rgba(245, 158, 11, 0.15)", color: "#F59E0B", padding: "2px 8px", borderRadius: "6px", fontSize: "11px", fontWeight: 800 }}>مرتفع (High)</span>;
       case "MEDIUM":
         return <span style={{ background: "rgba(59, 130, 246, 0.15)", color: "#3B82F6", padding: "2px 8px", borderRadius: "6px", fontSize: "11px", fontWeight: 800 }}>متوسط (Medium)</span>;
       case "LOW":
@@ -190,7 +190,7 @@ export default function AdminAuditLogsPage() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "var(--space-4)" }}>
         <div>
           <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 900, fontFamily: "var(--font-heading)" }}>
-            سجل الرقابة والتدقيق الأمني (Audit Trail) 🛡️
+            سجل الرقابة والتدقيق الأمني (Audit Trail)
           </h1>
           <p style={{ color: "var(--color-text-muted)", fontSize: "var(--text-sm)", marginTop: "var(--space-1)" }}>
             سجل تاريخي غير قابل للتعديل لكافة العمليات والقرارات الإدارية الحساسة الصادرة عبر المنصة

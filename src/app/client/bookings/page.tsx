@@ -102,7 +102,7 @@ export default function ClientBookingsPage() {
 
     setSelectedForReview(null);
     setReviewComment("");
-    success(`شكراً لك! تم إرسال تقييمك (${reviewStars} ⭐) للمرشد (${selectedForReview.guideName}) بنجاح! ✨`);
+    success(`شكراً لك! تم إرسال تقييمك (${reviewStars} نجوم) للمرشد (${selectedForReview.guideName}) بنجاح.`);
   };
 
   const columns: DataTableColumn<ClientBookingItem>[] = [
@@ -202,7 +202,7 @@ export default function ClientBookingsPage() {
       {/* Header */}
       <div>
         <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 900, fontFamily: "var(--font-heading)" }}>
-          سجل حجوزاتي ورحلاتي 🎫
+          سجل حجوزاتي ورحلاتي
         </h1>
         <p style={{ color: "var(--color-text-muted)", fontSize: "var(--text-sm)", marginTop: "var(--space-1)" }}>
           متابعة التذاكر المؤكدة، تفاصيل مسار الرحلة، المحادثات مع المرشد، وإلغاء الحجز مع الاسترداد الفوري

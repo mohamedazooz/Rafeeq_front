@@ -1,18 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { IconButton } from "@/components/ui/IconButton";
 import { Modal } from "@/components/ui/Modal";
 import { useLanguage } from "@/lib/language-provider";
 import { dispatchDualActionNotification } from "@/lib/action-dispatcher";
 import {
   StarIcon,
-  CheckCircleIcon,
-  XCircleIcon,
-  AlertTriangleIcon,
-  TrashIcon,
   ShieldCheckIcon,
+  EyeIcon,
+  CheckCircleIcon,
+  SearchIcon,
+  BanIcon,
 } from "@/components/icons";
 
 interface ReviewItem {
@@ -20,21 +19,51 @@ interface ReviewItem {
   authorName: string;
   authorEmail: string;
   subjectName: string;
-  subjectEmail: string;
-  programTitle: string;
-  direction: "client_to_guide" | "guide_to_client";
+  targetType: "guide" | "client";
   rating: number;
   comment: string;
   status: "published" | "flagged" | "hidden";
   reportsCount: number;
-  createdAt: string;
+  date: string;
 }
 
 const INITIAL_REVIEWS: ReviewItem[] = [
-  { id: "rev-1", authorName: "فيصل الشمري", authorEmail: "faisal.shammari@example.com", subjectName: "خالد الحربي", subjectEmail: "khaled.harbi@example.com", programTitle: "رحلة جبل القارة والواحة بالأحساء", direction: "client_to_guide", rating: 5, comment: "مرشد ممتاز وخلوق جداً، المعلومات التاريخية كانت دقيقة والاستقبال في الواحة رائع!", status: "published", reportsCount: 0, createdAt: "2026-08-15" },
-  { id: "rev-2", authorName: "خالد الحربي", authorEmail: "khaled.harbi@example.com", subjectName: "فيصل الشمري", subjectEmail: "faisal.shammari@example.com", programTitle: "رحلة جبل القارة والواحة بالأحساء", direction: "guide_to_client", rating: 5, comment: "ضيف محترم جداً والتزم بمواعيد الانطلاق بدقة.", status: "published", reportsCount: 0, createdAt: "2026-08-15" },
-  { id: "rev-3", authorName: "نورة القحطاني", authorEmail: "noura.qahtani@example.com", subjectName: "ريم العلي", subjectEmail: "reem.ali@example.com", programTitle: "جولة الغوص واستكشاف شعب حقل", direction: "client_to_guide", rating: 1, comment: "المرشد لم يلتزم بالمواعيد المحددة وتم إلغاء الفقرة الأخيرة دون توضيح السبب!", status: "flagged", reportsCount: 2, createdAt: "2026-08-17" },
-  { id: "rev-4", authorName: "مستخدم مجهول", authorEmail: "anonymous@example.com", subjectName: "سعود فهد الدوسري", subjectEmail: "saud.aldosari@example.com", programTitle: "مسار الهايكنج في جبال السودة", direction: "client_to_guide", rating: 2, comment: "تعليق يحتوي على عبارات غير لائقة وتم الإبلاغ عنه من قبل المرشد.", status: "hidden", reportsCount: 4, createdAt: "2026-08-10" },
+  {
+    id: "rev-1",
+    authorName: "فهد الحربي",
+    authorEmail: "fahad.harbi@example.com",
+    subjectName: "عبد العزيز الشمري",
+    targetType: "guide",
+    rating: 5,
+    comment: "تجربة استثنائية في آثار مدائن صالح، معرفة تاريخية عميقة وأسلوب راقٍ وممتع جداً!",
+    status: "published",
+    reportsCount: 0,
+    date: "2026-08-16",
+  },
+  {
+    id: "rev-2",
+    authorName: "James Wilson",
+    authorEmail: "james.wilson@uk-tours.co.uk",
+    subjectName: "مريم الغامدي",
+    targetType: "guide",
+    rating: 5,
+    comment: "Fantastic tour of historic Jeddah! Highly recommend Mariam for English speaking tourists.",
+    status: "published",
+    reportsCount: 0,
+    date: "2026-08-14",
+  },
+  {
+    id: "rev-3",
+    authorName: "مجهول / مستخدم غير موثق",
+    authorEmail: "spam.bot@external.org",
+    subjectName: "سعود الدوسري",
+    targetType: "guide",
+    rating: 1,
+    comment: "عرض إعلاني غير لائق وروابط ترويجية خارجية...",
+    status: "flagged",
+    reportsCount: 4,
+    date: "2026-08-15",
+  },
 ];
 
 export default function AdminReviewsPage() {
@@ -74,8 +103,8 @@ export default function AdminReviewsPage() {
     });
 
     const statusTexts = {
-      published: isAr ? "تم نشر التقييم بنجاح! ✓" : "Review published!",
-      flagged: isAr ? "تم وضع التقييم قيد الفحص! ⚠️" : "Review flagged for audit.",
+      published: isAr ? "تم نشر التقييم بنجاح." : "Review published.",
+      flagged: isAr ? "تم وضع التقييم قيد الفحص والتدقيق." : "Review flagged for audit.",
       hidden: isAr ? `تم حجب التقييم بنجاح ${reason ? `بسبب: ${reason}` : ""}` : "Review hidden from public.",
     };
     showToast(statusTexts[newStatus]);
@@ -85,8 +114,26 @@ export default function AdminReviewsPage() {
     <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
       {/* Toast Notification */}
       {toastMessage && (
-        <div style={{ position: "fixed", bottom: "24px", left: "24px", background: "var(--color-bg-card)", border: "1px solid var(--color-gold-heading)", color: "var(--color-text-primary)", padding: "14px 24px", borderRadius: "14px", boxShadow: "0 10px 30px rgba(0,0,0,0.6)", zIndex: 9999, fontWeight: 800, fontSize: "13px", display: "flex", alignItems: "center", gap: "10px" }}>
-          <ShieldCheckIcon size={18} color="#10B981" />
+        <div
+          style={{
+            position: "fixed",
+            bottom: "24px",
+            left: "24px",
+            background: "var(--color-bg-card)",
+            border: "1px solid var(--color-gold-heading)",
+            color: "var(--color-text-primary)",
+            padding: "14px 24px",
+            borderRadius: "14px",
+            boxShadow: "var(--shadow-xl)",
+            zIndex: 9999,
+            fontWeight: 800,
+            fontSize: "13px",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+          }}
+        >
+          <CheckCircleIcon size={18} color="#10B981" />
           <span>{toastMessage}</span>
         </div>
       )}
@@ -94,24 +141,40 @@ export default function AdminReviewsPage() {
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
         <div>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "rgba(245, 158, 11, 0.15)", border: "1px solid rgba(245, 158, 11, 0.3)", padding: "4px 12px", borderRadius: "100px", color: "#F59E0B", fontSize: "11px", fontWeight: 800, marginBottom: "8px" }}>
-            <StarIcon size={14} color="#F59E0B" />
-            {isAr ? "الرقابة على المراجعات والتقييمات" : "Reviews Moderation Queue"}
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              background: "rgba(200, 169, 110, 0.15)",
+              border: "1px solid rgba(200, 169, 110, 0.3)",
+              padding: "4px 12px",
+              borderRadius: "100px",
+              color: "var(--color-gold-heading)",
+              fontSize: "11px",
+              fontWeight: 800,
+              marginBottom: "8px",
+            }}
+          >
+            <StarIcon size={14} color="var(--color-gold-heading)" />
+            <span>{isAr ? "الرقابة على المراجعات والتقييمات" : "Reviews Moderation Queue"}</span>
           </div>
-          <h1 style={{ fontSize: "26px", fontWeight: 900, color: "var(--color-text-primary)" }}>
-            {isAr ? "إدارة التقييمات والمراجعات ⭐️" : "Reviews Moderation"}
+          <h1 style={{ fontSize: "24px", fontWeight: 900, color: "var(--color-text-primary)" }}>
+            {isAr ? "إدارة التقييمات والمراجعات" : "Reviews Moderation & Quality"}
           </h1>
           <p style={{ color: "var(--color-text-secondary)", fontSize: "13px", marginTop: "2px" }}>
-            {isAr ? "مراقبة التقييمات المتبادلة بين المسافرين والمرشدين، التعامل مع البلاغات، وحجب المحتوى المخالف." : "Moderate tour reviews, respond to abuse reports, and remove infringing feedback."}
+            {isAr
+              ? "مراقبة التقييمات المتبادلة بين المسافرين والمرشدين، التعامل مع البلاغات، وحجب المحتوى المخالف."
+              : "Moderate tour reviews, respond to abuse reports, and remove infringing feedback."}
           </p>
         </div>
 
         <div style={{ display: "flex", gap: "8px" }}>
           {[
-            { id: "all", label: isAr ? "الكل" : "All" },
-            { id: "published", label: isAr ? "منشورة" : "Published" },
-            { id: "flagged", label: isAr ? "بلاغات معلقة" : "Flagged" },
-            { id: "hidden", label: isAr ? "محجوبة" : "Hidden" },
+            { id: "all", labelAr: "الكل", labelEn: "All" },
+            { id: "published", labelAr: "منشورة", labelEn: "Published" },
+            { id: "flagged", labelAr: "بلاغات معلقة", labelEn: "Flagged" },
+            { id: "hidden", labelAr: "محجوبة", labelEn: "Hidden" },
           ].map((st) => (
             <button
               key={st.id}
@@ -127,127 +190,164 @@ export default function AdminReviewsPage() {
                 cursor: "pointer",
               }}
             >
-              {st.label}
+              {isAr ? st.labelAr : st.labelEn}
             </button>
           ))}
         </div>
       </div>
 
       {/* Reviews Table */}
-      <div style={{ background: "var(--color-bg-card)", borderRadius: "20px", border: "1px solid var(--color-border)", overflow: "hidden", boxShadow: "var(--shadow-md)" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "start", fontSize: "13px" }}>
+      <div className="rafeeq-table-wrapper">
+        <table className="rafeeq-table">
           <thead>
-            <tr style={{ background: "var(--color-bg-secondary)", borderBottom: "1px solid var(--color-border)", color: "var(--color-text-secondary)" }}>
-              <th style={{ padding: "14px 16px" }}>{isAr ? "الكاتب / المراجع" : "Author"}</th>
-              <th style={{ padding: "14px 16px" }}>{isAr ? "المستهدف" : "Target Subject"}</th>
-              <th style={{ padding: "14px 16px" }}>{isAr ? "التقييم والتعليق" : "Rating & Review"}</th>
-              <th style={{ padding: "14px 16px" }}>{isAr ? "الحالة والبلاغات" : "Status"}</th>
-              <th style={{ padding: "14px 16px" }}>{isAr ? "التاريخ" : "Date"}</th>
-              <th style={{ padding: "14px 16px", textAlign: "end" }}>{isAr ? "إجراءات الرقابة" : "Actions"}</th>
+            <tr>
+              <th>{isAr ? "الكاتب / المراجع" : "Author"}</th>
+              <th>{isAr ? "المستهدف" : "Target"}</th>
+              <th>{isAr ? "التقييم والتعليق" : "Rating & Review"}</th>
+              <th>{isAr ? "الحالة والبلاغات" : "Status"}</th>
+              <th>{isAr ? "التاريخ" : "Date"}</th>
+              <th style={{ textAlign: "end" }}>{isAr ? "إجراءات الرقابة" : "Actions"}</th>
             </tr>
           </thead>
           <tbody>
-            {filteredReviews.map((r) => (
-              <tr key={r.id} style={{ borderBottom: "1px solid var(--color-border)" }}>
-                <td style={{ padding: "14px 16px", fontWeight: 800 }}>{r.authorName}</td>
-                <td style={{ padding: "14px 16px", fontWeight: 700, color: "var(--color-gold-heading)" }}>{r.subjectName}</td>
-
-                <td style={{ padding: "14px 16px", maxWidth: "340px" }}>
-                  <div style={{ display: "flex", gap: "2px", marginBottom: "4px" }}>
-                    {Array.from({ length: r.rating }).map((_, i) => (
-                      <StarIcon key={i} size={12} color="#F59E0B" />
-                    ))}
-                  </div>
-                  <p style={{ fontSize: "12px", color: "var(--color-text-primary)", lineHeight: 1.5 }}>{r.comment}</p>
-                </td>
-
-                <td style={{ padding: "14px 16px" }}>
-                  <span
-                    style={{
-                      padding: "3px 10px",
-                      borderRadius: "100px",
-                      fontSize: "11px",
-                      fontWeight: 800,
-                      background: r.status === "published" ? "rgba(16, 185, 129, 0.15)" : r.status === "flagged" ? "rgba(245, 158, 11, 0.15)" : "rgba(239, 68, 68, 0.15)",
-                      color: r.status === "published" ? "#10B981" : r.status === "flagged" ? "#F59E0B" : "#EF4444",
-                    }}
-                  >
-                    {r.status === "published" ? (isAr ? "منشور ✓" : "Published") : r.status === "flagged" ? (isAr ? "بلاغات ⚠️" : "Flagged") : (isAr ? "محجوب ✕" : "Hidden")}
-                  </span>
-                  {r.reportsCount > 0 && (
-                    <span style={{ display: "block", fontSize: "10px", color: "#EF4444", fontWeight: 800, marginTop: "2px" }}>
-                      ({r.reportsCount} {isAr ? "بلاغات إساءة" : "reports"})
-                    </span>
-                  )}
-                </td>
-
-                <td style={{ padding: "14px 16px", color: "var(--color-text-secondary)", fontSize: "12px" }}>{r.createdAt}</td>
-
-                <td style={{ padding: "14px 16px", textAlign: "end" }}>
-                  <div style={{ display: "inline-flex", gap: "6px", alignItems: "center" }}>
-                    {r.status !== "published" && (
-                      <IconButton
-                        variant="success"
-                        size="sm"
-                        title={isAr ? "اعتماد ونشر المراجعة" : "Approve Review"}
-                        icon={<CheckCircleIcon size={15} />}
-                        onClick={() => handleUpdateStatus(r, "published")}
-                      />
-                    )}
-
-                    {r.status !== "hidden" && (
-                      <IconButton
-                        variant="danger"
-                        size="sm"
-                        title={isAr ? "حجب المراجعة من المنصة" : "Hide Review"}
-                        icon={<XCircleIcon size={15} />}
-                        onClick={() => setSelectedReview(r)}
-                      />
-                    )}
-                  </div>
+            {filteredReviews.length === 0 ? (
+              <tr>
+                <td colSpan={6} style={{ padding: "40px", textAlign: "center", color: "var(--color-text-secondary)" }}>
+                  {isAr ? "لا توجد مراجعات مطابقة." : "No reviews found."}
                 </td>
               </tr>
-            ))}
+            ) : (
+              filteredReviews.map((r) => (
+                <tr key={r.id}>
+                  <td style={{ fontWeight: 800 }}>{r.authorName}</td>
+                  <td style={{ fontWeight: 700, color: "var(--color-gold-heading)" }}>{r.subjectName}</td>
+
+                  <td style={{ maxWidth: "340px" }}>
+                    <div style={{ display: "flex", gap: "2px", marginBottom: "4px" }}>
+                      {Array.from({ length: r.rating }).map((_, i) => (
+                        <StarIcon key={i} size={12} color="#F59E0B" />
+                      ))}
+                    </div>
+                    <p style={{ fontSize: "12px", color: "var(--color-text-primary)", lineHeight: 1.5, margin: 0 }}>
+                      {r.comment}
+                    </p>
+                  </td>
+
+                  <td>
+                    <span
+                      style={{
+                        padding: "3px 10px",
+                        borderRadius: "100px",
+                        fontSize: "11px",
+                        fontWeight: 800,
+                        background:
+                          r.status === "published"
+                            ? "rgba(16, 185, 129, 0.15)"
+                            : r.status === "flagged"
+                            ? "rgba(245, 158, 11, 0.15)"
+                            : "rgba(239, 68, 68, 0.15)",
+                        color:
+                          r.status === "published"
+                            ? "#10B981"
+                            : r.status === "flagged"
+                            ? "#F59E0B"
+                            : "#EF4444",
+                      }}
+                    >
+                      {r.status === "published"
+                        ? (isAr ? "منشور" : "Published")
+                        : r.status === "flagged"
+                        ? (isAr ? "بلاغات معلقة" : "Flagged")
+                        : (isAr ? "محجوب" : "Hidden")}
+                    </span>
+                    {r.reportsCount > 0 && (
+                      <span style={{ display: "block", fontSize: "10px", color: "#EF4444", fontWeight: 800, marginTop: "2px" }}>
+                        ({r.reportsCount} {isAr ? "بلاغات إساءة" : "reports"})
+                      </span>
+                    )}
+                  </td>
+
+                  <td style={{ fontSize: "12px", color: "var(--color-text-secondary)" }}>{r.date}</td>
+
+                  <td style={{ textAlign: "end" }}>
+                    <div style={{ display: "inline-flex", gap: "6px" }}>
+                      {r.status !== "published" && (
+                        <button
+                          type="button"
+                          onClick={() => handleUpdateStatus(r, "published")}
+                          className="rafeeq-action-btn"
+                          style={{
+                            background: "rgba(16, 185, 129, 0.15)",
+                            borderColor: "rgba(16, 185, 129, 0.3)",
+                            color: "#10B981",
+                          }}
+                        >
+                          <CheckCircleIcon size={14} color="#10B981" />
+                          <span>{isAr ? "نشر" : "Publish"}</span>
+                        </button>
+                      )}
+
+                      {r.status !== "hidden" && (
+                        <button
+                          type="button"
+                          onClick={() => setSelectedReview(r)}
+                          className="rafeeq-action-btn"
+                          style={{
+                            background: "rgba(239, 68, 68, 0.1)",
+                            borderColor: "rgba(239, 68, 68, 0.25)",
+                            color: "#EF4444",
+                          }}
+                        >
+                          <BanIcon size={14} color="#EF4444" />
+                          <span>{isAr ? "حجب" : "Hide"}</span>
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
 
-      {/* Hide Reason Modal */}
-      <Modal
-        isOpen={!!selectedReview}
-        onClose={() => setSelectedReview(null)}
-        title={isAr ? "تأكيد حجب التقييم من المنصة" : "Confirm Hide Review"}
-        subtitle={selectedReview ? `${selectedReview.authorName} ➔ ${selectedReview.subjectName}` : ""}
-        maxWidth="500px"
-      >
-        {selectedReview && (
-          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-            <div className="rafeeq-modal-box" style={{ fontSize: "13px" }}>
-              <p style={{ marginBottom: "6px" }}><strong>{isAr ? "البرنامج:" : "Tour:"}</strong> {selectedReview.programTitle}</p>
-              <p style={{ fontStyle: "italic", color: "var(--color-text-secondary)" }}>&ldquo;{selectedReview.comment}&rdquo;</p>
+      {/* Modal: Hide Review Reason */}
+      {selectedReview && (
+        <Modal
+          isOpen={Boolean(selectedReview)}
+          onClose={() => setSelectedReview(null)}
+          title={isAr ? "تأكيد حجب التقييم والمراجعة" : "Confirm Hide Review"}
+          subtitle={selectedReview ? `${selectedReview.authorName} -> ${selectedReview.subjectName}` : ""}
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: "16px", fontSize: "13px" }}>
+            <div style={{ background: "var(--color-bg-secondary)", padding: "14px", borderRadius: "10px", border: "1px solid var(--color-border)" }}>
+              <p style={{ margin: 0, fontStyle: "italic" }}>"{selectedReview.comment}"</p>
             </div>
 
             <div>
-              <label style={{ display: "block", fontSize: "12px", color: "var(--color-text-secondary)", marginBottom: "6px" }}>{isAr ? "سبب الحجب الإداري (Reason)" : "Administrative Reason"}</label>
+              <label style={{ display: "block", fontSize: "11px", fontWeight: 700, marginBottom: "4px", color: "var(--color-text-secondary)" }}>
+                {isAr ? "سبب الحجب (يُوثق في سجل التدقيق):" : "Reason for Hiding (Recorded in Audit Trail):"}
+              </label>
               <textarea
-                rows={3}
-                required
-                placeholder={isAr ? "أدخل سبب حجب المراجعة (انتهاك سياسة النشر، ألفاظ غير لائقة)..." : "Enter reason for hiding this review..."}
                 value={hideReason}
                 onChange={(e) => setHideReason(e.target.value)}
-                style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", background: "var(--color-bg-secondary)", border: "1px solid var(--color-border)", color: "var(--color-text-primary)", outline: "none", fontSize: "13px" }}
+                placeholder={isAr ? "محتوى مسيء، لغة غير لائقة، ترويج تجاري خارجي..." : "Offensive language, spam, commercial promotion..."}
+                rows={3}
+                style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid var(--color-border)", background: "var(--color-bg-secondary)", color: "var(--color-text-primary)", fontSize: "13px", outline: "none" }}
               />
             </div>
 
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px", marginTop: "4px" }}>
-              <Button variant="ghost" size="md" onClick={() => setSelectedReview(null)}>{isAr ? "إلغاء" : "Cancel"}</Button>
-              <Button variant="primary" size="md" onClick={() => handleUpdateStatus(selectedReview, "hidden", hideReason)}>
-                {isAr ? "تأكيد حجب المراجعة ✕" : "Confirm Hide Review"}
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+              <Button variant="outline" size="sm" onClick={() => setSelectedReview(null)}>
+                {isAr ? "إلغاء" : "Cancel"}
+              </Button>
+              <Button variant="primary" size="sm" onClick={() => handleUpdateStatus(selectedReview, "hidden", hideReason)} style={{ background: "#EF4444", borderColor: "#EF4444", color: "#fff" }}>
+                {isAr ? "تأكيد حجب المراجعة" : "Confirm Hide"}
               </Button>
             </div>
           </div>
-        )}
-      </Modal>
+        </Modal>
+      )}
     </div>
   );
 }

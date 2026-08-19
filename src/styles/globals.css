@@ -220,6 +220,82 @@
   color: var(--color-text-primary);
 }
 
+/* ── Enterprise Clean Table Classes ── */
+.rafeeq-table-wrapper {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+}
+
+.rafeeq-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: start;
+  font-size: 13px;
+}
+
+.rafeeq-table th {
+  padding: 14px 18px;
+  background: var(--color-bg-secondary);
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-weight: 800;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.rafeeq-table td {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  vertical-align: middle;
+  transition: background 0.15s ease;
+}
+
+.rafeeq-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.rafeeq-table tbody tr:hover td {
+  background: var(--color-bg-secondary);
+}
+
+.rafeeq-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 800;
+  width: fit-content;
+}
+
+.rafeeq-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  text-decoration: none;
+}
+
+.rafeeq-action-btn:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
 @keyframes modalFadeIn {
   from { opacity: 0; }
   to { opacity: 1; }

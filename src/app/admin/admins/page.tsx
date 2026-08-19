@@ -113,7 +113,7 @@ export default function AdminStaffPage() {
     setAdmins((prev) =>
       prev.map((a) => (a.id === accountId ? { ...a, roleKey: newRoleKey, roleTitleAr } : a))
     );
-    showToast(isAr ? `تم تحديث دور المشرف بنجاح إلى: (${roleTitleAr}) 🛡️✓` : "Role updated successfully.");
+    showToast(isAr ? `تم تحديث دور المشرف بنجاح إلى: (${roleTitleAr})` : "Role updated successfully.");
   };
 
   const handleToggleStatus = (id: string) => {
@@ -154,7 +154,7 @@ export default function AdminStaffPage() {
     setNewName("");
     setNewEmail("");
     setNewPhone("");
-    showToast(isAr ? "تم إضافة المشرف الجديد وتعيين دوره بنجاح! 👤✓" : "New admin created.");
+    showToast(isAr ? "تمت إضافة المشرف الجديد وتعيين دوره بنجاح." : "New admin created.");
   };
 
   const columns: DataTableColumn<AdminStaffItem>[] = [
@@ -200,7 +200,7 @@ export default function AdminStaffPage() {
         <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
           <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: row.twoFactorEnabled ? "#10B981" : "#EF4444" }} />
           <span style={{ fontSize: "11px", fontWeight: 700, color: row.twoFactorEnabled ? "#10B981" : "#EF4444" }}>
-            {row.twoFactorEnabled ? "مفعل 🔒" : "غير مفعل"}
+            {row.twoFactorEnabled ? "مفعل" : "غير مفعل"}
           </span>
         </div>
       ),
@@ -232,17 +232,16 @@ export default function AdminStaffPage() {
     },
     {
       key: "actions",
-      headerAr: "الإجراءات والتعيين",
-      headerEn: "Actions & Assign",
+      headerAr: "الإجراءات",
+      headerEn: "Actions",
       align: "center",
       render: (row) => (
         <div style={{ display: "flex", gap: "6px", justifyContent: "center" }}>
           <Button variant="outline" size="sm" onClick={() => handleOpenAssign(row)}>
-            <KeyIcon size={13} />
-            <span>تعيين دور</span>
+            <KeyIcon size={14} />
+            <span>تدوير الدور</span>
           </Button>
-          <Button variant={row.status === "نشط" ? "ghost" : "secondary"} size="sm" onClick={() => handleToggleStatus(row.id)}>
-            <BanIcon size={13} />
+          <Button variant={row.status === "نشط" ? "ghost" : "primary"} size="sm" onClick={() => handleToggleStatus(row.id)}>
             <span>{row.status === "نشط" ? "تعطيل" : "تفعيل"}</span>
           </Button>
         </div>
@@ -278,7 +277,7 @@ export default function AdminStaffPage() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "var(--space-4)" }}>
         <div>
           <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 900, fontFamily: "var(--font-heading)" }}>
-            فريق الإدارة والمسؤولون (Staff & Roles) 👥
+            فريق الإدارة والمسؤولون (Staff & Roles)
           </h1>
           <p style={{ color: "var(--color-text-muted)", fontSize: "var(--text-sm)", marginTop: "var(--space-1)" }}>
             إدارة حسابات المشرفين، تدوير الصلاحيات، وتعيين الأدوار للحسابات بسهولة

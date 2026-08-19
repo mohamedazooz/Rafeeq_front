@@ -14,6 +14,7 @@ import {
   CheckCircleIcon,
   EyeIcon,
   UserIcon,
+  DownloadIcon,
 } from "@/components/icons";
 
 interface GuideBookingItem {
@@ -72,7 +73,7 @@ export default function GuideBookingsPage() {
           : b
       )
     );
-    success(`تم تسجيل اكتمال رحلة (${name}) وتحرير المبلغ لمحفظتك بعد انتهاء فترة الضمان! 🌟✓`);
+    success(`تم تسجيل اكتمال رحلة (${name}) وتحرير المبلغ لمحفظتك بعد انتهاء فترة الضمان.`);
   };
 
   const columns: DataTableColumn<GuideBookingItem>[] = [
@@ -98,7 +99,7 @@ export default function GuideBookingsPage() {
         <div>
           <span style={{ fontSize: "13px", fontWeight: 700 }}>{row.programTitle}</span>
           <span style={{ fontSize: "11px", color: "var(--color-text-muted)", display: "block" }}>
-            📅 {row.date} • {row.participants} مشاركين
+            {row.date} • {row.participants} مشاركين
           </span>
         </div>
       ),
@@ -141,15 +142,25 @@ export default function GuideBookingsPage() {
     },
     {
       key: "actions",
-      headerAr: "الإجراءات والتواصل",
+      headerAr: "الإجراءات والعمليات",
       headerEn: "Actions",
       align: "center",
       render: (row) => (
-        <div style={{ display: "flex", gap: "6px", justifyContent: "center" }}>
-          <Link href="/client/messages">
+        <div style={{ display: "flex", gap: "6px", justifyContent: "center", flexWrap: "nowrap" }}>
+          <button
+            type="button"
+            onClick={() => setSelectedBooking(row)}
+            className="rafeeq-action-btn"
+            title="عرض كامل بيانات الحجز وتذكرة المسافر"
+          >
+            <EyeIcon size={14} color="var(--color-gold-heading)" />
+            <span>تفاصيل الحجز</span>
+          </button>
+
+          <Link href="/client/messages" style={{ textDecoration: "none" }}>
             <Button variant="outline" size="sm">
               <MessageSquareIcon size={14} />
-              <span>محادثة</span>
+              <span>محادثة الضيف</span>
             </Button>
           </Link>
 
@@ -159,6 +170,16 @@ export default function GuideBookingsPage() {
               <span>تأكيد الإتمام</span>
             </Button>
           )}
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => alert(`جاري طباعة وتوليد تذكرة الحجز PDF رقم #${row.bookingNumber}`)}
+            title="تحميل تذكرة الحجز"
+          >
+            <DownloadIcon size={14} />
+            <span>تذكرة PDF</span>
+          </Button>
         </div>
       ),
     },
@@ -169,7 +190,7 @@ export default function GuideBookingsPage() {
       {/* Header */}
       <div>
         <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 900, fontFamily: "var(--font-heading)" }}>
-          حجوزات رحلاتي والمسافرين 🎫
+          حجوزات رحلاتي والمسافرين
         </h1>
         <p style={{ color: "var(--color-text-muted)", fontSize: "var(--text-sm)", marginTop: "var(--space-1)" }}>
           متابعة قوائم المشاركين بالرحلات، التواصل المباشر مع الضيوف، وتأكيد اكتمال الرحلات لتحرير مستحقات الـ Escrow
@@ -187,6 +208,50 @@ export default function GuideBookingsPage() {
           row.programTitle.toLowerCase().includes(query)
         }
       />
+
+      {/* Booking Detail Modal */}
+      {selectedBooking && (
+        <Modal
+          isOpen={!!selectedBooking}
+          onClose={() => setSelectedBooking(null)}
+          title={`تفاصيل الحجز رقم #${selectedBooking.bookingNumber}`}
+          subtitle={`المسافر: ${selectedBooking.travelerName} • ${selectedBooking.date}`}
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: "16px", fontSize: "13px" }}>
+            <div style={{ background: "var(--color-bg-secondary)", padding: "16px", borderRadius: "12px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+              <div>
+                <span style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>اسم المسافر الرئيسية:</span>
+                <p style={{ fontWeight: 800, margin: "2px 0 0 0" }}>{selectedBooking.travelerName}</p>
+              </div>
+              <div>
+                <span style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>رقم الجوال:</span>
+                <p style={{ fontWeight: 800, margin: "2px 0 0 0", direction: "ltr", textAlign: "start" }}>{selectedBooking.travelerPhone}</p>
+              </div>
+              <div>
+                <span style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>البرنامج السياحي:</span>
+                <p style={{ fontWeight: 800, margin: "2px 0 0 0" }}>{selectedBooking.programTitle}</p>
+              </div>
+              <div>
+                <span style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>عدد الضيوف:</span>
+                <p style={{ fontWeight: 800, margin: "2px 0 0 0" }}>{selectedBooking.participants} أشخاص</p>
+              </div>
+              <div>
+                <span style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>صافي المستحقات المحررة:</span>
+                <p style={{ fontWeight: 900, color: "var(--color-saudi-green)", margin: "2px 0 0 0", fontSize: "15px" }}>{selectedBooking.netPayoutSar.toLocaleString("en-US")} ر.س</p>
+              </div>
+              <div>
+                <span style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>حالة الضمان المالي Escrow:</span>
+                <p style={{ fontWeight: 800, color: "var(--color-gold-heading)", margin: "2px 0 0 0" }}>{selectedBooking.escrowStatus}</p>
+              </div>
+            </div>
+
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", paddingTop: "12px", borderTop: "1px solid var(--color-border)" }}>
+              <Button variant="outline" size="sm" onClick={() => setSelectedBooking(null)}>إغلاق</Button>
+              <Button variant="primary" size="sm" onClick={() => alert(`جاري توليد وتصدير التذكرة الرقمية رقم #${selectedBooking.bookingNumber}`)}>تحميل التذكرة PDF</Button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }

@@ -138,7 +138,7 @@ export default function AdminDashboardPage() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "var(--space-4)" }}>
         <div>
           <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 900, fontFamily: "var(--font-heading)", color: "var(--color-text-primary)" }}>
-            {isAr ? "لوحة القيادة والحوكمة الشاملة ✦" : "Master Governance & Operations Dashboard ✦"}
+            {isAr ? "لوحة القيادة والحوكمة الشاملة" : "Master Governance & Operations Dashboard"}
           </h1>
           <p style={{ color: "var(--color-text-muted)", fontSize: "var(--text-sm)", marginTop: "var(--space-1)" }}>
             {isAr
@@ -149,7 +149,7 @@ export default function AdminDashboardPage() {
 
         <div style={{ display: "flex", gap: "var(--space-3)" }}>
           <Button variant="outline" size="sm" onClick={() => info(isAr ? "جاري تحديث البيانات اللحظية..." : "Refreshing real-time data...")}>
-            🔄 {isAr ? "تحديث البيانات" : "Refresh Data"}
+            <span>{isAr ? "تحديث البيانات" : "Refresh Data"}</span>
           </Button>
           <Link href="/admin/finance">
             <Button variant="primary" size="sm">

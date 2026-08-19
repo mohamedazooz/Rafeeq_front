@@ -3,16 +3,15 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
-import { DataTable, type DataTableColumn } from "@/components/ui/DataTable";
-import { useToast } from "@/design-system/primitives/Toast";
 import { useLanguage } from "@/lib/language-provider";
+import { useDashboardMetrics } from "@/lib/dashboard-metrics";
 import { adminService } from "@/features/admin-governance/services/admin.service";
 import {
   WalletIcon,
   CheckCircleIcon,
   ShieldCheckIcon,
+  SearchIcon,
   CreditCardIcon,
-  ScaleIcon,
 } from "@/components/icons";
 
 interface PayoutRequest {
@@ -64,17 +63,29 @@ const INITIAL_PAYOUTS: PayoutRequest[] = [
 export default function AdminFinancePage() {
   const { lang } = useLanguage();
   const isAr = lang === "ar";
-  const { success } = useToast();
+  const { decrementPayoutsQueue } = useDashboardMetrics();
 
   const [payouts, setPayouts] = useState<PayoutRequest[]>(INITIAL_PAYOUTS);
   const [selectedPayout, setSelectedPayout] = useState<PayoutRequest | null>(null);
   const [transferRef, setTransferRef] = useState<string>("");
   const [isSettling, setIsSettling] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
 
-  const filteredPayouts = payouts.filter(
-    (p) => statusFilter === "all" || p.status === statusFilter
-  );
+  const showToast = (msg: string) => {
+    setToastMsg(msg);
+    setTimeout(() => setToastMsg(null), 4000);
+  };
+
+  const filteredPayouts = payouts.filter((p) => {
+    const matchesStatus = statusFilter === "all" || p.status === statusFilter;
+    const matchesSearch =
+      p.guideName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.iban.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.guideEmail.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesStatus && matchesSearch;
+  });
 
   const handleConfirmPayout = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,204 +100,276 @@ export default function AdminFinancePage() {
       )
     );
 
+    // Decrement the payout queue counter
+    decrementPayoutsQueue();
+
     try {
       await adminService.settlePayout(selectedPayout.id, ref);
     } catch {
-      // Handled
+      // simulated
     } finally {
       setIsSettling(false);
       setSelectedPayout(null);
       setTransferRef("");
     }
 
-    success(`تم تسوية التحويل البنكي للمرشد (${selectedPayout.guideName}) بمبلغ ${selectedPayout.amountSar} ر.س بالرقم المرجعي (${ref}) بنجاح! 💸✓`);
+    showToast(isAr ? `تمت تسوية التحويل البنكي للمرشد (${selectedPayout.guideName}) بمبلغ ${selectedPayout.amountSar} ر.س.` : `Payout transfer settled successfully.`);
   };
 
-  const columns: DataTableColumn<PayoutRequest>[] = [
-    {
-      key: "guide",
-      headerAr: "المرشد السياحي والبريد",
-      headerEn: "Guide & Email",
-      render: (row) => (
-        <div>
-          <span style={{ fontWeight: 800, fontSize: "13px", display: "block" }}>{row.guideName}</span>
-          <span style={{ fontSize: "11px", color: "var(--color-text-muted)" }}>{row.guideEmail}</span>
-        </div>
-      ),
-    },
-    {
-      key: "bank",
-      headerAr: "البنك والآيبان (IBAN)",
-      headerEn: "Bank & IBAN",
-      render: (row) => (
-        <div>
-          <span style={{ fontWeight: 700, fontSize: "12px", display: "block" }}>{row.bankName}</span>
-          <span style={{ fontSize: "11px", color: "var(--color-text-secondary)", fontFamily: "monospace", direction: "ltr" }}>
-            {row.iban}
-          </span>
-        </div>
-      ),
-    },
-    {
-      key: "amount",
-      headerAr: "المبلغ المطلوب (SAR)",
-      headerEn: "Payout Amount",
-      render: (row) => (
-        <span style={{ fontWeight: 900, fontSize: "14px", color: "var(--color-saudi-green)" }}>
-          {row.amountSar.toLocaleString("en-US")} ر.س
-        </span>
-      ),
-    },
-    {
-      key: "date",
-      headerAr: "تاريخ الطلب",
-      headerEn: "Request Date",
-      render: (row) => <span style={{ fontSize: "12px", color: "var(--color-text-muted)" }}>{row.date}</span>,
-    },
-    {
-      key: "status",
-      headerAr: "حالة التحويل",
-      headerEn: "Status",
-      render: (row) => {
-        const isCompleted = row.status === "completed";
-        return (
-          <div>
-            <span
-              style={{
-                background: isCompleted ? "rgba(16, 185, 129, 0.12)" : "rgba(245, 158, 11, 0.12)",
-                color: isCompleted ? "#10B981" : "#F59E0B",
-                padding: "3px 8px",
-                borderRadius: "6px",
-                fontSize: "11px",
-                fontWeight: 800,
-              }}
-            >
-              {isCompleted ? "تم التحويل بنجاح ✓" : "بانتظار التحويل"}
-            </span>
-            {row.transferRef && (
-              <span style={{ display: "block", fontSize: "10px", color: "var(--color-text-muted)", marginTop: "2px", fontFamily: "monospace" }}>
-                Ref: {row.transferRef}
-              </span>
-            )}
-          </div>
-        );
-      },
-    },
-    {
-      key: "actions",
-      headerAr: "الإجراءات",
-      headerEn: "Actions",
-      align: "center",
-      render: (row) => {
-        if (row.status === "completed") {
-          return <span style={{ fontSize: "11px", color: "#10B981", fontWeight: 700 }}>معتمد 🔒</span>;
-        }
-        return (
-          <Button variant="primary" size="sm" onClick={() => setSelectedPayout(row)}>
-            <ShieldCheckIcon size={14} />
-            <span>تأكيد التحويل البنكي</span>
-          </Button>
-        );
-      },
-    },
-  ];
-
   return (
-    <div style={{ padding: "var(--space-6)", display: "flex", flexDirection: "column", gap: "var(--space-6)" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+      {/* Toast */}
+      {toastMsg && (
+        <div
+          style={{
+            position: "fixed",
+            bottom: "24px",
+            left: "24px",
+            background: "var(--color-bg-card)",
+            border: "1px solid var(--color-gold-heading)",
+            color: "var(--color-text-primary)",
+            padding: "14px 24px",
+            borderRadius: "14px",
+            boxShadow: "var(--shadow-xl)",
+            zIndex: 9999,
+            fontWeight: 800,
+            fontSize: "13px",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+          }}
+        >
+          <CheckCircleIcon size={18} color="#10B981" />
+          <span>{toastMsg}</span>
+        </div>
+      )}
+
       {/* Header */}
-      <div>
-        <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 900, fontFamily: "var(--font-heading)" }}>
-          الإدارة المالية وحساب الضمان (Escrow & Payouts) 💳
-        </h1>
-        <p style={{ color: "var(--color-text-muted)", fontSize: "var(--text-sm)", marginTop: "var(--space-1)" }}>
-          متابعة تسويات الأرباح البنكية عبر نظام سريع (SARIE)، رصيد الضمان المعلق، وصافي عمولات المنصة
-        </p>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
+        <div>
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              background: "rgba(200, 169, 110, 0.15)",
+              border: "1px solid rgba(200, 169, 110, 0.3)",
+              padding: "4px 12px",
+              borderRadius: "100px",
+              color: "var(--color-gold-heading)",
+              fontSize: "11px",
+              fontWeight: 800,
+              marginBottom: "8px",
+            }}
+          >
+            <WalletIcon size={14} color="var(--color-gold-heading)" />
+            <span>{isAr ? "الإدارة المالية والـ Escrow" : "Finance & Escrow Management"}</span>
+          </div>
+          <h1 style={{ fontSize: "24px", fontWeight: 900, color: "var(--color-text-primary)" }}>
+            {isAr ? "الإدارة المالية وحساب الضمان" : "Finance & Escrow Operations"}
+          </h1>
+          <p style={{ color: "var(--color-text-secondary)", fontSize: "13px", marginTop: "2px" }}>
+            {isAr
+              ? "متابعة تسويات الأرباح البنكية عبر نظام سريع (SARIE)، رصيد الضمان المعلق، وصافي عمولات المنصة."
+              : "Monitor SARIE bank transfers, held escrow balances, and net platform commissions."}
+          </p>
+        </div>
       </div>
 
       {/* Financial KPIs */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "var(--space-4)" }}>
-        <div style={{ padding: "var(--space-5)", background: "var(--color-bg-card)", borderRadius: "var(--radius-xl)", border: "1px solid var(--color-border)" }}>
-          <span style={{ fontSize: "var(--text-xs)", color: "var(--color-text-muted)", fontWeight: 700 }}>رصيد الـ Escrow المعلق</span>
-          <h3 style={{ fontSize: "var(--text-2xl)", fontWeight: 900, color: "var(--color-gold-royal)", margin: "0.25rem 0" }}>38,400 ر.س</h3>
-          <span style={{ fontSize: "var(--text-xs)", color: "var(--color-text-secondary)" }}>مبالغ ضامنة لـ 42 رحلة قائمة</span>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "16px" }}>
+        <div style={{ padding: "20px", background: "var(--color-bg-card)", borderRadius: "16px", border: "1px solid var(--color-border)" }}>
+          <span style={{ fontSize: "12px", color: "var(--color-text-secondary)", fontWeight: 700 }}>
+            {isAr ? "رصيد الـ Escrow المعلق" : "Held Escrow Balance"}
+          </span>
+          <h3 style={{ fontSize: "24px", fontWeight: 900, color: "var(--color-gold-heading)", margin: "4px 0" }}>38,400 {isAr ? "ر.س" : "SAR"}</h3>
+          <span style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>
+            {isAr ? "مبالغ ضامنة لـ 42 رحلة قائمة" : "Protected funds for 42 tours"}
+          </span>
         </div>
 
-        <div style={{ padding: "var(--space-5)", background: "var(--color-bg-card)", borderRadius: "var(--radius-xl)", border: "1px solid var(--color-border)" }}>
-          <span style={{ fontSize: "var(--text-xs)", color: "var(--color-text-muted)", fontWeight: 700 }}>طلبات السحب المعلقة</span>
-          <h3 style={{ fontSize: "var(--text-2xl)", fontWeight: 900, color: "#F59E0B", margin: "0.25rem 0" }}>13,370 ر.س</h3>
-          <span style={{ fontSize: "var(--text-xs)", color: "var(--color-text-secondary)" }}>بانتظار التحويل عبر سريع</span>
+        <div style={{ padding: "20px", background: "var(--color-bg-card)", borderRadius: "16px", border: "1px solid var(--color-border)" }}>
+          <span style={{ fontSize: "12px", color: "var(--color-text-secondary)", fontWeight: 700 }}>
+            {isAr ? "طلبات السحب المعلقة" : "Pending Payout Requests"}
+          </span>
+          <h3 style={{ fontSize: "24px", fontWeight: 900, color: "#F59E0B", margin: "4px 0" }}>13,370 {isAr ? "ر.س" : "SAR"}</h3>
+          <span style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>
+            {isAr ? "بانتظار التحويل عبر سريع" : "Awaiting SARIE transfer"}
+          </span>
         </div>
 
-        <div style={{ padding: "var(--space-5)", background: "var(--color-bg-card)", borderRadius: "var(--radius-xl)", border: "1px solid var(--color-border)" }}>
-          <span style={{ fontSize: "var(--text-xs)", color: "var(--color-text-muted)", fontWeight: 700 }}>صافي إيرادات المنصة المحققة</span>
-          <h3 style={{ fontSize: "var(--text-2xl)", fontWeight: 900, color: "#10B981", margin: "0.25rem 0" }}>22,275 ر.س</h3>
-          <span style={{ fontSize: "var(--text-xs)", color: "var(--color-text-secondary)" }}>عمولة 15% صافية</span>
+        <div style={{ padding: "20px", background: "var(--color-bg-card)", borderRadius: "16px", border: "1px solid var(--color-border)" }}>
+          <span style={{ fontSize: "12px", color: "var(--color-text-secondary)", fontWeight: 700 }}>
+            {isAr ? "صافي إيرادات المنصة المحققة" : "Net Platform Earnings"}
+          </span>
+          <h3 style={{ fontSize: "24px", fontWeight: 900, color: "#10B981", margin: "4px 0" }}>22,275 {isAr ? "ر.س" : "SAR"}</h3>
+          <span style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>
+            {isAr ? "عمولة 15% صافية" : "15% net commission"}
+          </span>
         </div>
       </div>
 
-      {/* Payouts Table */}
-      <DataTable
-        data={filteredPayouts}
-        columns={columns}
-        searchPlaceholder="بحث باسم المرشد، الآيبان، أو البريد..."
-        searchFilter={(row, query) =>
-          row.guideName.toLowerCase().includes(query) ||
-          row.iban.toLowerCase().includes(query) ||
-          row.guideEmail.toLowerCase().includes(query)
-        }
-        filtersSlot={
-          <div style={{ display: "flex", gap: "6px" }}>
-            <Button variant={statusFilter === "all" ? "primary" : "ghost"} size="sm" onClick={() => setStatusFilter("all")}>
-              الكل ({payouts.length})
-            </Button>
-            <Button variant={statusFilter === "pending" ? "primary" : "ghost"} size="sm" onClick={() => setStatusFilter("pending")}>
-              معلقة ({payouts.filter((p) => p.status === "pending").length})
-            </Button>
-            <Button variant={statusFilter === "completed" ? "primary" : "ghost"} size="sm" onClick={() => setStatusFilter("completed")}>
-              مكتملة ({payouts.filter((p) => p.status === "completed").length})
-            </Button>
+      {/* Filter & Search */}
+      <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", background: "var(--color-bg-card)", padding: "16px", borderRadius: "16px", border: "1px solid var(--color-border)" }}>
+        <div style={{ flex: "1 1 280px", position: "relative" }}>
+          <input
+            type="text"
+            placeholder={isAr ? "بحث باسم المرشد، الآيبان، أو البريد..." : "Search guide, IBAN or email..."}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{ width: "100%", padding: "10px 14px", paddingInlineStart: "38px", borderRadius: "10px", background: "var(--color-bg-secondary)", border: "1px solid var(--color-border)", color: "var(--color-text-primary)", fontSize: "13px", outline: "none" }}
+          />
+          <div style={{ position: "absolute", top: "50%", transform: "translateY(-50%)", insetInlineStart: "12px", pointerEvents: "none" }}>
+            <SearchIcon size={16} color="var(--color-text-secondary)" />
           </div>
-        }
-      />
+        </div>
+
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          style={{ padding: "10px 14px", borderRadius: "10px", background: "var(--color-bg-secondary)", border: "1px solid var(--color-border)", color: "var(--color-text-primary)", fontSize: "13px", outline: "none" }}
+        >
+          <option value="all">{isAr ? "كافة الحالات" : "All Statuses"}</option>
+          <option value="pending">{isAr ? "معلقة بانتظار التحويل" : "Pending Payout"}</option>
+          <option value="completed">{isAr ? "مكتملة ومحولة" : "Completed"}</option>
+        </select>
+      </div>
+
+      {/* Payouts Table */}
+      <div className="rafeeq-table-wrapper">
+        <table className="rafeeq-table">
+          <thead>
+            <tr>
+              <th>{isAr ? "المرشد السياحي والبريد" : "Guide"}</th>
+              <th>{isAr ? "البنك والآيبان (IBAN)" : "Bank & IBAN"}</th>
+              <th>{isAr ? "المبلغ المطلوب" : "Amount"}</th>
+              <th>{isAr ? "تاريخ الطلب" : "Date"}</th>
+              <th>{isAr ? "حالة التحويل" : "Status"}</th>
+              <th style={{ textAlign: "end" }}>{isAr ? "الإجراءات" : "Actions"}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredPayouts.length === 0 ? (
+              <tr>
+                <td colSpan={6} style={{ padding: "40px", textAlign: "center", color: "var(--color-text-secondary)" }}>
+                  {isAr ? "لا توجد طلبات تحويل تطابق البحث." : "No payouts found."}
+                </td>
+              </tr>
+            ) : (
+              filteredPayouts.map((row) => (
+                <tr key={row.id}>
+                  <td>
+                    <div style={{ fontWeight: 800, color: "var(--color-text-primary)" }}>{row.guideName}</div>
+                    <div style={{ fontSize: "11px", color: "var(--color-text-secondary)", marginTop: "2px" }}>
+                      {row.guideEmail}
+                    </div>
+                  </td>
+
+                  <td>
+                    <div style={{ fontWeight: 700 }}>{row.bankName}</div>
+                    <div style={{ fontSize: "11px", color: "var(--color-gold-heading)", fontFamily: "monospace", direction: "ltr", textAlign: "start" }}>
+                      {row.iban}
+                    </div>
+                  </td>
+
+                  <td>
+                    <span style={{ fontWeight: 900, color: "#10B981", fontSize: "14px" }}>
+                      {row.amountSar.toLocaleString("en-US")} {isAr ? "ر.س" : "SAR"}
+                    </span>
+                  </td>
+
+                  <td style={{ fontSize: "12px", color: "var(--color-text-secondary)" }}>{row.date}</td>
+
+                  <td>
+                    <span
+                      style={{
+                        padding: "3px 10px",
+                        borderRadius: "100px",
+                        fontSize: "11px",
+                        fontWeight: 800,
+                        background: row.status === "completed" ? "rgba(16, 185, 129, 0.15)" : "rgba(245, 158, 11, 0.15)",
+                        color: row.status === "completed" ? "#10B981" : "#F59E0B",
+                      }}
+                    >
+                      {row.status === "completed" ? (isAr ? "تم التحويل بنجاح" : "Completed") : (isAr ? "بانتظار التحويل" : "Pending")}
+                    </span>
+                    {row.transferRef && (
+                      <span style={{ display: "block", fontSize: "10px", color: "var(--color-text-secondary)", marginTop: "2px", fontFamily: "monospace" }}>
+                        Ref: {row.transferRef}
+                      </span>
+                    )}
+                  </td>
+
+                  <td style={{ textAlign: "end" }}>
+                    {row.status === "completed" ? (
+                      <span style={{ fontSize: "11px", color: "#10B981", fontWeight: 700 }}>
+                        {isAr ? "معتمد ومسوى" : "Settled"}
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setSelectedPayout(row)}
+                        className="rafeeq-action-btn"
+                        style={{
+                          background: "var(--gradient-gold)",
+                          color: "#0f172a",
+                          border: "none",
+                        }}
+                      >
+                        <ShieldCheckIcon size={14} color="#0f172a" />
+                        <span>{isAr ? "تأكيد التحويل البنكي" : "Settle Payout"}</span>
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
 
       {/* Modal: Confirm Payout */}
-      <Modal isOpen={Boolean(selectedPayout)} onClose={() => setSelectedPayout(null)} title="تأكيد التحويل البنكي للمرشد (IBAN Payout)" maxWidth="520px">
-        {selectedPayout && (
-          <form onSubmit={handleConfirmPayout} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+      {selectedPayout && (
+        <Modal
+          isOpen={Boolean(selectedPayout)}
+          onClose={() => setSelectedPayout(null)}
+          title={isAr ? "تأكيد التحويل البنكي للمرشد (IBAN Payout)" : "Confirm IBAN Payout"}
+          subtitle={`${selectedPayout.guideName} • ${selectedPayout.amountSar} SAR`}
+        >
+          <form onSubmit={handleConfirmPayout} style={{ display: "flex", flexDirection: "column", gap: "16px", fontSize: "13px" }}>
             <div style={{ background: "var(--color-bg-secondary)", padding: "14px", borderRadius: "10px", border: "1px solid var(--color-border)" }}>
-              <span style={{ fontSize: "11px", color: "var(--color-text-muted)" }}>بيانات المستفيد:</span>
+              <span style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>{isAr ? "بيانات المستفيد:" : "Beneficiary Details:"}</span>
               <h4 style={{ fontSize: "15px", fontWeight: 800, margin: "4px 0" }}>{selectedPayout.guideName}</h4>
               <p style={{ fontSize: "12px", color: "var(--color-text-secondary)", margin: 0 }}>
-                {selectedPayout.bankName} • <span style={{ direction: "ltr", display: "inline-block", fontFamily: "monospace" }}>{selectedPayout.iban}</span>
+                {selectedPayout.bankName} • <span style={{ direction: "ltr", display: "inline-block", fontFamily: "monospace", color: "var(--color-gold-heading)", fontWeight: 800 }}>{selectedPayout.iban}</span>
               </p>
-              <div style={{ marginTop: "10px", fontSize: "16px", fontWeight: 900, color: "var(--color-saudi-green)" }}>
-                المبلغ المطلوب تحويله: {selectedPayout.amountSar.toLocaleString("en-US")} ر.س
-              </div>
             </div>
 
             <div>
-              <label style={{ display: "block", fontSize: "12px", fontWeight: 700, marginBottom: "4px" }}>
-                الرقم المرجعي للحوالة البنكية (Sarie Transfer Reference)
+              <label style={{ display: "block", fontSize: "11px", fontWeight: 700, marginBottom: "4px", color: "var(--color-text-secondary)" }}>
+                {isAr ? "الرقم المرجعي للحوالة بنظام سريع (SARIE Ref):" : "SARIE Transfer Reference:"}
               </label>
               <input
                 type="text"
-                placeholder="مثال: SARIE-TRX-884019"
                 value={transferRef}
                 onChange={(e) => setTransferRef(e.target.value)}
-                style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--color-border)", background: "var(--color-bg-primary)", fontSize: "13px" }}
+                placeholder="SARIE-994021-TX"
+                style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", border: "1px solid var(--color-border)", background: "var(--color-bg-secondary)", color: "var(--color-text-primary)", fontFamily: "monospace", fontSize: "13px", outline: "none" }}
               />
             </div>
 
             <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "8px" }}>
-              <Button variant="ghost" size="md" onClick={() => setSelectedPayout(null)} type="button">إلغاء</Button>
-              <Button variant="primary" size="md" type="submit" disabled={isSettling}>
-                <CreditCardIcon size={16} />
-                <span>{isSettling ? "جاري الاعتماد..." : "تأكيد التحويل وإشعار المرشد"}</span>
+              <Button variant="outline" size="sm" onClick={() => setSelectedPayout(null)} type="button">
+                {isAr ? "إلغاء" : "Cancel"}
+              </Button>
+              <Button variant="primary" size="sm" type="submit" disabled={isSettling}>
+                <CheckCircleIcon size={14} />
+                <span>{isSettling ? (isAr ? "جاري الاعتماد..." : "Processing...") : (isAr ? "اعتماد وتسجيل التحويل" : "Confirm Transfer")}</span>
               </Button>
             </div>
           </form>
-        )}
-      </Modal>
+        </Modal>
+      )}
     </div>
   );
 }

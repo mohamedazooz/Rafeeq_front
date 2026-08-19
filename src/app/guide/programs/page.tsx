@@ -171,7 +171,7 @@ export default function GuideProgramsPage() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "var(--space-4)" }}>
         <div>
           <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 900, fontFamily: "var(--font-heading)" }}>
-            محفظة برامجي وجولاتي السياحية 📋
+            محفظة برامجي وجولاتي السياحية
           </h1>
           <p style={{ color: "var(--color-text-muted)", fontSize: "var(--text-sm)", marginTop: "var(--space-1)" }}>
             إدارة البرامج المنشورة، متابعة حالة مراجعة الإدارة للبرامج الجديدة، وتعديل خطط الأسعار

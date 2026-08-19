@@ -55,7 +55,7 @@ export default function ClientProfilePage() {
       {/* Header */}
       <div>
         <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 900, fontFamily: "var(--font-heading)" }}>
-          {t.profiles.client.title} 👤
+          {t.profiles.client.title}
         </h1>
         <p style={{ color: "var(--color-text-muted)", fontSize: "var(--text-sm)", marginTop: "var(--space-1)" }}>
           {t.profiles.client.subtitle}
@@ -95,7 +95,7 @@ export default function ClientProfilePage() {
             cursor: "pointer",
           }}
         >
-          🌍 {t.profiles.client.internationalTab}
+          {t.profiles.client.internationalTab}
         </button>
       </div>
 

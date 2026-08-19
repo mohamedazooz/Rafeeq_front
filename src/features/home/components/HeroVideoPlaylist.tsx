@@ -294,8 +294,8 @@ export const HeroVideoPlaylist: React.FC = () => {
         <div
           style={{
             display: "flex",
-            gap: "0.75rem",
-            marginTop: "1.5rem",
+            gap: "0.5rem",
+            marginTop: "1.25rem",
             overflowX: "auto",
             paddingBottom: "0.5rem",
           }}
@@ -316,15 +316,15 @@ export const HeroVideoPlaylist: React.FC = () => {
                   background: isCurrent ? "rgba(255, 255, 255, 0.15)" : "rgba(255, 255, 255, 0.06)",
                   backdropFilter: "blur(12px)",
                   border: isCurrent ? "1.5px solid var(--color-gold-royal)" : "1px solid rgba(255, 255, 255, 0.15)",
-                  borderRadius: "var(--radius-xl)",
-                  padding: "0.75rem 1.25rem",
+                  borderRadius: "var(--radius-lg)",
+                  padding: "0.4rem 0.85rem",
                   color: "#ffffff",
                   cursor: "pointer",
                   display: "flex",
                   flexDirection: "column",
                   alignItems: isAr ? "flex-start" : "flex-start",
-                  gap: "0.25rem",
-                  minWidth: "150px",
+                  gap: "0.1rem",
+                  minWidth: "105px",
                   textAlign: isAr ? "right" : "left",
                   transition: "all 0.25s ease",
                   overflow: "hidden",
@@ -338,7 +338,7 @@ export const HeroVideoPlaylist: React.FC = () => {
                       bottom: 0,
                       left: 0,
                       right: 0,
-                      height: "3px",
+                      height: "2.5px",
                       background: "rgba(255, 255, 255, 0.2)",
                     }}
                   >
@@ -352,10 +352,10 @@ export const HeroVideoPlaylist: React.FC = () => {
                     />
                   </div>
                 )}
-                <span style={{ fontSize: "var(--text-xs)", color: isCurrent ? "var(--color-gold-royal)" : "rgba(255,255,255,0.6)", fontWeight: 600 }}>
+                <span style={{ fontSize: "11px", color: isCurrent ? "var(--color-gold-royal)" : "rgba(255,255,255,0.6)", fontWeight: 600, lineHeight: 1.2 }}>
                   {badgeWord}
                 </span>
-                <span style={{ fontSize: "var(--text-base)", fontWeight: 800 }}>
+                <span style={{ fontSize: "var(--text-sm)", fontWeight: 800, lineHeight: 1.3 }}>
                   {displayName}
                 </span>
               </button>

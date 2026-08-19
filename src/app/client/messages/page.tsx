@@ -5,21 +5,24 @@ import { Button } from "@/components/ui/Button";
 import { useLanguage } from "@/lib/language-provider";
 import {
   MessageSquareIcon,
-  SendIcon,
   CompassIcon,
-  MapPinIcon,
+  ShieldCheckIcon,
+  ShieldIcon,
   CheckCircleIcon,
+  SendIcon,
 } from "@/components/icons";
 
 interface MessageItem {
   id: string;
-  sender: "client" | "guide";
+  sender: "client" | "guide" | "admin" | "system";
+  senderName: string;
   text: string;
   time: string;
 }
 
 interface ChatThread {
   id: string;
+  type: "guide" | "support_mediation";
   guideName: string;
   guideCity: string;
   tourTitle: string;
@@ -30,27 +33,74 @@ interface ChatThread {
 
 const INITIAL_THREADS: ChatThread[] = [
   {
-    id: "th-1",
-    guideName: "عبد العزيز الشمري",
-    guideCity: "العلا",
-    tourTitle: "جولة مدائن صالح والبلدة القديمة",
-    lastMessage: "أهلاً بك يا محمد! يسعدنا استضافتك في العلا...",
-    unreadCount: 0,
+    id: "th-med",
+    type: "support_mediation",
+    guideName: "خالد الحربي (المرشد) + إدارة رفيق",
+    guideCity: "الأحساء",
+    tourTitle: "غرفة وساطة: رحلة جبل القارة والواحة",
+    lastMessage: "تم مراجعة تقرير مسار الرحلة واعتماد التسوية التوافقية.",
+    unreadCount: 1,
     messages: [
-      { id: "m-1", sender: "guide", text: "أهلاً بك يا محمد! يسعدنا استضافتك في العلا. يرجى التواجد عند نقطة التجمع الساعة 8:00 صباحاً.", time: "10:30 ص" },
-      { id: "m-2", sender: "client", text: "أهلاً أخي عبد العزيز، هل يفضل ارتداء أحذية هايكنج مخصصة للجولة؟", time: "10:32 ص" },
-      { id: "m-3", sender: "guide", text: "نعم بالضبط، أحذية مريحة وقبعة شمسية. سنوفر لكم الماء والمشروبات الباردة طوال الجولة ✦", time: "10:35 ص" },
+      {
+        id: "m-0",
+        sender: "system",
+        senderName: "نظام رفيق",
+        text: "تم فتح غرفة الوساطة الإدارية الثلاثية بينك وبين المرشد وإدارة المنصة.",
+        time: "09:00 ص",
+      },
+      {
+        id: "m-1",
+        sender: "client",
+        senderName: "أنت (المسافر)",
+        text: "السلام عليكم، واجهنا تأخير في موعد الانطلاق الصباحي وتم اختصار إحدى المحطات التراثية في الواحة.",
+        time: "09:15 ص",
+      },
+      {
+        id: "m-2",
+        sender: "guide",
+        senderName: "خالد الحربي (المرشد السياحي)",
+        text: "أهلاً أخي العزيز، التأخير كان بسبب إغلاق أمني مؤقت للطريق الجبلي وتم تعويض المحطة بزيارة دار التراث الشعبي المجاورة.",
+        time: "09:22 ص",
+      },
+      {
+        id: "m-3",
+        sender: "admin",
+        senderName: "إدارة الحوكمة والضمان",
+        text: "مرحباً بكم. تم مراجعة تقرير مسار الرحلة ونظام الـ GPS، وجاري اعتماد تسوية توافقية ترضي الطرفين عبر حساب الضمان.",
+        time: "09:30 ص",
+      },
     ],
   },
   {
-    id: "th-2",
-    guideName: "مريم الغامدي",
-    guideCity: "جدة",
-    tourTitle: "جولة حارة البلد التاريخية",
-    lastMessage: "شكراً لك على تقييمك الرائع للجولة!",
+    id: "th-1",
+    type: "guide",
+    guideName: "عبد العزيز الشمري",
+    guideCity: "العلا",
+    tourTitle: "جولة مدائن صالح والبلدة القديمة",
+    lastMessage: "سنوفر لكم الماء والمشروبات الباردة طوال الجولة.",
     unreadCount: 0,
     messages: [
-      { id: "m-4", sender: "guide", text: "شكراً لك على تقييمك الرائع للجولة! تشرفنا بخدمتكم ونتمنى لكم إقامة سعيدة بجدة.", time: "أمس 08:15 م" },
+      {
+        id: "m-10",
+        sender: "guide",
+        senderName: "عبد العزيز الشمري",
+        text: "أهلاً بك يا فهد! يسعدنا استضافتك في العلا. يرجى التواجد عند نقطة التجمع الساعة 8:00 صباحاً.",
+        time: "10:30 ص",
+      },
+      {
+        id: "m-11",
+        sender: "client",
+        senderName: "أنت (المسافر)",
+        text: "أهلاً أخي عبد العزيز، هل يفضل ارتداء أحذية هايكنج مخصصة للجولة؟",
+        time: "10:32 ص",
+      },
+      {
+        id: "m-12",
+        sender: "guide",
+        senderName: "عبد العزيز الشمري",
+        text: "نعم بالضبط، أحذية مريحة وقبعة شمسية. سنوفر لكم الماء والمشروبات الباردة طوال الجولة.",
+        time: "10:35 ص",
+      },
     ],
   },
 ];
@@ -60,7 +110,7 @@ export default function ClientMessagesPage() {
   const isAr = lang === "ar";
 
   const [threads, setThreads] = useState<ChatThread[]>(INITIAL_THREADS);
-  const [activeThreadId, setActiveThreadId] = useState<string>("th-1");
+  const [activeThreadId, setActiveThreadId] = useState<string>("th-med");
   const [inputText, setInputText] = useState("");
 
   const activeThread = threads.find((t) => t.id === activeThreadId) || threads[0];
@@ -72,8 +122,9 @@ export default function ClientMessagesPage() {
     const newMsg: MessageItem = {
       id: `msg-${Date.now()}`,
       sender: "client",
+      senderName: isAr ? "أنت (المسافر)" : "You (Client)",
       text: inputText.trim(),
-      time: new Date().toLocaleTimeString("ar-SA", { hour: "2-digit", minute: "2-digit" }),
+      time: new Date().toLocaleTimeString(isAr ? "ar-SA" : "en-US", { hour: "2-digit", minute: "2-digit" }),
     };
 
     setThreads((prev) =>
@@ -92,62 +143,93 @@ export default function ClientMessagesPage() {
   };
 
   return (
-    <div style={{ padding: "var(--space-6)", display: "flex", flexDirection: "column", gap: "var(--space-6)" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
       {/* Header */}
       <div>
-        <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 900, fontFamily: "var(--font-heading)" }}>
-          مركز المراسلات المباشرة 💬
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "6px",
+            background: "rgba(200, 169, 110, 0.12)",
+            border: "1px solid rgba(200, 169, 110, 0.25)",
+            padding: "4px 12px",
+            borderRadius: "100px",
+            color: "var(--color-gold-heading)",
+            fontSize: "11px",
+            fontWeight: 800,
+            marginBottom: "8px",
+          }}
+        >
+          <MessageSquareIcon size={14} color="var(--color-gold-heading)" />
+          <span>{isAr ? "مركز المراسلات المباشرة وغرف الوساطة" : "Direct Messages & Mediation Rooms"}</span>
+        </div>
+        <h1 style={{ fontSize: "24px", fontWeight: 900, color: "var(--color-text-primary)" }}>
+          {isAr ? "المراسلات والتواصل الفوري" : "Messages & Direct Support"}
         </h1>
-        <p style={{ color: "var(--color-text-muted)", fontSize: "var(--text-sm)", marginTop: "var(--space-1)" }}>
-          التواصل الآمن والمباشر مع المرشدين السياحيين قبل موعد الرحلة لمطابقة نقاط التجمع والترتيبات
+        <p style={{ color: "var(--color-text-secondary)", fontSize: "13px", marginTop: "2px" }}>
+          {isAr
+            ? "تواصل مع مرشدك السياحي لتنسيق تفاصيل الجولة أو الانضمام لغرفة الوساطة الإدارية لحل أي استفسارات."
+            : "Chat directly with your tour guide to coordinate tour logistics or join administrative mediation."}
         </p>
       </div>
 
-      {/* Chat Container */}
+      {/* Split View Console */}
       <div
         style={{
-          background: "var(--color-bg-card)",
-          border: "1px solid var(--color-border)",
-          borderRadius: "var(--radius-2xl)",
           display: "grid",
           gridTemplateColumns: "320px 1fr",
+          gap: "16px",
           minHeight: "560px",
+          background: "var(--color-bg-card)",
+          border: "1px solid var(--color-border)",
+          borderRadius: "18px",
           overflow: "hidden",
-          boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
         }}
       >
-        {/* Threads List (Sidebar) */}
-        <div style={{ borderInlineEnd: "1px solid var(--color-border)", background: "var(--color-bg-secondary)", display: "flex", flexDirection: "column" }}>
-          <div style={{ padding: "16px", borderBottom: "1px solid var(--color-border)" }}>
-            <span style={{ fontSize: "12px", fontWeight: 800, color: "var(--color-gold-heading)", textTransform: "uppercase" }}>
-              محادثات الرحلات النشطة ({threads.length})
-            </span>
+        {/* Threads Sidebar */}
+        <div style={{ borderInlineEnd: "1px solid var(--color-border)", background: "var(--color-bg-card)", display: "flex", flexDirection: "column" }}>
+          <div style={{ padding: "14px", borderBottom: "1px solid var(--color-border)", fontSize: "12px", fontWeight: 800, color: "var(--color-text-secondary)" }}>
+            {isAr ? "المحادثات النشطة" : "Active Conversations"}
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "2px", overflowY: "auto", flexGrow: 1, padding: "8px" }}>
+          <div style={{ flexGrow: 1, overflowY: "auto" }}>
             {threads.map((t) => {
-              const isActive = t.id === activeThreadId;
+              const isSelected = t.id === activeThreadId;
+              const isMediation = t.type === "support_mediation";
               return (
                 <div
                   key={t.id}
                   onClick={() => setActiveThreadId(t.id)}
                   style={{
-                    padding: "12px 14px",
-                    borderRadius: "10px",
-                    background: isActive ? "rgba(200, 169, 110, 0.12)" : "transparent",
-                    border: isActive ? "1px solid var(--color-gold-heading)" : "1px solid transparent",
+                    padding: "14px 16px",
+                    borderBottom: "1px solid var(--color-border)",
                     cursor: "pointer",
-                    transition: "all 0.15s ease",
+                    background: isSelected ? "var(--color-bg-secondary)" : "transparent",
+                    borderInlineStart: isSelected ? "3px solid var(--color-gold-heading)" : "3px solid transparent",
                   }}
                 >
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <h4 style={{ fontSize: "13px", fontWeight: 800, margin: 0, color: isActive ? "var(--color-gold-heading)" : "var(--color-text-primary)" }}>
-                      {t.guideName}
-                    </h4>
-                    <span style={{ fontSize: "10px", color: "var(--color-text-muted)" }}>{t.guideCity}</span>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+                    <span
+                      style={{
+                        fontSize: "10px",
+                        fontWeight: 800,
+                        padding: "2px 8px",
+                        borderRadius: "100px",
+                        background: isMediation ? "rgba(200, 169, 110, 0.15)" : "rgba(16, 185, 129, 0.15)",
+                        color: isMediation ? "var(--color-gold-heading)" : "#10B981",
+                      }}
+                    >
+                      {isMediation ? (isAr ? "وساطة إدارية ثلاثية" : "Admin Mediation") : isAr ? "مرشد معتمد" : "Guide"}
+                    </span>
+                    <span style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>{t.guideCity}</span>
                   </div>
 
-                  <p style={{ fontSize: "11px", color: "var(--color-text-secondary)", margin: "4px 0 0 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  <h4 style={{ fontSize: "13px", fontWeight: 800, color: "var(--color-text-primary)", marginBottom: "4px" }}>
+                    {t.guideName}
+                  </h4>
+
+                  <p style={{ fontSize: "11px", color: "var(--color-text-secondary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                     {t.lastMessage}
                   </p>
                 </div>
@@ -156,110 +238,74 @@ export default function ClientMessagesPage() {
           </div>
         </div>
 
-        {/* Active Chat Conversation Window */}
-        <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", background: "var(--color-bg-card)" }}>
-          {/* Chat Header */}
-          <div
-            style={{
-              padding: "16px 20px",
-              borderBottom: "1px solid var(--color-border)",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              background: "var(--color-bg-secondary)",
-            }}
-          >
-            <div>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <CompassIcon size={18} color="var(--color-gold-heading)" />
-                <h3 style={{ fontSize: "15px", fontWeight: 900, margin: 0 }}>{activeThread.guideName}</h3>
-                <span style={{ background: "rgba(16, 185, 129, 0.15)", color: "#10B981", fontSize: "10px", fontWeight: 800, padding: "2px 6px", borderRadius: "4px" }}>
-                  مرشد معتمد ✦
-                </span>
+        {/* Chat Pane */}
+        {activeThread && (
+          <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+            {/* Header */}
+            <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--color-border)", background: "var(--color-bg-secondary)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div>
+                <h3 style={{ fontSize: "14px", fontWeight: 900, color: "var(--color-text-primary)" }}>{activeThread.tourTitle}</h3>
+                <p style={{ fontSize: "11px", color: "var(--color-text-secondary)", marginTop: "2px" }}>{activeThread.guideName}</p>
               </div>
-              <span style={{ fontSize: "11px", color: "var(--color-text-muted)", display: "block", marginTop: "2px" }}>
-                {activeThread.tourTitle} ({activeThread.guideCity})
-              </span>
             </div>
 
-            <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", color: "var(--color-saudi-green)", fontWeight: 700 }}>
-              <MapPinIcon size={14} />
-              <span>موقع نقطة التجمع محدد</span>
-            </div>
-          </div>
+            {/* Messages */}
+            <div style={{ flexGrow: 1, padding: "20px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "12px", background: "var(--color-bg-card)" }}>
+              {activeThread.messages.map((m) => {
+                const isClient = m.sender === "client";
+                const isSystem = m.sender === "system";
+                const isAdmin = m.sender === "admin";
 
-          {/* Messages Feed */}
-          <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "14px", overflowY: "auto", flexGrow: 1 }}>
-            {activeThread.messages.map((msg) => {
-              const isMe = msg.sender === "client";
-              return (
-                <div
-                  key={msg.id}
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: isMe ? "flex-end" : "flex-start",
-                  }}
-                >
-                  <div
-                    style={{
-                      maxWidth: "75%",
-                      padding: "10px 14px",
-                      borderRadius: isMe ? "14px 14px 2px 14px" : "14px 14px 14px 2px",
-                      background: isMe
-                        ? "linear-gradient(135deg, var(--color-gold-heading) 0%, var(--color-gold-dark) 100%)"
-                        : "var(--color-bg-secondary)",
-                      color: isMe ? "#0B132B" : "var(--color-text-primary)",
-                      fontWeight: 600,
-                      fontSize: "13px",
-                      lineHeight: "1.5",
-                      border: isMe ? "none" : "1px solid var(--color-border)",
-                      boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
-                    }}
-                  >
-                    {msg.text}
+                if (isSystem) {
+                  return (
+                    <div key={m.id} style={{ alignSelf: "center", background: "var(--color-bg-secondary)", border: "1px solid var(--color-border)", padding: "6px 14px", borderRadius: "100px", fontSize: "11px", color: "var(--color-text-secondary)", display: "flex", alignItems: "center", gap: "6px" }}>
+                      <ShieldIcon size={12} color="var(--color-gold-heading)" />
+                      <span>{m.text}</span>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div key={m.id} style={{ display: "flex", flexDirection: "column", alignSelf: isClient ? "flex-end" : "flex-start", maxWidth: "75%" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "4px", justifyContent: isClient ? "flex-end" : "flex-start" }}>
+                      <span style={{ fontSize: "10px", fontWeight: 800, padding: "1px 6px", borderRadius: "4px", background: isClient ? "var(--gradient-gold)" : isAdmin ? "rgba(200, 169, 110, 0.2)" : "rgba(16, 185, 129, 0.15)", color: isClient ? "#0f172a" : isAdmin ? "var(--color-gold-heading)" : "#10B981" }}>
+                        {m.senderName}
+                      </span>
+                      <span style={{ fontSize: "10px", color: "var(--color-text-secondary)" }}>{m.time}</span>
+                    </div>
+
+                    <div style={{ padding: "10px 14px", borderRadius: "12px", background: isClient ? "var(--color-bg-secondary)" : "var(--color-bg-card)", border: "1px solid", borderColor: isClient ? "var(--color-gold-heading)" : "var(--color-border)", color: "var(--color-text-primary)", fontSize: "13px", lineHeight: 1.5 }}>
+                      {m.text}
+                    </div>
                   </div>
-                  <span style={{ fontSize: "10px", color: "var(--color-text-muted)", marginTop: "4px", paddingInline: "4px" }}>
-                    {msg.time}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
 
-          {/* Chat Input Footer */}
-          <form
-            onSubmit={handleSendMessage}
-            style={{
-              padding: "14px 20px",
-              borderTop: "1px solid var(--color-border)",
-              display: "flex",
-              gap: "10px",
-              background: "var(--color-bg-secondary)",
-            }}
-          >
-            <input
-              type="text"
-              placeholder="اكتب رسالتك للمرشد السياحي..."
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-              style={{
-                flexGrow: 1,
-                padding: "10px 14px",
-                borderRadius: "8px",
-                border: "1px solid var(--color-border)",
-                background: "var(--color-bg-primary)",
-                color: "var(--color-text-primary)",
-                fontSize: "13px",
-                outline: "none",
-              }}
-            />
-            <Button variant="primary" size="md" type="submit" disabled={!inputText.trim()}>
-              <SendIcon size={16} />
-              <span>إرسال</span>
-            </Button>
-          </form>
-        </div>
+            {/* Input */}
+            <form onSubmit={handleSendMessage} style={{ padding: "14px 20px", borderTop: "1px solid var(--color-border)", background: "var(--color-bg-secondary)", display: "flex", gap: "10px" }}>
+              <input
+                type="text"
+                placeholder={isAr ? "اكتب رسالتك للمرشد أو إدارة الوساطة..." : "Type your message..."}
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+                style={{
+                  flexGrow: 1,
+                  background: "var(--color-bg-card)",
+                  border: "1px solid var(--color-border)",
+                  borderRadius: "10px",
+                  padding: "10px 14px",
+                  fontSize: "13px",
+                  color: "var(--color-text-primary)",
+                  outline: "none",
+                }}
+              />
+              <Button variant="primary" type="submit" disabled={!inputText.trim()} style={{ padding: "10px 18px", fontSize: "12px", fontWeight: 800 }}>
+                {isAr ? "إرسال" : "Send"}
+              </Button>
+            </form>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -6,6 +6,7 @@ import { Button, Badge, Modal, Input } from "@/design-system/primitives";
 import { useToast } from "@/design-system/primitives/Toast";
 import { bookingsService } from "@/features/bookings/services/bookings.service";
 import { disputesService } from "@/features/disputes-support/services/disputes.service";
+import { FileTextIcon, ShieldCheckIcon, MessageSquareIcon } from "@/components/icons";
 
 export default function ClientBookingDetailPage({
   params,
@@ -117,7 +118,7 @@ export default function ClientBookingDetailPage({
               جولة مدائن صالح وتكوينات الحجر في العلا
             </h2>
             <p style={{ fontSize: "var(--text-xs)", color: "var(--color-text-secondary)", marginTop: "0.2rem" }}>
-              👤 المرشد: عبد العزيز الشمري • 📅 الخميس، 24 أكتوبر 2026 • 👥 2 مشاركين
+              المرشد: عبد العزيز الشمري • الخميس، 24 أكتوبر 2026 • 2 مشاركين
             </p>
           </div>
           <Badge variant="emerald" size="lg" dot>
@@ -146,7 +147,7 @@ export default function ClientBookingDetailPage({
             </p>
           </div>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "#ffffff", padding: "0.75rem", borderRadius: "var(--radius-lg)", maxWidth: "140px", marginInline: "auto" }}>
-            <span style={{ fontSize: "3.5rem" }}>📱</span>
+            <FileTextIcon size={48} color="#111827" />
           </div>
         </div>
 
@@ -175,7 +176,7 @@ export default function ClientBookingDetailPage({
 
         {/* Escrow Banner */}
         <div style={{ background: "rgba(200, 169, 110, 0.12)", border: "1px solid var(--color-gold-royal)", padding: "1rem 1.25rem", borderRadius: "var(--radius-xl)", display: "flex", gap: "0.75rem", alignItems: "center", marginBottom: "1.5rem" }}>
-          <span style={{ fontSize: "1.75rem" }}>🔒</span>
+          <ShieldCheckIcon size={24} color="var(--color-gold-heading)" />
           <div>
             <h4 style={{ fontSize: "var(--text-sm)", fontWeight: 800, color: "var(--color-gold-royal)", margin: 0 }}>
               حماية الضمان المالي الكاملة (Escrow Protection)
@@ -190,17 +191,18 @@ export default function ClientBookingDetailPage({
         <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
           <Link href="/client/messages">
             <Button variant="primary" size="md">
-              💬 مراسلة المرشد مباشرة
+              <MessageSquareIcon size={16} />
+              <span>مراسلة المرشد مباشرة</span>
             </Button>
           </Link>
           <Button variant="gold" size="md" onClick={() => setIsReviewModalOpen(true)}>
-            ★ إضافة تقييم للرحلة
+            <span>إضافة تقييم للرحلة</span>
           </Button>
           <Button variant="outline" size="md" onClick={() => setIsCancelModalOpen(true)}>
-            إلغاء الحجز والاسترداد
+            <span>إلغاء الحجز والاسترداد</span>
           </Button>
           <Button variant="ghost" size="md" style={{ color: "var(--color-error)" }} onClick={() => setIsDisputeModalOpen(true)}>
-            رفع نزاع إلى الإدارة
+            <span>رفع نزاع إلى الإدارة</span>
           </Button>
         </div>
       </div>

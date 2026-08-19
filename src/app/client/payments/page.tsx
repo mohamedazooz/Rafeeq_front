@@ -63,7 +63,7 @@ export default function ClientPaymentsPage() {
   const [selectedInvoice, setSelectedInvoice] = useState<PaymentInvoice | null>(null);
 
   const handleDownloadPdf = (inv: PaymentInvoice) => {
-    success(`جاري تحميل الفاتورة الضريبية رقم (${inv.invoiceNumber}) بتنسيق PDF... 📄✓`);
+    success(`جاري تحميل الفاتورة الضريبية رقم (${inv.invoiceNumber}) بتنسيق PDF.`);
   };
 
   const columns: DataTableColumn<PaymentInvoice>[] = [
@@ -102,7 +102,7 @@ export default function ClientPaymentsPage() {
             fontWeight: 800,
           }}
         >
-          {row.method} 💳
+          {row.method}
         </span>
       ),
     },
@@ -152,7 +152,7 @@ export default function ClientPaymentsPage() {
       {/* Header */}
       <div>
         <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 900, fontFamily: "var(--font-heading)" }}>
-          سجل المدفوعات والفواتير الضريبية 💳
+          سجل المدفوعات والفواتير الضريبية
         </h1>
         <p style={{ color: "var(--color-text-muted)", fontSize: "var(--text-sm)", marginTop: "var(--space-1)" }}>
           استعراض الفواتير الضريبية المعتمدة (ZATCA)، تفاصيل حساب الضمان Escrow، وتحميل مستندات الدفع
@@ -213,7 +213,7 @@ export default function ClientPaymentsPage() {
 
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <span style={{ fontSize: "11px", color: "#10B981", fontWeight: 700 }}>
-                🔒 مدفوعة بالكامل ومحفوظة في حساب الضمان البنكي Escrow
+                مدفوعة بالكامل ومحفوظة في حساب الضمان البنكي Escrow
               </span>
               <Button variant="primary" size="md" onClick={() => handleDownloadPdf(selectedInvoice)}>
                 <DownloadIcon size={16} />

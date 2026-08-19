@@ -106,7 +106,9 @@ export default function ClientWishlistPage() {
             textAlign: "center",
           }}
         >
-          <span style={{ fontSize: "32px", display: "block", marginBottom: "12px" }}>🏜️</span>
+          <div style={{ margin: "0 auto 12px", width: "48px", height: "48px", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "50%", background: "var(--color-bg-secondary)" }}>
+            <CompassIcon size={24} color="var(--color-gold-heading)" />
+          </div>
           <h3 style={{ fontSize: "16px", fontWeight: 800, margin: 0 }}>قائمة رغباتك فارغة حالياً</h3>
           <p style={{ fontSize: "13px", color: "var(--color-text-muted)", margin: "4px 0 16px 0" }}>
             استكشف روائع الوجهات السعودية واحفظ رحلاتك المفضلة لتصل إليها في أي وقت

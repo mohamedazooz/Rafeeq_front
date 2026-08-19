@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { IconButton } from "@/components/ui/IconButton";
 import { Modal } from "@/components/ui/Modal";
 import { useLanguage } from "@/lib/language-provider";
 import {
@@ -26,9 +25,9 @@ interface PricingAddition {
 }
 
 const INITIAL_ADDITIONS: PricingAddition[] = [
-  { id: "pa-1", nameAr: "ضريبة القيمة المضافة (VAT)", nameEn: "Value Added Tax", kind: "tax", calc: "percent", value: 15, isActive: true },
-  { id: "pa-2", nameAr: "رسوم الخدمة والتشغيل التقني", nameEn: "Service Fee", kind: "fee", calc: "fixed", value: 25, isActive: true },
-  { id: "pa-3", nameAr: "رسوم تنمية السياحة البلدية", nameEn: "Municipal Tourism Fee", kind: "fee", calc: "percent", value: 2.5, isActive: true },
+  { id: "pa-1", nameAr: "ضريبة القيمة المضافة (VAT)", nameEn: "Value Added Tax (VAT)", kind: "tax", calc: "percent", value: 15, isActive: true },
+  { id: "pa-2", nameAr: "رسوم الخدمة والتشغيل التقني", nameEn: "Technical Platform Fee", kind: "fee", calc: "fixed", value: 25, isActive: true },
+  { id: "pa-3", nameAr: "رسوم تنمية السياحة والبلديات", nameEn: "Tourism Development Fee", kind: "fee", calc: "percent", value: 2.5, isActive: true },
 ];
 
 export default function AdminSettingsPage() {
@@ -65,20 +64,20 @@ export default function AdminSettingsPage() {
 
     setTimeout(() => {
       setIsSaving(false);
-      showToast(isAr ? "تم تطبيق وتحديث نسب وعمولات المنصة وسياسات الـ Escrow بنجاح! ⚙️✓" : "Settings saved.");
-    }, 600);
+      showToast(isAr ? "تم تطبيق وتحديث نسب وعمولات المنصة وسياسات الـ Escrow بنجاح." : "Settings updated successfully.");
+    }, 500);
   };
 
   const handleToggleAddition = (id: string) => {
     setPricingAdditions((prev) =>
       prev.map((a) => (a.id === id ? { ...a, isActive: !a.isActive } : a))
     );
-    showToast(isAr ? "تم تحديث حالة تفعيل الرسم / الضريبة!" : "Fee status updated.");
+    showToast(isAr ? "تم تحديث حالة تفعيل الرسم / الضريبة." : "Fee status updated.");
   };
 
   const handleDeleteAddition = (id: string) => {
     setPricingAdditions((prev) => prev.filter((a) => a.id !== id));
-    showToast(isAr ? "تم حذف الرسم من هيكل التسعير!" : "Fee removed.");
+    showToast(isAr ? "تم حذف الرسم من هيكل التسعير." : "Fee removed.");
   };
 
   const handleCreateAddition = (e: React.FormEvent) => {
@@ -100,11 +99,11 @@ export default function AdminSettingsPage() {
     setNewAddNameAr("");
     setNewAddNameEn("");
     setNewAddValue(5);
-    showToast(isAr ? "تمت إضافة الرسم / الضريبة الجديدة بنجاح! 🏷️✓" : "Pricing addition added.");
+    showToast(isAr ? "تمت إضافة الرسم / الضريبة الجديدة بنجاح." : "Pricing addition added.");
   };
 
   return (
-    <div style={{ padding: "var(--space-6)", display: "flex", flexDirection: "column", gap: "var(--space-6)", maxWidth: "1000px" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "24px", maxWidth: "1000px" }}>
       {/* Toast */}
       {toastMessage && (
         <div
@@ -115,285 +114,248 @@ export default function AdminSettingsPage() {
             background: "var(--color-bg-card)",
             border: "1px solid var(--color-gold-heading)",
             color: "var(--color-text-primary)",
-            padding: "14px 28px",
+            padding: "14px 24px",
             borderRadius: "14px",
-            boxShadow: "0 10px 30px rgba(0,0,0,0.25)",
+            boxShadow: "var(--shadow-xl)",
             zIndex: 9999,
             fontWeight: 800,
-            fontSize: "14px",
+            fontSize: "13px",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
           }}
         >
-          {toastMessage}
+          <CheckCircleIcon size={18} color="#10B981" />
+          <span>{toastMessage}</span>
         </div>
       )}
 
       {/* Header */}
       <div>
-        <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 900, fontFamily: "var(--font-heading)" }}>
-          إعدادات المنصة وتحديد النسب والعمولات ⚙️
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "6px",
+            background: "rgba(200, 169, 110, 0.15)",
+            border: "1px solid rgba(200, 169, 110, 0.3)",
+            padding: "4px 12px",
+            borderRadius: "100px",
+            color: "var(--color-gold-heading)",
+            fontSize: "11px",
+            fontWeight: 800,
+            marginBottom: "8px",
+          }}
+        >
+          <SettingsIcon size={14} color="var(--color-gold-heading)" />
+          <span>{isAr ? "إعدادات المنصة والسياسات المالية" : "Platform Governance Settings"}</span>
+        </div>
+        <h1 style={{ fontSize: "24px", fontWeight: 900, color: "var(--color-text-primary)" }}>
+          {isAr ? "إعدادات المنصة وتحديد النسب والضرائب" : "Platform Settings, Rates & VAT"}
         </h1>
-        <p style={{ color: "var(--color-text-muted)", fontSize: "var(--text-sm)", marginTop: "var(--space-1)" }}>
-          ضبط نسبة عمولة المنصة، فترة احتجاز الضمان البنكي Escrow، الضرائب والرسوم المضافة
+        <p style={{ color: "var(--color-text-secondary)", fontSize: "13px", marginTop: "2px" }}>
+          {isAr
+            ? "ضبط نسبة عمولة المنصة، فترة احتجاز الضمان البنكي Escrow، الضرائب والرسوم المضافة."
+            : "Commission percentage, escrow holding duration, and tax rules."}
         </p>
       </div>
 
-      <form onSubmit={handleSaveSettings} style={{ display: "flex", flexDirection: "column", gap: "var(--space-6)" }}>
+      <form onSubmit={handleSaveSettings} style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
         {/* Section 1: Platform Commission & Rates */}
-        <div
-          style={{
-            background: "var(--color-bg-card)",
-            border: "1px solid var(--color-border)",
-            borderRadius: "var(--radius-2xl)",
-            padding: "24px",
-            display: "flex",
-            flexDirection: "column",
-            gap: "18px",
-            boxShadow: "0 4px 20px rgba(0,0,0,0.04)",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", borderBottom: "1px solid var(--color-border)", paddingBottom: "12px" }}>
-            <WalletIcon size={20} color="var(--color-gold-heading)" />
-            <h2 style={{ fontSize: "16px", fontWeight: 800, margin: 0 }}>
-              1. نسبة عمولة المنصة والضمان البنكي (Platform Rates & Escrow)
-            </h2>
-          </div>
+        <div style={{ background: "var(--color-bg-card)", border: "1px solid var(--color-border)", borderRadius: "18px", padding: "24px", display: "flex", flexDirection: "column", gap: "18px" }}>
+          <h2 style={{ fontSize: "16px", fontWeight: 900, color: "var(--color-gold-heading)" }}>
+            {isAr ? "النسب والعمولات وسياسات الدفع" : "Commission & Escrow Rules"}
+          </h2>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "16px" }}>
             <div>
               <label style={{ display: "block", fontSize: "12px", fontWeight: 700, marginBottom: "6px" }}>
-                نسبة عمولة المنصة الأساسية (%)
+                {isAr ? "نسبة عمولة المنصة القياسية (%)" : "Standard Commission Rate (%)"}
               </label>
               <input
                 type="number"
-                min="0"
-                max="50"
-                step="0.5"
+                min={0}
+                max={100}
                 value={commissionRate}
                 onChange={(e) => setCommissionRate(Number(e.target.value))}
-                style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--color-border)", background: "var(--color-bg-primary)", fontSize: "14px", fontWeight: 800, color: "var(--color-gold-heading)" }}
+                style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", border: "1px solid var(--color-border)", background: "var(--color-bg-secondary)", color: "var(--color-text-primary)", fontSize: "13px", outline: "none" }}
               />
-              <span style={{ fontSize: "11px", color: "var(--color-text-muted)", marginTop: "4px", display: "block" }}>
-                تُقتطع تلقائياً من إجمالي مبلغ الحجز عند تحرير مستحقات المرشد السياحي
-              </span>
             </div>
 
             <div>
               <label style={{ display: "block", fontSize: "12px", fontWeight: 700, marginBottom: "6px" }}>
-                فترة احتجاز الضمان البنكي Escrow (أيام)
+                {isAr ? "فترة احتجاز الضمان بعد انتهاء الجولة (أيام)" : "Escrow Hold Period (Days)"}
               </label>
               <input
                 type="number"
-                min="1"
-                max="30"
+                min={1}
+                max={30}
                 value={escrowHoldDays}
                 onChange={(e) => setEscrowHoldDays(Number(e.target.value))}
-                style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--color-border)", background: "var(--color-bg-primary)", fontSize: "14px", fontWeight: 800, color: "#10B981" }}
-              />
-              <span style={{ fontSize: "11px", color: "var(--color-text-muted)", marginTop: "4px", display: "block" }}>
-                المدة اللازمة بعد انتهاء الرحلة قبل السماح للمرشد بطلب تحويل الـ IBAN
-              </span>
-            </div>
-          </div>
-
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px" }}>
-            <div>
-              <label style={{ display: "block", fontSize: "12px", fontWeight: 700, marginBottom: "6px" }}>
-                مهلة تجميد المقعد Soft-Lock (دقائق)
-              </label>
-              <input
-                type="number"
-                min="5"
-                max="60"
-                value={softLockMinutes}
-                onChange={(e) => setSoftLockMinutes(Number(e.target.value))}
-                style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--color-border)", background: "var(--color-bg-primary)", fontSize: "13px" }}
+                style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", border: "1px solid var(--color-border)", background: "var(--color-bg-secondary)", color: "var(--color-text-primary)", fontSize: "13px", outline: "none" }}
               />
             </div>
 
             <div>
               <label style={{ display: "block", fontSize: "12px", fontWeight: 700, marginBottom: "6px" }}>
-                رسوم الإلغاء المتأخر (%)
+                {isAr ? "رسوم الإلغاء المتأخر للمسافر (%)" : "Late Cancellation Penalty (%)"}
               </label>
               <input
                 type="number"
-                min="0"
-                max="100"
+                min={0}
+                max={100}
                 value={cancellationFeePercent}
                 onChange={(e) => setCancellationFeePercent(Number(e.target.value))}
-                style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--color-border)", background: "var(--color-bg-primary)", fontSize: "13px" }}
+                style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", border: "1px solid var(--color-border)", background: "var(--color-bg-secondary)", color: "var(--color-text-primary)", fontSize: "13px", outline: "none" }}
               />
             </div>
 
             <div>
               <label style={{ display: "block", fontSize: "12px", fontWeight: 700, marginBottom: "6px" }}>
-                الحد الأدنى لطلب السحب البنكي (ر.س)
+                {isAr ? "الحد الأدنى لطلب التحويل البنكي (SAR)" : "Min Payout Request (SAR)"}
               </label>
               <input
                 type="number"
-                min="100"
-                max="5000"
+                min={50}
                 value={minPayoutSar}
                 onChange={(e) => setMinPayoutSar(Number(e.target.value))}
-                style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--color-border)", background: "var(--color-bg-primary)", fontSize: "13px" }}
+                style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", border: "1px solid var(--color-border)", background: "var(--color-bg-secondary)", color: "var(--color-text-primary)", fontSize: "13px", outline: "none" }}
               />
             </div>
           </div>
         </div>
 
-        {/* Section 2: Dynamic Pricing Additions (Taxes & Fees) */}
-        <div
-          style={{
-            background: "var(--color-bg-card)",
-            border: "1px solid var(--color-border)",
-            borderRadius: "var(--radius-2xl)",
-            padding: "24px",
-            display: "flex",
-            flexDirection: "column",
-            gap: "18px",
-            boxShadow: "0 4px 20px rgba(0,0,0,0.04)",
-          }}
-        >
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--color-border)", paddingBottom: "12px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <ScaleIcon size={20} color="var(--color-gold-heading)" />
-              <h2 style={{ fontSize: "16px", fontWeight: 800, margin: 0 }}>
-                2. الضرائب والرسوم وإضافات التسعير (Taxes & Pricing Additions)
+        {/* Section 2: Pricing Additions (Taxes & Fees) */}
+        <div style={{ background: "var(--color-bg-card)", border: "1px solid var(--color-border)", borderRadius: "18px", padding: "24px", display: "flex", flexDirection: "column", gap: "16px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
+            <div>
+              <h2 style={{ fontSize: "16px", fontWeight: 900, color: "var(--color-gold-heading)" }}>
+                {isAr ? "الضرائب والرسوم الإلزامية (VAT & Platform Fees)" : "Taxes & Platform Fees"}
               </h2>
+              <p style={{ fontSize: "12px", color: "var(--color-text-secondary)", marginTop: "2px" }}>
+                {isAr ? "هيكل الرسوم والضرائب المطبقة تلقائياً عند الدفع النهائي." : "Automatically applied fees and VAT at checkout."}
+              </p>
             </div>
-            <Button variant="outline" size="sm" type="button" onClick={() => setShowAdditionModal(true)}>
+
+            <Button variant="outline" size="sm" type="button" onClick={() => setShowAdditionModal(true)} style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
               <PlusIcon size={14} />
-              <span>إضافة رسم / ضريبة جديدة</span>
+              <span>{isAr ? "إضافة رسم / ضريبة" : "Add Tax/Fee"}</span>
             </Button>
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-            {pricingAdditions.map((item) => (
-              <div
-                key={item.id}
-                style={{
-                  padding: "12px 16px",
-                  borderRadius: "10px",
-                  background: "var(--color-bg-secondary)",
-                  border: "1px solid var(--color-border)",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <span style={{ fontSize: "13px", fontWeight: 800 }}>{item.nameAr}</span>
-                    <span
-                      style={{
-                        fontSize: "10px",
-                        fontWeight: 700,
-                        padding: "1px 6px",
-                        borderRadius: "4px",
-                        background: item.kind === "tax" ? "rgba(245, 158, 11, 0.15)" : "rgba(59, 130, 246, 0.15)",
-                        color: item.kind === "tax" ? "#F59E0B" : "#3B82F6",
-                      }}
-                    >
-                      {item.kind === "tax" ? "ضريبة حكومية" : "رسوم خدمة"}
-                    </span>
-                  </div>
-                  <span style={{ fontSize: "11px", color: "var(--color-text-muted)" }}>{item.nameEn}</span>
-                </div>
-
-                <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                  <span style={{ fontSize: "14px", fontWeight: 900, color: "var(--color-gold-heading)" }}>
-                    {item.calc === "percent" ? `${item.value}%` : `${item.value} ر.س`}
-                  </span>
-
-                  <div style={{ display: "flex", gap: "6px" }}>
-                    <Button variant={item.isActive ? "primary" : "ghost"} size="sm" type="button" onClick={() => handleToggleAddition(item.id)}>
-                      {item.isActive ? "مفعل ✓" : "معطل"}
-                    </Button>
-                    <IconButton icon={<TrashIcon size={14} />} title="حذف" size="sm" variant="ghost" type="button" onClick={() => handleDeleteAddition(item.id)} />
-                  </div>
-                </div>
-              </div>
-            ))}
+          <div className="rafeeq-table-wrapper">
+            <table className="rafeeq-table">
+              <thead>
+                <tr>
+                  <th>{isAr ? "اسم البند" : "Name"}</th>
+                  <th>{isAr ? "النوع" : "Kind"}</th>
+                  <th>{isAr ? "طريقة الاحتساب" : "Calculation"}</th>
+                  <th>{isAr ? "القيمة" : "Value"}</th>
+                  <th>{isAr ? "الحالة" : "Status"}</th>
+                  <th style={{ textAlign: "end" }}>{isAr ? "الإجراءات" : "Actions"}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pricingAdditions.map((item) => (
+                  <tr key={item.id}>
+                    <td>
+                      <div style={{ fontWeight: 800 }}>{isAr ? item.nameAr : item.nameEn}</div>
+                    </td>
+                    <td>
+                      <span style={{ fontSize: "11px", fontWeight: 700, color: item.kind === "tax" ? "var(--color-gold-heading)" : "#3B82F6" }}>
+                        {item.kind === "tax" ? (isAr ? "ضريبة رسمية" : "Official Tax") : (isAr ? "رسوم خدمة" : "Service Fee")}
+                      </span>
+                    </td>
+                    <td>{item.calc === "percent" ? (isAr ? "نسبة مئوية (%)" : "Percentage (%)") : (isAr ? "مبلغ ثابت (SAR)" : "Fixed Amount (SAR)")}</td>
+                    <td>
+                      <span style={{ fontWeight: 900, color: "#10B981" }}>
+                        {item.value} {item.calc === "percent" ? "%" : isAr ? "ر.س" : "SAR"}
+                      </span>
+                    </td>
+                    <td>
+                      <button
+                        type="button"
+                        onClick={() => handleToggleAddition(item.id)}
+                        className="rafeeq-action-btn"
+                        style={{
+                          background: item.isActive ? "rgba(16, 185, 129, 0.15)" : "rgba(239, 68, 68, 0.15)",
+                          color: item.isActive ? "#10B981" : "#EF4444",
+                          borderColor: item.isActive ? "rgba(16, 185, 129, 0.3)" : "rgba(239, 68, 68, 0.3)",
+                        }}
+                      >
+                        <span>{item.isActive ? (isAr ? "مفعل" : "Active") : (isAr ? "معطل" : "Disabled")}</span>
+                      </button>
+                    </td>
+                    <td style={{ textAlign: "end" }}>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteAddition(item.id)}
+                        className="rafeeq-action-btn"
+                        style={{ color: "#EF4444" }}
+                        title={isAr ? "حذف" : "Delete"}
+                      >
+                        <TrashIcon size={14} color="#EF4444" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
 
-        {/* Save Button */}
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
-          <Button variant="primary" size="lg" type="submit" disabled={isSaving}>
-            <ShieldCheckIcon size={18} />
-            <span>{isSaving ? "جاري حفظ وتطبيق الإعدادات..." : "حفظ ونشر إعدادات الحوكمة ⚙️✓"}</span>
+        {/* Submit */}
+        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+          <Button variant="primary" size="lg" type="submit" disabled={isSaving} style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
+            <CheckCircleIcon size={16} />
+            <span>{isSaving ? (isAr ? "جاري الحفظ والتطبيق..." : "Saving...") : (isAr ? "حفظ ونشر إعدادات الحوكمة" : "Save & Publish Settings")}</span>
           </Button>
         </div>
       </form>
 
-      {/* Modal: Add Pricing Addition */}
-      <Modal isOpen={showAdditionModal} onClose={() => setShowAdditionModal(false)} title="إضافة رسم أو ضريبة جديدة لهيكل التسعير" maxWidth="480px">
-        <form onSubmit={handleCreateAddition} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+      {/* Add Tax/Fee Modal */}
+      <Modal
+        isOpen={showAdditionModal}
+        onClose={() => setShowAdditionModal(false)}
+        title={isAr ? "إضافة رسم أو ضريبة جديدة" : "Add New Tax / Fee"}
+      >
+        <form onSubmit={handleCreateAddition} style={{ display: "flex", flexDirection: "column", gap: "14px", fontSize: "13px" }}>
           <div>
-            <label style={{ display: "block", fontSize: "12px", fontWeight: 700, marginBottom: "4px" }}>الاسم بالعربية</label>
-            <input
-              type="text"
-              placeholder="مثال: رسوم التأمين السياحي"
-              value={newAddNameAr}
-              onChange={(e) => setNewAddNameAr(e.target.value)}
-              required
-              style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid var(--color-border)", background: "var(--color-bg-primary)" }}
-            />
+            <label style={{ display: "block", fontSize: "11px", color: "var(--color-text-secondary)", marginBottom: "4px" }}>{isAr ? "الاسم بالعربية" : "Name (Arabic)"}</label>
+            <input type="text" required value={newAddNameAr} onChange={(e) => setNewAddNameAr(e.target.value)} placeholder="ضريبة القيمة المضافة" style={{ width: "100%", padding: "8px 12px", borderRadius: "8px", background: "var(--color-bg-secondary)", border: "1px solid var(--color-border)", color: "var(--color-text-primary)", outline: "none" }} />
           </div>
 
           <div>
-            <label style={{ display: "block", fontSize: "12px", fontWeight: 700, marginBottom: "4px" }}>الاسم بالإنجليزية</label>
-            <input
-              type="text"
-              placeholder="e.g. Travel Insurance Fee"
-              value={newAddNameEn}
-              onChange={(e) => setNewAddNameEn(e.target.value)}
-              style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid var(--color-border)", background: "var(--color-bg-primary)" }}
-            />
+            <label style={{ display: "block", fontSize: "11px", color: "var(--color-text-secondary)", marginBottom: "4px" }}>{isAr ? "الاسم بالإنجليزية" : "Name (English)"}</label>
+            <input type="text" value={newAddNameEn} onChange={(e) => setNewAddNameEn(e.target.value)} placeholder="VAT" style={{ width: "100%", padding: "8px 12px", borderRadius: "8px", background: "var(--color-bg-secondary)", border: "1px solid var(--color-border)", color: "var(--color-text-primary)", outline: "none" }} />
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
             <div>
-              <label style={{ display: "block", fontSize: "12px", fontWeight: 700, marginBottom: "4px" }}>نوع الإضافة</label>
-              <select
-                value={newAddKind}
-                onChange={(e) => setNewAddKind(e.target.value as "tax" | "fee")}
-                style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid var(--color-border)", background: "var(--color-bg-primary)" }}
-              >
-                <option value="fee">رسوم خدمة (Fee)</option>
-                <option value="tax">ضريبة (Tax)</option>
+              <label style={{ display: "block", fontSize: "11px", color: "var(--color-text-secondary)", marginBottom: "4px" }}>{isAr ? "النوع" : "Kind"}</label>
+              <select value={newAddKind} onChange={(e) => setNewAddKind(e.target.value as "tax" | "fee")} style={{ width: "100%", padding: "8px 12px", borderRadius: "8px", background: "var(--color-bg-secondary)", border: "1px solid var(--color-border)", color: "var(--color-text-primary)", outline: "none" }}>
+                <option value="tax">{isAr ? "ضريبة" : "Tax"}</option>
+                <option value="fee">{isAr ? "رسوم خدمة" : "Service Fee"}</option>
               </select>
             </div>
 
             <div>
-              <label style={{ display: "block", fontSize: "12px", fontWeight: 700, marginBottom: "4px" }}>طريقة الحساب</label>
-              <select
-                value={newAddCalc}
-                onChange={(e) => setNewAddCalc(e.target.value as "percent" | "fixed")}
-                style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid var(--color-border)", background: "var(--color-bg-primary)" }}
-              >
-                <option value="percent">نسبة مئوية (%)</option>
-                <option value="fixed">مبلغ ثابت (SAR)</option>
+              <label style={{ display: "block", fontSize: "11px", color: "var(--color-text-secondary)", marginBottom: "4px" }}>{isAr ? "طريقة الاحتساب" : "Calculation"}</label>
+              <select value={newAddCalc} onChange={(e) => setNewAddCalc(e.target.value as "percent" | "fixed")} style={{ width: "100%", padding: "8px 12px", borderRadius: "8px", background: "var(--color-bg-secondary)", border: "1px solid var(--color-border)", color: "var(--color-text-primary)", outline: "none" }}>
+                <option value="percent">{isAr ? "نسبة مئوية (%)" : "Percentage (%)"}</option>
+                <option value="fixed">{isAr ? "مبلغ ثابت (SAR)" : "Fixed (SAR)"}</option>
               </select>
             </div>
           </div>
 
           <div>
-            <label style={{ display: "block", fontSize: "12px", fontWeight: 700, marginBottom: "4px" }}>
-              القيمة ({newAddCalc === "percent" ? "%" : "ر.س"})
-            </label>
-            <input
-              type="number"
-              step="0.1"
-              value={newAddValue}
-              onChange={(e) => setNewAddValue(Number(e.target.value))}
-              required
-              style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid var(--color-border)", background: "var(--color-bg-primary)" }}
-            />
+            <label style={{ display: "block", fontSize: "11px", color: "var(--color-text-secondary)", marginBottom: "4px" }}>{isAr ? "القيمة" : "Value"}</label>
+            <input type="number" required value={newAddValue} onChange={(e) => setNewAddValue(Number(e.target.value))} style={{ width: "100%", padding: "8px 12px", borderRadius: "8px", background: "var(--color-bg-secondary)", border: "1px solid var(--color-border)", color: "var(--color-text-primary)", outline: "none" }} />
           </div>
 
-          <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "8px" }}>
-            <Button variant="ghost" size="md" onClick={() => setShowAdditionModal(false)} type="button">إلغاء</Button>
-            <Button variant="primary" size="md" type="submit">إضافة وتفعيل</Button>
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "10px" }}>
+            <Button variant="outline" size="sm" type="button" onClick={() => setShowAdditionModal(false)}>{isAr ? "إلغاء" : "Cancel"}</Button>
+            <Button variant="primary" size="sm" type="submit">{isAr ? "إضافة الرسم" : "Add Fee"}</Button>
           </div>
         </form>
       </Modal>
