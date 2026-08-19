@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { DashboardNavbar } from "@/components/layout/DashboardNavbar";
 import { useLanguage } from "@/lib/language-provider";
+import { RafeeqLogo } from "@/components/brand";
 
 const CLIENT_LINKS = [
   { href: "/client/dashboard", labelAr: "📊 نظرة عامة", labelEn: "📊 Overview" },
@@ -36,11 +36,14 @@ export default function ClientLayout({ children }: { readonly children: React.Re
             flexShrink: 0,
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "20px" }}>
-            <Image src="/logo-emblem.png" alt="Rafeeq Logo" width={28} height={28} style={{ objectFit: "contain" }} />
-            <span style={{ fontSize: "16px", fontWeight: 800, color: "var(--color-gold-heading)" }}>
-              {isAr ? "لوحة التحكم" : "Client Dashboard"}
-            </span>
+          <div style={{ marginBottom: "20px" }}>
+            <RafeeqLogo
+              variant="horizontal"
+              size={28}
+              href="/client/dashboard"
+              showSubtitle
+              customSubtitle={isAr ? "لوحة المسافر" : "Client Portal"}
+            />
           </div>
 
           <nav style={{ display: "flex", flexDirection: "column", gap: "6px" }}>

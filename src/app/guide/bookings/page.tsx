@@ -1,39 +1,192 @@
+"use client";
+
+import React, { useState } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/Button";
+import { Modal } from "@/components/ui/Modal";
+import { DataTable, type DataTableColumn } from "@/components/ui/DataTable";
+import { useToast } from "@/design-system/primitives/Toast";
+import { useLanguage } from "@/lib/language-provider";
+import {
+  CalendarIcon,
+  ShieldCheckIcon,
+  MessageSquareIcon,
+  CheckCircleIcon,
+  EyeIcon,
+  UserIcon,
+} from "@/components/icons";
+
+interface GuideBookingItem {
+  id: string;
+  bookingNumber: string;
+  travelerName: string;
+  travelerPhone: string;
+  programTitle: string;
+  date: string;
+  participants: number;
+  netPayoutSar: number;
+  status: "مؤكد" | "مكتمل" | "ملغي";
+  escrowStatus: "محجوز بالضمان" | "محرر للمحفظة";
+}
+
+const INITIAL_GUIDE_BOOKINGS: GuideBookingItem[] = [
+  {
+    id: "gb-101",
+    bookingNumber: "RFQ-2026-9042",
+    travelerName: "محمد العتيبي",
+    travelerPhone: "+966553334444",
+    programTitle: "جولة مدائن صالح والبلدة القديمة بالعلا",
+    date: "2026-10-24",
+    participants: 2,
+    netPayoutSar: 1445,
+    status: "مؤكد",
+    escrowStatus: "محجوز بالضمان",
+  },
+  {
+    id: "gb-100",
+    bookingNumber: "RFQ-2026-8721",
+    travelerName: "سارة محمد",
+    travelerPhone: "+966501122334",
+    programTitle: "جولة البلدة القديمة وسوق الحرف",
+    date: "2026-08-05",
+    participants: 1,
+    netPayoutSar: 1020,
+    status: "مكتمل",
+    escrowStatus: "محرر للمحفظة",
+  },
+];
 
 export default function GuideBookingsPage() {
-  return (
-    <div style={{ padding: "var(--space-6)" }}>
-      <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, marginBottom: "var(--space-2)" }}>حجوزات العملاء 🎫</h1>
-      <p style={{ color: "var(--color-text-muted)", fontSize: "var(--text-sm)", marginBottom: "var(--space-6)" }}>متابعة وقبول الحجوزات المستقبلة والتواصل مع المسافرين</p>
+  const { lang } = useLanguage();
+  const isAr = lang === "ar";
+  const { success } = useToast();
 
-      <div className="glass" style={{ padding: "var(--space-6)", borderRadius: "var(--radius-2xl)" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "right", fontSize: "var(--text-sm)" }}>
-          <thead>
-            <tr style={{ borderBottom: "1px solid var(--color-border)", color: "var(--color-text-muted)" }}>
-              <th style={{ padding: "var(--space-3)" }}>رقم الحجز</th>
-              <th style={{ padding: "var(--space-3)" }}>اسم المسافر</th>
-              <th style={{ padding: "var(--space-3)" }}>البرنامج</th>
-              <th style={{ padding: "var(--space-3)" }}>التاريخ</th>
-              <th style={{ padding: "var(--space-3)" }}>المشاركين</th>
-              <th style={{ padding: "var(--space-3)" }}>صافي المستحق</th>
-              <th style={{ padding: "var(--space-3)" }}>حالة الدفع بالضمان</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr style={{ borderBottom: "1px dashed var(--color-border)" }}>
-              <td style={{ padding: "var(--space-3)", fontWeight: 700 }}>RFQ-2026-9042</td>
-              <td style={{ padding: "var(--space-3)" }}>محمد العتيبي</td>
-              <td style={{ padding: "var(--space-3)" }}>جولة مدائن صالح بالعلا</td>
-              <td style={{ padding: "var(--space-3)" }}>2026-10-24</td>
-              <td style={{ padding: "var(--space-3)" }}>2 أشخاص</td>
-              <td style={{ padding: "var(--space-3)", fontWeight: 800, color: "var(--color-saudi-green)" }}>1,445.00 ر.س (بعد تخصيم 15% عمولة)</td>
-              <td style={{ padding: "var(--space-3)" }}>
-                <span style={{ color: "var(--color-gold-royal)", fontWeight: 700, fontSize: "var(--text-xs)" }}>محجوز في Escrow 🔒</span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+  const [bookings, setBookings] = useState<GuideBookingItem[]>(INITIAL_GUIDE_BOOKINGS);
+  const [selectedBooking, setSelectedBooking] = useState<GuideBookingItem | null>(null);
+
+  const handleMarkCompleted = (id: string, name: string) => {
+    setBookings((prev) =>
+      prev.map((b) =>
+        b.id === id
+          ? { ...b, status: "مكتمل", escrowStatus: "محرر للمحفظة" }
+          : b
+      )
+    );
+    success(`تم تسجيل اكتمال رحلة (${name}) وتحرير المبلغ لمحفظتك بعد انتهاء فترة الضمان! 🌟✓`);
+  };
+
+  const columns: DataTableColumn<GuideBookingItem>[] = [
+    {
+      key: "booking",
+      headerAr: "رقم الحجز والمسافر",
+      headerEn: "Booking & Guest",
+      render: (row) => (
+        <div>
+          <span style={{ fontWeight: 800, fontSize: "12px", color: "var(--color-gold-heading)", fontFamily: "monospace" }}>
+            {row.bookingNumber}
+          </span>
+          <h4 style={{ fontSize: "14px", fontWeight: 800, margin: "2px 0 0 0" }}>{row.travelerName}</h4>
+          <span style={{ fontSize: "11px", color: "var(--color-text-muted)" }}>{row.travelerPhone}</span>
+        </div>
+      ),
+    },
+    {
+      key: "program",
+      headerAr: "البرنامج السياحي",
+      headerEn: "Tour Program",
+      render: (row) => (
+        <div>
+          <span style={{ fontSize: "13px", fontWeight: 700 }}>{row.programTitle}</span>
+          <span style={{ fontSize: "11px", color: "var(--color-text-muted)", display: "block" }}>
+            📅 {row.date} • {row.participants} مشاركين
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: "payout",
+      headerAr: "صافي مستحقاتك",
+      headerEn: "Net Payout",
+      render: (row) => (
+        <div>
+          <span style={{ fontSize: "14px", fontWeight: 900, color: "var(--color-saudi-green)", display: "block" }}>
+            {row.netPayoutSar.toLocaleString("en-US")} ر.س
+          </span>
+          <span style={{ fontSize: "10px", color: "var(--color-text-muted)" }}>بعد خصم عمولة المنصة 15%</span>
+        </div>
+      ),
+    },
+    {
+      key: "escrow",
+      headerAr: "حالة الضمان",
+      headerEn: "Escrow Status",
+      render: (row) => (
+        <span
+          style={{
+            background: row.escrowStatus === "محرر للمحفظة" ? "rgba(16, 185, 129, 0.12)" : "rgba(200, 169, 110, 0.15)",
+            color: row.escrowStatus === "محرر للمحفظة" ? "#10B981" : "var(--color-gold-heading)",
+            padding: "3px 8px",
+            borderRadius: "6px",
+            fontSize: "11px",
+            fontWeight: 800,
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "4px",
+          }}
+        >
+          <ShieldCheckIcon size={13} />
+          <span>{row.escrowStatus}</span>
+        </span>
+      ),
+    },
+    {
+      key: "actions",
+      headerAr: "الإجراءات والتواصل",
+      headerEn: "Actions",
+      align: "center",
+      render: (row) => (
+        <div style={{ display: "flex", gap: "6px", justifyContent: "center" }}>
+          <Link href="/client/messages">
+            <Button variant="outline" size="sm">
+              <MessageSquareIcon size={14} />
+              <span>محادثة</span>
+            </Button>
+          </Link>
+
+          {row.status === "مؤكد" && (
+            <Button variant="primary" size="sm" onClick={() => handleMarkCompleted(row.id, row.travelerName)}>
+              <CheckCircleIcon size={14} />
+              <span>تأكيد الإتمام</span>
+            </Button>
+          )}
+        </div>
+      ),
+    },
+  ];
+
+  return (
+    <div style={{ padding: "var(--space-6)", display: "flex", flexDirection: "column", gap: "var(--space-6)" }}>
+      {/* Header */}
+      <div>
+        <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 900, fontFamily: "var(--font-heading)" }}>
+          حجوزات رحلاتي والمسافرين 🎫
+        </h1>
+        <p style={{ color: "var(--color-text-muted)", fontSize: "var(--text-sm)", marginTop: "var(--space-1)" }}>
+          متابعة قوائم المشاركين بالرحلات، التواصل المباشر مع الضيوف، وتأكيد اكتمال الرحلات لتحرير مستحقات الـ Escrow
+        </p>
       </div>
+
+      {/* DataTable */}
+      <DataTable
+        data={bookings}
+        columns={columns}
+        searchPlaceholder="بحث باسم المسافر، رقم الحجز، أو البرنامج..."
+        searchFilter={(row, query) =>
+          row.travelerName.toLowerCase().includes(query) ||
+          row.bookingNumber.toLowerCase().includes(query) ||
+          row.programTitle.toLowerCase().includes(query)
+        }
+      />
     </div>
   );
 }

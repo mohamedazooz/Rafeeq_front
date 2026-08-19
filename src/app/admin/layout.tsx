@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { DashboardNavbar } from "@/components/layout/DashboardNavbar";
 import { useLanguage } from "@/lib/language-provider";
+import { RafeeqLogo } from "@/components/brand";
 import {
   LayoutDashboardIcon,
   UsersIcon,
@@ -112,13 +112,13 @@ export default function AdminLayout({ children }: { readonly children: React.Rea
         >
           {/* Brand Header */}
           <div style={{ marginBottom: "16px", paddingBottom: "12px", borderBottom: "1px solid var(--color-border)" }}>
-            <Link href="/admin/dashboard" style={{ fontSize: "17px", fontWeight: 900, color: "var(--color-gold-heading)", textDecoration: "none", display: "flex", alignItems: "center", gap: "8px" }}>
-              <Image src="/logo-emblem.png" alt="Rafeeq Logo" width={26} height={26} style={{ objectFit: "contain" }} />
-              <span>{isAr ? "إدارة رفيق Admin" : "Rafeeq Admin"}</span>
-            </Link>
-            <p style={{ fontSize: "11px", color: "var(--color-text-secondary)", marginTop: "4px" }}>
-              {isAr ? "مركز الحوكمة والتحكم الإداري الشامل" : "Platform Governance & Control Center"}
-            </p>
+            <RafeeqLogo
+              variant="horizontal"
+              size={30}
+              href="/admin/dashboard"
+              showSubtitle
+              customSubtitle={isAr ? "مركز الحوكمة والتحكم الإداري" : "Platform Governance Center"}
+            />
           </div>
 
           {/* System Status Pill */}

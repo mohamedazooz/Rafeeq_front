@@ -362,3 +362,37 @@ export const RefreshIcon: React.FC<IconProps> = ({ size, color, strokeWidth, ...
     <path d="M8 16H3v5" />
   </svg>
 );
+
+// 41. Chevron Left
+export const ChevronLeftIcon: React.FC<IconProps> = ({ size, color, strokeWidth, ...props }) => (
+  <svg {...baseStyle(color, size, strokeWidth)} {...props}>
+    <polyline points="15 18 9 12 15 6" />
+  </svg>
+);
+
+// 42. Chevron Right
+export const ChevronRightIcon: React.FC<IconProps> = ({ size, color, strokeWidth, ...props }) => (
+  <svg {...baseStyle(color, size, strokeWidth)} {...props}>
+    <polyline points="9 18 15 12 9 6" />
+  </svg>
+);
+
+// 43. Rafeeq Brand Emblem Icon (SVG)
+export const RafeeqBrandIcon: React.FC<{ size?: number | string; className?: string }> = ({
+  size = 24,
+  className,
+}) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 512 512"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+    style={{ display: "inline-block", verticalAlign: "middle" }}
+  >
+    <image href="/logo-emblem.png" width="512" height="512" />
+  </svg>
+);
+
+

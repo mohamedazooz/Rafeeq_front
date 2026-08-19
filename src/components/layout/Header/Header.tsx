@@ -7,6 +7,7 @@ import styles from "./Header.module.css";
 import { Button } from "@/components/ui/Button";
 import { useTheme } from "@/lib/theme-provider";
 import { useLanguage } from "@/lib/language-provider";
+import { RafeeqLogo } from "@/components/brand";
 
 interface NavLink {
   readonly href: string;
@@ -56,10 +57,7 @@ export function Header() {
     <header className={headerClass}>
       <div className={styles.header__inner}>
         {/* Logo */}
-        <Link href="/" className={styles.header__logo} style={{ display: "flex", alignItems: "center", gap: "10px", textDecoration: "none" }}>
-          <Image src="/logo-emblem.png" alt="Rafeeq Logo" width={42} height={42} style={{ objectFit: "contain", flexShrink: 0 }} />
-          <span className={styles["header__logo-text"]}>{lang === "ar" ? "رفيق" : "Rafeeq"}</span>
-        </Link>
+        <RafeeqLogo variant="horizontal" size={42} animated priority />
 
         {/* Desktop Nav */}
         <nav className={styles.header__nav}>

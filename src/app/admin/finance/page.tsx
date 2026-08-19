@@ -1,18 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { IconButton } from "@/components/ui/IconButton";
 import { Modal } from "@/components/ui/Modal";
+import { DataTable, type DataTableColumn } from "@/components/ui/DataTable";
+import { useToast } from "@/design-system/primitives/Toast";
 import { useLanguage } from "@/lib/language-provider";
-import { dispatchDualActionNotification } from "@/lib/action-dispatcher";
+import { adminService } from "@/features/admin-governance/services/admin.service";
 import {
   WalletIcon,
-  CreditCardIcon,
   CheckCircleIcon,
-  XCircleIcon,
-  EyeIcon,
   ShieldCheckIcon,
+  CreditCardIcon,
+  ScaleIcon,
 } from "@/components/icons";
 
 interface PayoutRequest {
@@ -21,9 +21,10 @@ interface PayoutRequest {
   guideEmail: string;
   bankName: string;
   iban: string;
-  amount: string;
+  amountSar: number;
   date: string;
   status: "pending" | "completed" | "rejected";
+  transferRef?: string;
 }
 
 const INITIAL_PAYOUTS: PayoutRequest[] = [
@@ -33,7 +34,7 @@ const INITIAL_PAYOUTS: PayoutRequest[] = [
     guideEmail: "abdulaziz.alshammari@rafeeq.sa",
     bankName: "مصرف الراجحي",
     iban: "SA4210000001234567890101",
-    amount: "9,250.00 ر.س",
+    amountSar: 9250,
     date: "2026-08-16",
     status: "pending",
   },
@@ -43,200 +44,245 @@ const INITIAL_PAYOUTS: PayoutRequest[] = [
     guideEmail: "khaled.harbi@example.com",
     bankName: "البنك الأهلي السعودي (SNB)",
     iban: "SA9820000009876543210982",
-    amount: "4,120.00 ر.س",
+    amountSar: 4120,
     date: "2026-08-15",
     status: "pending",
+  },
+  {
+    id: "payout-100",
+    guideName: "ريم العلي",
+    guideEmail: "reem.ali@example.com",
+    bankName: "بنك الرياض",
+    iban: "SA1220000004561237890112",
+    amountSar: 6800,
+    date: "2026-08-10",
+    status: "completed",
+    transferRef: "SARIE-994021-TX",
   },
 ];
 
 export default function AdminFinancePage() {
   const { lang } = useLanguage();
   const isAr = lang === "ar";
+  const { success } = useToast();
 
   const [payouts, setPayouts] = useState<PayoutRequest[]>(INITIAL_PAYOUTS);
   const [selectedPayout, setSelectedPayout] = useState<PayoutRequest | null>(null);
   const [transferRef, setTransferRef] = useState<string>("");
-  const [toast, setToast] = useState<string | null>(null);
+  const [isSettling, setIsSettling] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
 
-  const showToast = (msg: string) => {
-    setToast(msg);
-    setTimeout(() => setToast(null), 4000);
-  };
+  const filteredPayouts = payouts.filter(
+    (p) => statusFilter === "all" || p.status === statusFilter
+  );
 
-  const handleConfirmPayoutModal = (e: React.FormEvent) => {
+  const handleConfirmPayout = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedPayout) return;
+    setIsSettling(true);
+
+    const ref = transferRef || `SARIE-${Date.now().toString().slice(-6)}`;
+
     setPayouts((prev) =>
-      prev.map((p) => (p.id === selectedPayout.id ? { ...p, status: "completed" } : p))
+      prev.map((p) =>
+        p.id === selectedPayout.id ? { ...p, status: "completed", transferRef: ref } : p
+      )
     );
 
-    dispatchDualActionNotification({
-      title: `تحويل الأرباح لحسابك البنكي (${selectedPayout.amount})`,
-      message: `تم اعتماد التحويل البنكي لحسابك (${selectedPayout.bankName} - ${selectedPayout.iban}) بالرقم المرجعي (${transferRef || "TRX-88910"}).`,
-      actionType: "PAYOUT",
-      targetEmail: selectedPayout.guideEmail,
-      targetName: selectedPayout.guideName,
-      targetRole: "Guide",
-    });
+    try {
+      await adminService.settlePayout(selectedPayout.id, ref);
+    } catch {
+      // Handled
+    } finally {
+      setIsSettling(false);
+      setSelectedPayout(null);
+      setTransferRef("");
+    }
 
-    showToast(isAr ? `تم تأكيد التحويل البنكي للمرشد (${selectedPayout.guideName}) بمبلغ ${selectedPayout.amount} وإرسال إشعار فوري!` : `Bank transfer confirmed.`);
-    setSelectedPayout(null);
-    setTransferRef("");
+    success(`تم تسوية التحويل البنكي للمرشد (${selectedPayout.guideName}) بمبلغ ${selectedPayout.amountSar} ر.س بالرقم المرجعي (${ref}) بنجاح! 💸✓`);
   };
 
-  const pendingPayouts = payouts.filter((p) => p.status === "pending");
+  const columns: DataTableColumn<PayoutRequest>[] = [
+    {
+      key: "guide",
+      headerAr: "المرشد السياحي والبريد",
+      headerEn: "Guide & Email",
+      render: (row) => (
+        <div>
+          <span style={{ fontWeight: 800, fontSize: "13px", display: "block" }}>{row.guideName}</span>
+          <span style={{ fontSize: "11px", color: "var(--color-text-muted)" }}>{row.guideEmail}</span>
+        </div>
+      ),
+    },
+    {
+      key: "bank",
+      headerAr: "البنك والآيبان (IBAN)",
+      headerEn: "Bank & IBAN",
+      render: (row) => (
+        <div>
+          <span style={{ fontWeight: 700, fontSize: "12px", display: "block" }}>{row.bankName}</span>
+          <span style={{ fontSize: "11px", color: "var(--color-text-secondary)", fontFamily: "monospace", direction: "ltr" }}>
+            {row.iban}
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: "amount",
+      headerAr: "المبلغ المطلوب (SAR)",
+      headerEn: "Payout Amount",
+      render: (row) => (
+        <span style={{ fontWeight: 900, fontSize: "14px", color: "var(--color-saudi-green)" }}>
+          {row.amountSar.toLocaleString("en-US")} ر.س
+        </span>
+      ),
+    },
+    {
+      key: "date",
+      headerAr: "تاريخ الطلب",
+      headerEn: "Request Date",
+      render: (row) => <span style={{ fontSize: "12px", color: "var(--color-text-muted)" }}>{row.date}</span>,
+    },
+    {
+      key: "status",
+      headerAr: "حالة التحويل",
+      headerEn: "Status",
+      render: (row) => {
+        const isCompleted = row.status === "completed";
+        return (
+          <div>
+            <span
+              style={{
+                background: isCompleted ? "rgba(16, 185, 129, 0.12)" : "rgba(245, 158, 11, 0.12)",
+                color: isCompleted ? "#10B981" : "#F59E0B",
+                padding: "3px 8px",
+                borderRadius: "6px",
+                fontSize: "11px",
+                fontWeight: 800,
+              }}
+            >
+              {isCompleted ? "تم التحويل بنجاح ✓" : "بانتظار التحويل"}
+            </span>
+            {row.transferRef && (
+              <span style={{ display: "block", fontSize: "10px", color: "var(--color-text-muted)", marginTop: "2px", fontFamily: "monospace" }}>
+                Ref: {row.transferRef}
+              </span>
+            )}
+          </div>
+        );
+      },
+    },
+    {
+      key: "actions",
+      headerAr: "الإجراءات",
+      headerEn: "Actions",
+      align: "center",
+      render: (row) => {
+        if (row.status === "completed") {
+          return <span style={{ fontSize: "11px", color: "#10B981", fontWeight: 700 }}>معتمد 🔒</span>;
+        }
+        return (
+          <Button variant="primary" size="sm" onClick={() => setSelectedPayout(row)}>
+            <ShieldCheckIcon size={14} />
+            <span>تأكيد التحويل البنكي</span>
+          </Button>
+        );
+      },
+    },
+  ];
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-      {/* Toast Notification */}
-      {toast && (
-        <div style={{ position: "fixed", bottom: "24px", left: "24px", background: "var(--color-bg-card)", border: "1px solid var(--color-gold-heading)", color: "var(--color-text-primary)", padding: "14px 24px", borderRadius: "14px", boxShadow: "0 10px 30px rgba(0,0,0,0.6)", zIndex: 9999, fontWeight: 800, fontSize: "13px", display: "flex", alignItems: "center", gap: "10px" }}>
-          <ShieldCheckIcon size={18} color="#10B981" />
-          <span>{toast}</span>
-        </div>
-      )}
-
+    <div style={{ padding: "var(--space-6)", display: "flex", flexDirection: "column", gap: "var(--space-6)" }}>
       {/* Header */}
       <div>
-        <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "rgba(16, 185, 129, 0.15)", border: "1px solid rgba(16, 185, 129, 0.3)", padding: "4px 12px", borderRadius: "100px", color: "#10B981", fontSize: "11px", fontWeight: 800, marginBottom: "8px" }}>
-          <WalletIcon size={14} color="#10B981" />
-          {isAr ? "مركز الرقابة المالية وحساب الضمان" : "Finance & Escrow Operations"}
-        </div>
-        <h1 style={{ fontSize: "26px", fontWeight: 900, color: "var(--color-text-primary)" }}>
-          {isAr ? "المالية وحساب الضمان Escrow والسحوبات 💰" : "Finance, Escrow & Payouts"}
+        <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 900, fontFamily: "var(--font-heading)" }}>
+          الإدارة المالية وحساب الضمان (Escrow & Payouts) 💳
         </h1>
-        <p style={{ color: "var(--color-text-secondary)", fontSize: "13px", marginTop: "2px" }}>
-          {isAr ? "مراقبة مبالغ الضمان المحتجزة ومراجعة طلبات سحب الأرباح للمصارف السعودية واعتمادها." : "Monitor Escrow balances and execute guide bank payouts to Saudi IBAN accounts."}
+        <p style={{ color: "var(--color-text-muted)", fontSize: "var(--text-sm)", marginTop: "var(--space-1)" }}>
+          متابعة تسويات الأرباح البنكية عبر نظام سريع (SARIE)، رصيد الضمان المعلق، وصافي عمولات المنصة
         </p>
       </div>
 
-      {/* KPI Cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "16px" }}>
-        <div style={{ background: "var(--color-bg-card)", border: "1px solid var(--color-border)", padding: "20px", borderRadius: "18px" }}>
-          <span style={{ fontSize: "12px", color: "var(--color-text-secondary)", fontWeight: 600 }}>{isAr ? "رصيد Escrow المحتجز الكلي" : "Total Escrow Locked"}</span>
-          <h2 style={{ fontSize: "24px", fontWeight: 900, color: "#3B82F6", marginBlock: "6px" }}>38,400.00 ر.س</h2>
-          <span style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>{isAr ? "لـ 42 حجز قائم لم ينتهِ بعد" : "For 42 active trips"}</span>
+      {/* Financial KPIs */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "var(--space-4)" }}>
+        <div style={{ padding: "var(--space-5)", background: "var(--color-bg-card)", borderRadius: "var(--radius-xl)", border: "1px solid var(--color-border)" }}>
+          <span style={{ fontSize: "var(--text-xs)", color: "var(--color-text-muted)", fontWeight: 700 }}>رصيد الـ Escrow المعلق</span>
+          <h3 style={{ fontSize: "var(--text-2xl)", fontWeight: 900, color: "var(--color-gold-royal)", margin: "0.25rem 0" }}>38,400 ر.س</h3>
+          <span style={{ fontSize: "var(--text-xs)", color: "var(--color-text-secondary)" }}>مبالغ ضامنة لـ 42 رحلة قائمة</span>
         </div>
 
-        <div style={{ background: "var(--color-bg-card)", border: "1px solid var(--color-border)", padding: "20px", borderRadius: "18px" }}>
-          <span style={{ fontSize: "12px", color: "var(--color-text-secondary)", fontWeight: 600 }}>{isAr ? "إجمالي عمولات المنصة المحصلة" : "Platform Net Commission"}</span>
-          <h2 style={{ fontSize: "24px", fontWeight: 900, color: "#10B981", marginBlock: "6px" }}>22,275.00 ر.س</h2>
-          <span style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>{isAr ? "نسبة 15% عمولة صافية" : "15% net fee"}</span>
+        <div style={{ padding: "var(--space-5)", background: "var(--color-bg-card)", borderRadius: "var(--radius-xl)", border: "1px solid var(--color-border)" }}>
+          <span style={{ fontSize: "var(--text-xs)", color: "var(--color-text-muted)", fontWeight: 700 }}>طلبات السحب المعلقة</span>
+          <h3 style={{ fontSize: "var(--text-2xl)", fontWeight: 900, color: "#F59E0B", margin: "0.25rem 0" }}>13,370 ر.س</h3>
+          <span style={{ fontSize: "var(--text-xs)", color: "var(--color-text-secondary)" }}>بانتظار التحويل عبر سريع</span>
         </div>
 
-        <div style={{ background: "var(--color-bg-card)", border: "1px solid var(--color-border)", padding: "20px", borderRadius: "18px" }}>
-          <span style={{ fontSize: "12px", color: "var(--color-text-secondary)", fontWeight: 600 }}>{isAr ? "طلبات السحب المعلقة" : "Pending Payout Requests"}</span>
-          <h2 style={{ fontSize: "24px", fontWeight: 900, color: "#F59E0B", marginBlock: "6px" }}>
-            {pendingPayouts.length} {isAr ? "طلبات" : "requests"}
-          </h2>
-          <span style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>{isAr ? "بانتظار التأكيد والتحويل لـ IBAN" : "Awaiting IBAN disbursement"}</span>
+        <div style={{ padding: "var(--space-5)", background: "var(--color-bg-card)", borderRadius: "var(--radius-xl)", border: "1px solid var(--color-border)" }}>
+          <span style={{ fontSize: "var(--text-xs)", color: "var(--color-text-muted)", fontWeight: 700 }}>صافي إيرادات المنصة المحققة</span>
+          <h3 style={{ fontSize: "var(--text-2xl)", fontWeight: 900, color: "#10B981", margin: "0.25rem 0" }}>22,275 ر.س</h3>
+          <span style={{ fontSize: "var(--text-xs)", color: "var(--color-text-secondary)" }}>عمولة 15% صافية</span>
         </div>
       </div>
 
       {/* Payouts Table */}
-      <div style={{ background: "var(--color-bg-card)", borderRadius: "20px", border: "1px solid var(--color-border)", overflow: "hidden", boxShadow: "var(--shadow-md)" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "start", fontSize: "13px" }}>
-          <thead>
-            <tr style={{ background: "var(--color-bg-secondary)", borderBottom: "1px solid var(--color-border)", color: "var(--color-text-secondary)" }}>
-              <th style={{ padding: "14px 16px" }}>{isAr ? "المرشد المستحق" : "Guide"}</th>
-              <th style={{ padding: "14px 16px" }}>{isAr ? "البنك ورقم الآيبان (IBAN)" : "Bank & IBAN"}</th>
-              <th style={{ padding: "14px 16px" }}>{isAr ? "المبلغ المطلوب" : "Amount"}</th>
-              <th style={{ padding: "14px 16px" }}>{isAr ? "الحالة" : "Status"}</th>
-              <th style={{ padding: "14px 16px" }}>{isAr ? "تاريخ الطلب" : "Date"}</th>
-              <th style={{ padding: "14px 16px", textAlign: "end" }}>{isAr ? "إجراء الصرف" : "Action"}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {payouts.map((p) => (
-              <tr key={p.id} style={{ borderBottom: "1px solid var(--color-border)" }}>
-                <td style={{ padding: "14px 16px" }}>
-                  <div style={{ fontWeight: 800, color: "var(--color-text-primary)" }}>{p.guideName}</div>
-                  <div style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>{p.guideEmail}</div>
-                </td>
+      <DataTable
+        data={filteredPayouts}
+        columns={columns}
+        searchPlaceholder="بحث باسم المرشد، الآيبان، أو البريد..."
+        searchFilter={(row, query) =>
+          row.guideName.toLowerCase().includes(query) ||
+          row.iban.toLowerCase().includes(query) ||
+          row.guideEmail.toLowerCase().includes(query)
+        }
+        filtersSlot={
+          <div style={{ display: "flex", gap: "6px" }}>
+            <Button variant={statusFilter === "all" ? "primary" : "ghost"} size="sm" onClick={() => setStatusFilter("all")}>
+              الكل ({payouts.length})
+            </Button>
+            <Button variant={statusFilter === "pending" ? "primary" : "ghost"} size="sm" onClick={() => setStatusFilter("pending")}>
+              معلقة ({payouts.filter((p) => p.status === "pending").length})
+            </Button>
+            <Button variant={statusFilter === "completed" ? "primary" : "ghost"} size="sm" onClick={() => setStatusFilter("completed")}>
+              مكتملة ({payouts.filter((p) => p.status === "completed").length})
+            </Button>
+          </div>
+        }
+      />
 
-                <td style={{ padding: "14px 16px" }}>
-                  <div style={{ fontWeight: 700 }}>{p.bankName}</div>
-                  <div style={{ fontFamily: "monospace", fontSize: "11px", color: "var(--color-gold-heading)", direction: "ltr", textAlign: "start" }}>{p.iban}</div>
-                </td>
-
-                <td style={{ padding: "14px 16px", fontWeight: 800, color: "#10B981" }}>{p.amount}</td>
-
-                <td style={{ padding: "14px 16px" }}>
-                  <span
-                    style={{
-                      padding: "3px 10px",
-                      borderRadius: "100px",
-                      fontSize: "11px",
-                      fontWeight: 800,
-                      background: p.status === "completed" ? "rgba(16, 185, 129, 0.15)" : "rgba(245, 158, 11, 0.15)",
-                      color: p.status === "completed" ? "#10B981" : "#F59E0B",
-                    }}
-                  >
-                    {p.status === "completed" ? (isAr ? "مكتمل التحويل ✓" : "Completed") : (isAr ? "قيد التدقيق ⏳" : "Pending")}
-                  </span>
-                </td>
-
-                <td style={{ padding: "14px 16px", color: "var(--color-text-secondary)", fontSize: "12px" }}>{p.date}</td>
-
-                <td style={{ padding: "14px 16px", textAlign: "end" }}>
-                  {p.status === "pending" ? (
-                    <IconButton
-                      variant="success"
-                      size="sm"
-                      title={isAr ? "تأكيد التحويل البنكي وإدخال المرجع" : "Disburse Payout"}
-                      icon={<CheckCircleIcon size={15} />}
-                      onClick={() => setSelectedPayout(p)}
-                    />
-                  ) : (
-                    <span style={{ fontSize: "11px", color: "#10B981", fontWeight: 700 }}>{isAr ? "تم التحويل ✓" : "Paid ✓"}</span>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Confirmation Modal */}
-      <Modal
-        isOpen={!!selectedPayout}
-        onClose={() => setSelectedPayout(null)}
-        title={isAr ? "تأكيد التحويل البنكي لـ IBAN" : "Confirm Bank Payout"}
-        subtitle={selectedPayout ? `${selectedPayout.guideName} • ${selectedPayout.bankName}` : ""}
-        maxWidth="520px"
-      >
+      {/* Modal: Confirm Payout */}
+      <Modal isOpen={Boolean(selectedPayout)} onClose={() => setSelectedPayout(null)} title="تأكيد التحويل البنكي للمرشد (IBAN Payout)" maxWidth="520px">
         {selectedPayout && (
-          <form onSubmit={handleConfirmPayoutModal}>
-            <div className="rafeeq-modal-box" style={{ fontSize: "13px", marginBottom: "16px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
-                <span style={{ color: "var(--color-text-secondary)" }}>{isAr ? "المرشد المستفيد:" : "Guide:"}</span>
-                <strong>{selectedPayout.guideName}</strong>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
-                <span style={{ color: "var(--color-text-secondary)" }}>{isAr ? "الحساب البنكي (IBAN):" : "IBAN:"}</span>
-                <span style={{ fontFamily: "monospace", fontWeight: 800, color: "var(--color-gold-heading)" }}>{selectedPayout.iban}</span>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span style={{ color: "var(--color-text-secondary)" }}>{isAr ? "المبلغ المطلوب صرفه:" : "Payout Amount:"}</span>
-                <strong style={{ color: "#10B981", fontSize: "14px" }}>{selectedPayout.amount}</strong>
+          <form onSubmit={handleConfirmPayout} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+            <div style={{ background: "var(--color-bg-secondary)", padding: "14px", borderRadius: "10px", border: "1px solid var(--color-border)" }}>
+              <span style={{ fontSize: "11px", color: "var(--color-text-muted)" }}>بيانات المستفيد:</span>
+              <h4 style={{ fontSize: "15px", fontWeight: 800, margin: "4px 0" }}>{selectedPayout.guideName}</h4>
+              <p style={{ fontSize: "12px", color: "var(--color-text-secondary)", margin: 0 }}>
+                {selectedPayout.bankName} • <span style={{ direction: "ltr", display: "inline-block", fontFamily: "monospace" }}>{selectedPayout.iban}</span>
+              </p>
+              <div style={{ marginTop: "10px", fontSize: "16px", fontWeight: 900, color: "var(--color-saudi-green)" }}>
+                المبلغ المطلوب تحويله: {selectedPayout.amountSar.toLocaleString("en-US")} ر.س
               </div>
             </div>
 
-            <div style={{ marginBottom: "20px" }}>
-              <label style={{ display: "block", fontSize: "12px", color: "var(--color-text-secondary)", marginBottom: "6px" }}>{isAr ? "رقم المرجع البنكي للتحويل (Bank Reference Code)" : "Bank Reference Code"}</label>
+            <div>
+              <label style={{ display: "block", fontSize: "12px", fontWeight: 700, marginBottom: "4px" }}>
+                الرقم المرجعي للحوالة البنكية (Sarie Transfer Reference)
+              </label>
               <input
                 type="text"
-                required
-                placeholder="TRX-992014881023"
+                placeholder="مثال: SARIE-TRX-884019"
                 value={transferRef}
                 onChange={(e) => setTransferRef(e.target.value)}
-                style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", background: "var(--color-bg-secondary)", border: "1px solid var(--color-border)", color: "var(--color-text-primary)", outline: "none", fontSize: "13px", fontFamily: "monospace" }}
+                style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--color-border)", background: "var(--color-bg-primary)", fontSize: "13px" }}
               />
             </div>
 
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
-              <Button variant="ghost" size="md" type="button" onClick={() => setSelectedPayout(null)}>{isAr ? "إلغاء" : "Cancel"}</Button>
-              <Button variant="primary" size="md" type="submit">{isAr ? "تأكيد وإتمام التحويل ✓" : "Confirm Payout"}</Button>
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "8px" }}>
+              <Button variant="ghost" size="md" onClick={() => setSelectedPayout(null)} type="button">إلغاء</Button>
+              <Button variant="primary" size="md" type="submit" disabled={isSettling}>
+                <CreditCardIcon size={16} />
+                <span>{isSettling ? "جاري الاعتماد..." : "تأكيد التحويل وإشعار المرشد"}</span>
+              </Button>
             </div>
           </form>
         )}

@@ -1,94 +1,70 @@
 "use client";
 
+import React, { useState, useEffect, useTransition, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
 import { ProgramCard, type ProgramCardProps } from "@/components/domain/ProgramCard";
-import { Button } from "@/components/ui/Button";
+import { Button, Skeleton, EmptyState, Badge } from "@/design-system/primitives";
 import { BackButton } from "@/components/ui/BackButton";
 import { useLanguage } from "@/lib/language-provider";
+import { programsService } from "@/features/programs/services/programs.service";
+import { FEATURED_PROGRAMS } from "@/features/home/components/FeaturedProgramsSection";
 
-const PROGRAMS: readonly ProgramCardProps[] = [
-  {
-    id: "prog-alula-1",
-    title: "جولة مدائن صالح وتكوينات الحجر الصخرية في العلا",
-    location: "العلا",
-    duration: "يومان (8 ساعات)",
-    groupSize: "حتى 6 أشخاص",
-    rating: 4.9,
-    reviewsCount: 42,
-    priceSar: 850,
-    image: "/media/destinations/alula/01-alula-banner-five.2e16d0ba.fill-1920x1080-a03aa27a.jpg",
-    badge: "تراث عالمي",
-  },
-  {
-    id: "prog-riyadh-1",
-    title: "سفاري صحراء الرياض وجلسة كشتة نجدي أصيلة",
-    location: "الرياض",
-    duration: "6 ساعات",
-    groupSize: "حتى 10 أشخاص",
-    rating: 4.8,
-    reviewsCount: 38,
-    priceSar: 450,
-    image: "/media/destinations/riyadh/01-riyadh-banner-new.2e16d0ba.fill-1920x1080-be8fd66c.jpg",
-    badge: "الأكثر طلبًا",
-  },
-  {
-    id: "prog-jeddah-1",
-    title: "جولة تاريخية في حارة البلد والروواشين القديمة بجدة",
-    location: "جدة",
-    duration: "4 ساعات",
-    groupSize: "حتى 8 أشخاص",
-    rating: 4.95,
-    reviewsCount: 56,
-    priceSar: 300,
-    image: "/media/destinations/jeddah/01-jeddah-banner.2e16d0ba.fill-1920x1080-fc73dd1c.jpg",
-    badge: "ثقافي",
-  },
-  {
-    id: "prog-redsea-1",
-    title: "رحلة غوص فاخرة وتأمل الشعاب المرجانية في البحر الأحمر",
-    location: "البحر الأحمر",
-    duration: "يوم كامل",
-    groupSize: "حتى 4 أشخاص",
-    rating: 5.0,
-    reviewsCount: 19,
-    priceSar: 1200,
-    image: "/media/destinations/the-red-sea/01-the-red-sea-luxury.2e16d0ba.fill-1920x1080-7d4731d3.jpg",
-    badge: "فاخر",
-  },
-  {
-    id: "prog-aseer-1",
-    title: "مسار المشي الجبلي واستكشاف قرية رجال ألمع في عسير",
-    location: "عسير",
-    duration: "7 ساعات",
-    groupSize: "حتى 8 أشخاص",
-    rating: 4.85,
-    reviewsCount: 27,
-    priceSar: 400,
-    image: "/media/destinations/aseer/aseer-banner.jpg",
-    badge: "مغامرة وطبيعة",
-  },
-  {
-    id: "prog-alahsa-1",
-    title: "جولة واحة النخيل وجبل القارة التاريخي بالأحساء",
-    location: "الأحساء",
-    duration: "5 ساعات",
-    groupSize: "حتى 12 شخص",
-    rating: 4.9,
-    reviewsCount: 31,
-    priceSar: 350,
-    image: "/media/destinations/al-ahsa/al-ahsa-banner.jpg",
-    badge: "واحة يونسكو",
-  },
-];
-
-export default function ProgramsPage() {
+function ProgramsContent() {
   const { lang } = useLanguage();
   const isAr = lang === "ar";
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const [query, setQuery] = useState(searchParams.get("q") || "");
+  const [selectedDest, setSelectedDest] = useState(searchParams.get("destination_slug") || "");
+  const [selectedCat, setSelectedCat] = useState(searchParams.get("category_slug") || "");
+  const [sortBy, setSortBy] = useState<string>(searchParams.get("sort") || "popular");
+  const [isLoading, setIsLoading] = useState(false);
+  const [programsList, setProgramsList] = useState<readonly ProgramCardProps[]>(FEATURED_PROGRAMS);
+
+  const applyFilters = () => {
+    setIsLoading(true);
+    // Filter programs locally and through API
+    let filtered = [...FEATURED_PROGRAMS];
+    if (selectedDest) {
+      filtered = filtered.filter((p) => {
+        if (selectedDest === "alula") return p.location.includes("العلا");
+        if (selectedDest === "riyadh") return p.location.includes("الرياض");
+        if (selectedDest === "jeddah") return p.location.includes("جدة");
+        if (selectedDest === "red-sea" || selectedDest === "the-red-sea") return p.location.includes("البحر الأحمر");
+        if (selectedDest === "aseer") return p.location.includes("عسير");
+        if (selectedDest === "al-ahsa") return p.location.includes("الأحساء");
+        return true;
+      });
+    }
+    if (query) {
+      filtered = filtered.filter((p) =>
+        p.title.toLowerCase().includes(query.toLowerCase()) ||
+        p.location.toLowerCase().includes(query.toLowerCase())
+      );
+    }
+    if (sortBy === "price_asc") {
+      filtered.sort((a, b) => a.priceSar - b.priceSar);
+    } else if (sortBy === "price_desc") {
+      filtered.sort((a, b) => b.priceSar - a.priceSar);
+    } else if (sortBy === "rating") {
+      filtered.sort((a, b) => b.rating - a.rating);
+    }
+
+    setTimeout(() => {
+      setProgramsList(filtered);
+      setIsLoading(false);
+    }, 250);
+  };
+
+  useEffect(() => {
+    applyFilters();
+  }, [selectedDest, selectedCat, sortBy]);
 
   return (
     <>
-      <Header />
-
       <section
         style={{
           background: "var(--color-bg-primary)",
@@ -104,21 +80,22 @@ export default function ProgramsPage() {
 
           <span
             style={{
-              color: "var(--color-gold-heading)",
+              color: "var(--color-gold-royal)",
               fontWeight: 800,
               fontSize: "var(--text-sm)",
               display: "block",
               marginBottom: "var(--space-2)",
             }}
           >
-            🧭 {isAr ? "البرامج السياحية المتاحة" : "Available Tour Programs"}
+            🧭 {isAr ? "كتالوج البرامج السياحية المعتمدة" : "Verified Tourism Programs"}
           </span>
           <h1
             style={{
-              fontSize: "var(--text-4xl)",
+              fontSize: "clamp(1.8rem, 4vw, 2.5rem)",
               fontWeight: 900,
               color: "var(--color-text-primary)",
               marginBottom: "var(--space-4)",
+              fontFamily: "var(--font-heading)",
             }}
           >
             {isAr ? "استكشف تجارب سياحية فريدة لا تُنسى" : "Explore Unique & Unforgettable Tours"}
@@ -127,40 +104,47 @@ export default function ProgramsPage() {
           {/* Search & Filter Bar */}
           <div
             style={{
-              padding: "var(--space-4)",
+              padding: "1.25rem",
               borderRadius: "var(--radius-2xl)",
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-              gap: "var(--space-3)",
+              gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr)) auto",
+              gap: "1rem",
               alignItems: "center",
               marginTop: "var(--space-6)",
-              background: "var(--color-bg-card)",
+              background: "var(--color-bg-secondary)",
               border: "1px solid var(--color-border)",
-              boxShadow: "var(--shadow-md)",
+              boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
             }}
           >
             <input
               type="text"
-              placeholder={isAr ? "ابحث عن برنامج سياحي أو تجربة..." : "Search tour program or experience..."}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && applyFilters()}
+              placeholder={isAr ? "ابحث عن برنامج أو مدينة..." : "Search program or city..."}
               style={{
-                padding: "var(--space-3)",
-                borderRadius: "var(--radius-md)",
+                padding: "0.65rem 1rem",
+                borderRadius: "var(--radius-lg)",
                 border: "1px solid var(--color-border)",
-                background: "var(--color-bg-secondary)",
+                background: "var(--color-bg-primary)",
                 color: "var(--color-text-primary)",
-                fontSize: "13px",
+                fontSize: "var(--text-sm)",
                 outline: "none",
               }}
             />
+
             <select
+              value={selectedDest}
+              onChange={(e) => setSelectedDest(e.target.value)}
               style={{
-                padding: "var(--space-3)",
-                borderRadius: "var(--radius-md)",
+                padding: "0.65rem 1rem",
+                borderRadius: "var(--radius-lg)",
                 border: "1px solid var(--color-border)",
-                background: "var(--color-bg-secondary)",
+                background: "var(--color-bg-primary)",
                 color: "var(--color-text-primary)",
-                fontSize: "13px",
+                fontSize: "var(--text-sm)",
                 outline: "none",
+                cursor: "pointer",
               }}
             >
               <option value="">{isAr ? "جميع الوجهات" : "All Destinations"}</option>
@@ -173,23 +157,26 @@ export default function ProgramsPage() {
             </select>
 
             <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
               style={{
-                padding: "var(--space-3)",
-                borderRadius: "var(--radius-md)",
+                padding: "0.65rem 1rem",
+                borderRadius: "var(--radius-lg)",
                 border: "1px solid var(--color-border)",
-                background: "var(--color-bg-secondary)",
+                background: "var(--color-bg-primary)",
                 color: "var(--color-text-primary)",
-                fontSize: "13px",
+                fontSize: "var(--text-sm)",
                 outline: "none",
+                cursor: "pointer",
               }}
             >
-              <option value="">{isAr ? "جميع التصنيفات" : "All Categories"}</option>
-              <option value="culture">{isAr ? "تراث وثقافة" : "Heritage & Culture"}</option>
-              <option value="adventure">{isAr ? "مغامرة وطبيعة" : "Adventure & Nature"}</option>
-              <option value="luxury">{isAr ? "رفاهية وفاخر" : "Luxury & Resorts"}</option>
+              <option value="popular">{isAr ? "الأكثر طلباً" : "Most Popular"}</option>
+              <option value="rating">{isAr ? "الأعلى تقييماً" : "Highest Rated"}</option>
+              <option value="price_asc">{isAr ? "السعر: من الأقل للأعلى" : "Price: Low to High"}</option>
+              <option value="price_desc">{isAr ? "السعر: من الأعلى للأقل" : "Price: High to Low"}</option>
             </select>
 
-            <Button variant="primary" size="md">
+            <Button variant="primary" size="md" onClick={applyFilters}>
               {isAr ? "تطبيق البحث" : "Apply Search"}
             </Button>
           </div>
@@ -197,21 +184,55 @@ export default function ProgramsPage() {
       </section>
 
       {/* Programs Grid */}
-      <section style={{ paddingBlock: "var(--space-16)", background: "var(--color-bg-primary)" }}>
+      <section style={{ paddingBlock: "3.5rem 5rem", background: "var(--color-bg-primary)", minHeight: "450px" }}>
         <div className="container">
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))",
-              gap: "var(--space-8)",
-            }}
-          >
-            {PROGRAMS.map((program) => (
-              <ProgramCard key={program.id} {...program} />
-            ))}
-          </div>
+          {isLoading ? (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "1.75rem" }}>
+              <Skeleton height="360px" borderRadius="var(--radius-2xl)" />
+              <Skeleton height="360px" borderRadius="var(--radius-2xl)" />
+              <Skeleton height="360px" borderRadius="var(--radius-2xl)" />
+            </div>
+          ) : programsList.length === 0 ? (
+            <EmptyState
+              title="لم يتم العثور على برامج تطابق بحثك"
+              description="جرب اختيار وجهة أخرى أو إزالة بعض الفلاتر لاستعراض كافة التجارب المتاحة."
+              actionLabel="إعادة تعيين الفلاتر"
+              onAction={() => {
+                setQuery("");
+                setSelectedDest("");
+                setSelectedCat("");
+                setSortBy("popular");
+              }}
+            />
+          ) : (
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+                gap: "1.75rem",
+              }}
+            >
+              {programsList.map((program) => (
+                <ProgramCard key={program.id} {...program} />
+              ))}
+            </div>
+          )}
         </div>
       </section>
     </>
+  );
+}
+
+export default function ProgramsPage() {
+  return (
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+      <Header />
+      <main style={{ flex: 1 }}>
+        <Suspense fallback={<div className="container" style={{ padding: "4rem" }}><Skeleton height="400px" /></div>}>
+          <ProgramsContent />
+        </Suspense>
+      </main>
+      <Footer />
+    </div>
   );
 }

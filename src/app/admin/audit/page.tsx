@@ -1,16 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { IconButton } from "@/components/ui/IconButton";
+import { DataTable, type DataTableColumn } from "@/components/ui/DataTable";
 import { useLanguage } from "@/lib/language-provider";
 import {
   ActivityIcon,
-  SearchIcon,
-  EyeIcon,
   DownloadIcon,
   ShieldCheckIcon,
-  XCircleIcon,
+  AlertTriangleIcon,
 } from "@/components/icons";
 
 interface AuditLog {
@@ -38,7 +36,7 @@ const INITIAL_AUDIT_LOGS: AuditLog[] = [
   {
     id: "log-102",
     actor: "نورة القحطاني (Lead)",
-    role: "ContentLead",
+    role: "GuideApprover",
     action: "APPROVE_GUIDE_KYC",
     target: "Guide: سعود فهد الدوسري (TG-992014)",
     ipAddress: "197.220.14.88",
@@ -58,9 +56,9 @@ const INITIAL_AUDIT_LOGS: AuditLog[] = [
   {
     id: "log-104",
     actor: "سلطان المنصور (Finance)",
-    role: "FinanceOfficer",
+    role: "FinanceManager",
     action: "APPROVE_BANK_PAYOUT",
-    target: "IBAN Payout: 9,250.00 SAR to عبد العزيز الشمري",
+    target: "IBAN Payout: 9,250.00 SAR to عبد العزيز الشمري (SARIE-994021)",
     ipAddress: "197.220.14.88",
     timestamp: "2026-08-18 12:00:44",
     severity: "CRITICAL",
@@ -75,6 +73,16 @@ const INITIAL_AUDIT_LOGS: AuditLog[] = [
     timestamp: "2026-08-17 19:22:18",
     severity: "HIGH",
   },
+  {
+    id: "log-106",
+    actor: "فهد العريفي (Admin)",
+    role: "SuperAdmin",
+    action: "ASSIGN_ROLE_TO_USER",
+    target: "User: نورة القحطاني -> Assigned Role: Guide Approver",
+    ipAddress: "197.220.14.88",
+    timestamp: "2026-08-17 11:15:30",
+    severity: "MEDIUM",
+  },
 ];
 
 export default function AdminAuditLogsPage() {
@@ -82,167 +90,147 @@ export default function AdminAuditLogsPage() {
   const isAr = lang === "ar";
 
   const [logs] = useState<AuditLog[]>(INITIAL_AUDIT_LOGS);
-  const [search, setSearch] = useState<string>("");
   const [selectedSeverity, setSelectedSeverity] = useState<string>("all");
-  const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
 
-  const filteredLogs = logs.filter((log) => {
-    const matchesSeverity = selectedSeverity === "all" || log.severity === selectedSeverity;
-    const matchesSearch =
-      log.actor.includes(search) ||
-      log.action.toLowerCase().includes(search.toLowerCase()) ||
-      log.target.includes(search) ||
-      log.ipAddress.includes(search);
-    return matchesSeverity && matchesSearch;
-  });
+  const showToast = (msg: string) => {
+    setToastMsg(msg);
+    setTimeout(() => setToastMsg(null), 3500);
+  };
+
+  const handleExportCsv = () => {
+    showToast(isAr ? "تم تصدير سجل التدقيق والرقابة (CSV Audit Report) بنجاح! 📥" : "Audit log exported to CSV.");
+  };
+
+  const filteredLogs = logs.filter(
+    (l) => selectedSeverity === "all" || l.severity === selectedSeverity
+  );
 
   const getSeverityBadge = (sev: AuditLog["severity"]) => {
     switch (sev) {
       case "CRITICAL":
-        return <span style={{ background: "rgba(239, 68, 68, 0.2)", color: "#ef4444", padding: "3px 8px", borderRadius: "6px", fontSize: "11px", fontWeight: 800 }}>حرج CRITICAL</span>;
+        return <span style={{ background: "rgba(239, 68, 68, 0.15)", color: "#EF4444", padding: "2px 8px", borderRadius: "6px", fontSize: "11px", fontWeight: 800 }}>حرج (Critical) 🚨</span>;
       case "HIGH":
-        return <span style={{ background: "rgba(245, 158, 11, 0.2)", color: "#f59e0b", padding: "3px 8px", borderRadius: "6px", fontSize: "11px", fontWeight: 800 }}>عالي HIGH</span>;
+        return <span style={{ background: "rgba(245, 158, 11, 0.15)", color: "#F59E0B", padding: "2px 8px", borderRadius: "6px", fontSize: "11px", fontWeight: 800 }}>مرتفع (High) ⚠️</span>;
       case "MEDIUM":
-        return <span style={{ background: "rgba(59, 130, 246, 0.2)", color: "#3b82f6", padding: "3px 8px", borderRadius: "6px", fontSize: "11px", fontWeight: 800 }}>متوسط MEDIUM</span>;
+        return <span style={{ background: "rgba(59, 130, 246, 0.15)", color: "#3B82F6", padding: "2px 8px", borderRadius: "6px", fontSize: "11px", fontWeight: 800 }}>متوسط (Medium)</span>;
       case "LOW":
-        return <span style={{ background: "rgba(16, 185, 129, 0.2)", color: "#10b981", padding: "3px 8px", borderRadius: "6px", fontSize: "11px", fontWeight: 800 }}>عادي LOW</span>;
+      default:
+        return <span style={{ background: "rgba(16, 185, 129, 0.15)", color: "#10B981", padding: "2px 8px", borderRadius: "6px", fontSize: "11px", fontWeight: 800 }}>عادي (Low)</span>;
     }
   };
 
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-      {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
+  const columns: DataTableColumn<AuditLog>[] = [
+    {
+      key: "actor",
+      headerAr: "المستخدم والمسؤولية",
+      headerEn: "Actor & Role",
+      render: (row) => (
         <div>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "rgba(59, 130, 246, 0.15)", border: "1px solid rgba(59, 130, 246, 0.3)", padding: "4px 12px", borderRadius: "100px", color: "#3B82F6", fontSize: "11px", fontWeight: 800, marginBottom: "8px" }}>
-            <ActivityIcon size={14} color="#3B82F6" />
-            {isAr ? "سجل الرقابة الأمنية والعمليات الإدارية" : "Immutable Audit Trail & Compliance"}
-          </div>
-          <h1 style={{ fontSize: "26px", fontWeight: 900, color: "var(--color-text-primary)" }}>
-            {isAr ? "سجل العمليات والتدقيق الأمني (Audit Logs) 🛡️" : "Security Audit Logs"}
+          <span style={{ fontWeight: 800, fontSize: "13px", display: "block" }}>{row.actor}</span>
+          <span style={{ fontSize: "11px", color: "var(--color-text-muted)" }}>{row.role} • IP: {row.ipAddress}</span>
+        </div>
+      ),
+    },
+    {
+      key: "action",
+      headerAr: "العملية الإدارية",
+      headerEn: "Action Key",
+      render: (row) => (
+        <span style={{ fontFamily: "monospace", fontSize: "12px", fontWeight: 700, color: "var(--color-gold-heading)", background: "var(--color-bg-secondary)", padding: "2px 6px", borderRadius: "4px" }}>
+          {row.action}
+        </span>
+      ),
+    },
+    {
+      key: "target",
+      headerAr: "الهدف والتفاصيل",
+      headerEn: "Target Details",
+      render: (row) => <span style={{ fontSize: "12px", color: "var(--color-text-secondary)" }}>{row.target}</span>,
+    },
+    {
+      key: "severity",
+      headerAr: "مستوى الخطورة",
+      headerEn: "Severity",
+      render: (row) => getSeverityBadge(row.severity),
+    },
+    {
+      key: "timestamp",
+      headerAr: "التوقيت",
+      headerEn: "Timestamp",
+      render: (row) => <span style={{ fontSize: "11px", color: "var(--color-text-muted)", fontFamily: "monospace" }}>{row.timestamp}</span>,
+    },
+  ];
+
+  return (
+    <div style={{ padding: "var(--space-6)", display: "flex", flexDirection: "column", gap: "var(--space-6)" }}>
+      {/* Toast */}
+      {toastMsg && (
+        <div
+          style={{
+            position: "fixed",
+            bottom: "24px",
+            left: "24px",
+            background: "var(--color-bg-card)",
+            border: "1px solid var(--color-gold-heading)",
+            color: "var(--color-text-primary)",
+            padding: "14px 28px",
+            borderRadius: "14px",
+            boxShadow: "0 10px 30px rgba(0,0,0,0.25)",
+            zIndex: 9999,
+            fontWeight: 800,
+            fontSize: "14px",
+          }}
+        >
+          {toastMsg}
+        </div>
+      )}
+
+      {/* Header */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "var(--space-4)" }}>
+        <div>
+          <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 900, fontFamily: "var(--font-heading)" }}>
+            سجل الرقابة والتدقيق الأمني (Audit Trail) 🛡️
           </h1>
-          <p style={{ color: "var(--color-text-secondary)", fontSize: "13px", marginTop: "2px" }}>
-            {isAr ? "تتبع فوري وغير قابل للتعديل لجميع العمليات الحساسة، الصرف المالي، وتغييرات الصلاحيات." : "Immutable audit records of sensitive operations, payouts, and permission overrides."}
+          <p style={{ color: "var(--color-text-muted)", fontSize: "var(--text-sm)", marginTop: "var(--space-1)" }}>
+            سجل تاريخي غير قابل للتعديل لكافة العمليات والقرارات الإدارية الحساسة الصادرة عبر المنصة
           </p>
         </div>
 
-        <Button
-          variant="outline"
-          size="md"
-          onClick={() => alert(isAr ? "جاري تصدير سجل التدقيق بصيغة CSV مشفرة..." : "Exporting CSV...")}
-          style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}
-        >
+        <Button variant="outline" size="md" onClick={handleExportCsv}>
           <DownloadIcon size={16} />
-          <span>{isAr ? "تصدير السجل (CSV)" : "Export CSV"}</span>
+          <span>تصدير السجل CSV</span>
         </Button>
       </div>
 
-      {/* Filter and Search Bar */}
-      <div style={{ background: "var(--color-bg-card)", border: "1px solid var(--color-border)", padding: "16px", borderRadius: "16px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
-        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-          {[
-            { id: "all", label: isAr ? "الكل" : "All" },
-            { id: "CRITICAL", label: isAr ? "الحرجة (CRITICAL)" : "Critical" },
-            { id: "HIGH", label: isAr ? "العالية (HIGH)" : "High" },
-            { id: "MEDIUM", label: isAr ? "المتوسطة" : "Medium" },
-            { id: "LOW", label: isAr ? "العادية" : "Low" },
-          ].map((f) => (
-            <button
-              key={f.id}
-              onClick={() => setSelectedSeverity(f.id)}
-              style={{
-                padding: "6px 14px",
-                borderRadius: "100px",
-                border: `1px solid ${selectedSeverity === f.id ? "transparent" : "var(--color-border)"}`,
-                background: selectedSeverity === f.id ? "var(--gradient-gold)" : "var(--color-bg-secondary)",
-                color: selectedSeverity === f.id ? "#0f172a" : "var(--color-text-primary)",
-                fontSize: "12px",
-                fontWeight: 800,
-                cursor: "pointer",
-              }}
-            >
-              {f.label}
-            </button>
-          ))}
-        </div>
-
-        <div style={{ position: "relative", minWidth: "260px" }}>
-          <input
-            type="text"
-            placeholder={isAr ? "بحث بالمسؤول، الإجراء، الهدف..." : "Search actor, action, IP..."}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            style={{ width: "100%", padding: "9px 14px", paddingInlineStart: "36px", borderRadius: "10px", background: "var(--color-bg-secondary)", border: "1px solid var(--color-border)", color: "var(--color-text-primary)", fontSize: "13px", outline: "none" }}
-          />
-          <div style={{ position: "absolute", top: "50%", transform: "translateY(-50%)", insetInlineStart: "12px", pointerEvents: "none" }}>
-            <SearchIcon size={15} color="var(--color-text-secondary)" />
+      {/* DataTable */}
+      <DataTable
+        data={filteredLogs}
+        columns={columns}
+        searchPlaceholder="بحث في سجل التدقيق باسم المسؤول، العملية، أو الهدف..."
+        searchFilter={(row, query) =>
+          row.actor.toLowerCase().includes(query) ||
+          row.action.toLowerCase().includes(query) ||
+          row.target.toLowerCase().includes(query) ||
+          row.ipAddress.includes(query)
+        }
+        filtersSlot={
+          <div style={{ display: "flex", gap: "6px" }}>
+            <Button variant={selectedSeverity === "all" ? "primary" : "ghost"} size="sm" onClick={() => setSelectedSeverity("all")}>
+              الكل ({logs.length})
+            </Button>
+            <Button variant={selectedSeverity === "CRITICAL" ? "primary" : "ghost"} size="sm" onClick={() => setSelectedSeverity("CRITICAL")}>
+              حرجة
+            </Button>
+            <Button variant={selectedSeverity === "HIGH" ? "primary" : "ghost"} size="sm" onClick={() => setSelectedSeverity("HIGH")}>
+              مرتفعة
+            </Button>
+            <Button variant={selectedSeverity === "MEDIUM" ? "primary" : "ghost"} size="sm" onClick={() => setSelectedSeverity("MEDIUM")}>
+              متوسطة
+            </Button>
           </div>
-        </div>
-      </div>
-
-      {/* Logs Table */}
-      <div style={{ background: "var(--color-bg-card)", borderRadius: "20px", border: "1px solid var(--color-border)", overflow: "hidden", boxShadow: "var(--shadow-md)" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "start", fontSize: "13px" }}>
-          <thead>
-            <tr style={{ background: "var(--color-bg-secondary)", borderBottom: "1px solid var(--color-border)", color: "var(--color-text-secondary)" }}>
-              <th style={{ padding: "14px 16px" }}>{isAr ? "المنفذ (Actor)" : "Actor"}</th>
-              <th style={{ padding: "14px 16px" }}>{isAr ? "نوع الإجراء (Action)" : "Action"}</th>
-              <th style={{ padding: "14px 16px" }}>{isAr ? "الهدف والتفاصيل" : "Target"}</th>
-              <th style={{ padding: "14px 16px" }}>{isAr ? "عنوان IP" : "IP Address"}</th>
-              <th style={{ padding: "14px 16px" }}>{isAr ? "مستوى الخطورة" : "Severity"}</th>
-              <th style={{ padding: "14px 16px" }}>{isAr ? "التوقيت" : "Timestamp"}</th>
-              <th style={{ padding: "14px 16px", textAlign: "end" }}>{isAr ? "المعاينة" : "Inspect"}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredLogs.map((log) => (
-              <tr key={log.id} style={{ borderBottom: "1px solid var(--color-border)" }}>
-                <td style={{ padding: "14px 16px", fontWeight: 800 }}>{log.actor}</td>
-                <td style={{ padding: "14px 16px", fontFamily: "monospace", fontSize: "11px", color: "var(--color-gold-heading)" }}>{log.action}</td>
-                <td style={{ padding: "14px 16px", maxWidth: "280px", color: "var(--color-text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{log.target}</td>
-                <td style={{ padding: "14px 16px", fontFamily: "monospace", fontSize: "12px", color: "var(--color-text-secondary)" }}>{log.ipAddress}</td>
-                <td style={{ padding: "14px 16px" }}>{getSeverityBadge(log.severity)}</td>
-                <td style={{ padding: "14px 16px", color: "var(--color-text-secondary)", fontSize: "11px", direction: "ltr", textAlign: "start" }}>{log.timestamp}</td>
-                <td style={{ padding: "14px 16px", textAlign: "end" }}>
-                  <IconButton
-                    variant="gold"
-                    size="sm"
-                    title={isAr ? "معاينة تفاصيل سجل التدقيق" : "Inspect Log"}
-                    icon={<EyeIcon size={15} />}
-                    onClick={() => setSelectedLog(log)}
-                  />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Log Modal with Outside Click */}
-      {selectedLog && (
-        <div onClick={() => setSelectedLog(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 10000, padding: "24px", cursor: "pointer" }}>
-          <div onClick={(e) => e.stopPropagation()} style={{ width: "540px", background: "var(--color-bg-card)", padding: "28px", borderRadius: "24px", border: "1px solid var(--color-border)", boxShadow: "var(--shadow-xl)", cursor: "default" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", paddingBottom: "12px", borderBottom: "1px solid var(--color-border)" }}>
-              <h3 style={{ fontSize: "18px", fontWeight: 900, color: "var(--color-gold-heading)" }}>{isAr ? "تفاصيل سجل الرقابة والتدقيق" : "Audit Log Record"}</h3>
-              <IconButton variant="ghost" size="sm" title={isAr ? "إغلاق" : "Close"} icon={<XCircleIcon size={18} />} onClick={() => setSelectedLog(null)} />
-            </div>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px", fontSize: "13px", background: "var(--color-bg-secondary)", padding: "16px", borderRadius: "14px", marginBottom: "20px" }}>
-              <p><strong>{isAr ? "رقم السجل:" : "Log ID:"}</strong> <span style={{ fontFamily: "monospace" }}>{selectedLog.id}</span></p>
-              <p><strong>{isAr ? "المسؤول المنفذ:" : "Actor:"}</strong> {selectedLog.actor} ({selectedLog.role})</p>
-              <p><strong>{isAr ? "كود العملية:" : "Action Code:"}</strong> <span style={{ fontFamily: "monospace", color: "var(--color-gold-heading)" }}>{selectedLog.action}</span></p>
-              <p><strong>{isAr ? "الهدف والتفاصيل:" : "Target:"}</strong> {selectedLog.target}</p>
-              <p><strong>{isAr ? "عنوان الـ IP:" : "IP Address:"}</strong> <span style={{ fontFamily: "monospace" }}>{selectedLog.ipAddress}</span></p>
-              <p><strong>{isAr ? "مستوى الخطورة:" : "Severity:"}</strong> {getSeverityBadge(selectedLog.severity)}</p>
-              <p><strong>{isAr ? "التوقيت المسجل:" : "Timestamp:"}</strong> {selectedLog.timestamp}</p>
-            </div>
-
-            <div style={{ display: "flex", justifyContent: "flex-end" }}>
-              <Button variant="ghost" size="sm" onClick={() => setSelectedLog(null)}>{isAr ? "إغلاق" : "Close"}</Button>
-            </div>
-          </div>
-        </div>
-      )}
+        }
+      />
     </div>
   );
 }

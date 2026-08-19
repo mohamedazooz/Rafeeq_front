@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { DashboardNavbar } from "@/components/layout/DashboardNavbar";
 import { useLanguage } from "@/lib/language-provider";
+import { RafeeqLogo } from "@/components/brand";
 
 const GUIDE_LINKS = [
   { href: "/guide/dashboard", labelAr: "📈 لوحة الأداء", labelEn: "📈 Overview" },
@@ -37,11 +37,14 @@ export default function GuideLayout({ children }: { readonly children: React.Rea
             flexShrink: 0,
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
-            <Image src="/logo-emblem.png" alt="Rafeeq Logo" width={28} height={28} style={{ objectFit: "contain" }} />
-            <span style={{ fontSize: "16px", fontWeight: 800, color: "var(--color-gold-heading)" }}>
-              {isAr ? "لوحة المرشد" : "Guide Portal"}
-            </span>
+          <div style={{ marginBottom: "12px" }}>
+            <RafeeqLogo
+              variant="horizontal"
+              size={28}
+              href="/guide/dashboard"
+              showSubtitle
+              customSubtitle={isAr ? "بوابة المرشد السياحي" : "Guide Portal"}
+            />
           </div>
 
           <div style={{ display: "inline-flex", alignItems: "center", gap: "4px", background: "rgba(16,185,129,0.15)", color: "#10B981", padding: "3px 10px", borderRadius: "100px", fontSize: "11px", fontWeight: 800, marginBottom: "20px", width: "fit-content" }}>

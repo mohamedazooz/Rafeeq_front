@@ -4,9 +4,12 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/design-system/primitives";
 import { BackButton } from "@/components/ui/BackButton";
-import { authService } from "@/lib/api/services";
+import { RafeeqLogo } from "@/components/brand";
+import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
+import { authService } from "@/features/auth/services/auth.service";
+import { sessionManager } from "@/core/storage/session-storage";
 import { useLanguage } from "@/lib/language-provider";
 import { useTheme } from "@/lib/theme-provider";
 
@@ -68,20 +71,20 @@ export default function RegisterPage() {
     setErrorMsg("");
 
     try {
-      const res = await authService.register({
+      const res = await authService.registerWithEmail({
         fullName,
         email,
         password,
-        date_of_birth: dateOfBirth,
+        dateOfBirth: dateOfBirth || "2000-01-01",
       });
 
-      if (res.data.accessToken) {
-        localStorage.setItem("rafeeq_access_token", res.data.accessToken);
+      if (res.data?.accessToken) {
+        sessionManager.setToken(res.data.accessToken);
         router.push("/client/dashboard");
       }
     } catch {
       setIsLoading(false);
-      localStorage.setItem("rafeeq_access_token", "demo_jwt_token");
+      sessionManager.setToken("demo_jwt_session_token");
       router.push("/client/dashboard");
     }
   };
@@ -106,10 +109,7 @@ export default function RegisterPage() {
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
             <BackButton fallbackHref="/" labelAr="الرئيسية" labelEn="Home" lang={lang} />
 
-            <Link href="/" style={{ display: "flex", alignItems: "center", gap: "8px", textDecoration: "none" }}>
-              <Image src="/logo-emblem.png" alt="Rafeeq Logo" width={34} height={34} style={{ objectFit: "contain" }} />
-              <span style={{ fontSize: "20px", fontWeight: 900, color: "var(--color-gold-heading)" }}>{isAr ? "رفيق" : "Rafeeq"}</span>
-            </Link>
+            <RafeeqLogo variant="horizontal" size={34} animated priority />
 
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <button
@@ -139,6 +139,17 @@ export default function RegisterPage() {
               {errorMsg}
             </div>
           )}
+
+          {/* Social OAuth Google Button */}
+          <div style={{ marginBottom: "16px" }}>
+            <GoogleSignInButton lang={lang} labelAr="التسجيل السريع باستخدام Google" labelEn="Quick Sign Up with Google" />
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
+            <div style={{ flex: 1, height: "1px", background: "var(--color-border)" }} />
+            <span style={{ fontSize: "11px", color: "var(--color-text-muted)", fontWeight: 700 }}>{isAr ? "أو التسجيل اليدوي" : "OR MANUAL REGISTRATION"}</span>
+            <div style={{ flex: 1, height: "1px", background: "var(--color-border)" }} />
+          </div>
 
           {/* Registration Form matching NestJS RegisterDto */}
           <form onSubmit={handleRegister} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useLanguage } from "@/lib/language-provider";
+import { RafeeqLogo } from "@/components/brand";
 
 export function Footer() {
   const { lang } = useLanguage();
@@ -27,27 +28,9 @@ export function Footer() {
         }}
       >
         {/* Brand Logo & Copyright */}
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <div
-            style={{
-              width: "32px",
-              height: "32px",
-              borderRadius: "8px",
-              background: "var(--gradient-gold)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "#0f172a",
-              fontWeight: 900,
-              fontSize: "14px",
-            }}
-          >
-            ر
-          </div>
-          <span style={{ fontWeight: 900, fontSize: "18px", color: "var(--color-gold-heading)" }}>
-            {isAr ? "رفيق" : "Rafeeq"}
-          </span>
-          <span style={{ fontSize: "12px", color: "var(--color-text-secondary)", marginInlineStart: "8px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "14px", flexWrap: "wrap" }}>
+          <RafeeqLogo variant="horizontal" size={32} animated={false} />
+          <span style={{ fontSize: "12px", color: "var(--color-text-secondary)" }}>
             {isAr ? "© 2026 رفيق. جميع الحقوق محفوظة — منصة السياحة السعودية المرخصة 🇸🇦" : "© 2026 Rafeeq. Licensed Saudi Tourism Platform 🇸🇦"}
           </span>
         </div>

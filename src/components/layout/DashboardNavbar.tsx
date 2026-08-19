@@ -1,10 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useLanguage } from "@/lib/language-provider";
 import { useTheme } from "@/lib/theme-provider";
 import { SunIcon, MoonIcon, GlobeIcon, UserIcon, BellIcon } from "@/components/icons";
+import { RafeeqLogo } from "@/components/brand";
 
 interface DashboardNavbarProps {
   roleTitleAr: string;
@@ -34,12 +34,7 @@ export function DashboardNavbar({ roleTitleAr, roleTitleEn, profileHref }: Dashb
     >
       {/* Brand Logo & Role Title */}
       <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-        <Link href="/" style={{ display: "flex", alignItems: "center", gap: "10px", textDecoration: "none" }}>
-          <Image src="/logo-emblem.png" alt="Rafeeq Emblem" width={34} height={34} style={{ objectFit: "contain" }} />
-          <span style={{ fontSize: "19px", fontWeight: 900, color: "var(--color-gold-heading)" }}>
-            {isAr ? "رفيق" : "Rafeeq"}
-          </span>
-        </Link>
+        <RafeeqLogo variant="horizontal" size={34} animated />
         <span style={{ fontSize: "11px", background: "var(--color-bg-secondary)", padding: "4px 12px", borderRadius: "100px", color: "var(--color-text-secondary)", fontWeight: 700, border: "1px solid var(--color-border)" }}>
           {isAr ? roleTitleAr : roleTitleEn}
         </span>

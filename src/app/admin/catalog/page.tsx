@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { IconButton } from "@/components/ui/IconButton";
 import { Modal } from "@/components/ui/Modal";
+import { DataTable, type DataTableColumn } from "@/components/ui/DataTable";
 import { useLanguage } from "@/lib/language-provider";
-import { dispatchDualActionNotification } from "@/lib/action-dispatcher";
 import {
   FolderIcon,
   MapPinIcon,
@@ -14,7 +14,7 @@ import {
   TrashIcon,
   CheckCircleIcon,
   XCircleIcon,
-  ShieldCheckIcon,
+  LayersIcon,
 } from "@/components/icons";
 
 interface CategoryItem {
@@ -40,16 +40,16 @@ interface DestinationItem {
 }
 
 const INITIAL_CATEGORIES: CategoryItem[] = [
-  { id: "c-1", slug: "hiking-adventure", nameAr: "مغامرات الهايكنج والجبال", nameEn: "Hiking & Mountain Adventure", descriptionAr: "رحلات صعود القمم، واستكشاف الأودية والصخور التراثية في المملكة.", programsCount: 14, sortOrder: 1, isActive: true },
+  { id: "c-1", slug: "hiking-adventure", nameAr: "مغامرات الهايكنج والجبال", nameEn: "Hiking & Adventure", descriptionAr: "رحلات صعود القمم، واستكشاف الأودية والصخور التراثية في المملكة.", programsCount: 14, sortOrder: 1, isActive: true },
   { id: "c-2", slug: "cultural-heritage", nameAr: "التراث والآثار التاريخية", nameEn: "Cultural & Heritage", descriptionAr: "جولات المواقع الأثرية، التراث العالمي اليونسكو، والمتاحف الحية.", programsCount: 22, sortOrder: 2, isActive: true },
-  { id: "c-3", slug: "marine-diving", nameAr: "الأنشطة البحرية والغوص", nameEn: "Marine & Red Sea Diving", descriptionAr: "استكشاف الشعاب المرجانية الحية ورحلات الجزر وسواحل البحر الأحمر.", programsCount: 9, sortOrder: 3, isActive: true },
-  { id: "c-4", slug: "desert-camping", nameAr: "التخييم وتأمل النجوم في الصحراء", nameEn: "Desert Camping & Stargazing", descriptionAr: "تجارب سهرات الصحراء، الفلك والتأمل تحت السماء المفتوحة.", programsCount: 18, sortOrder: 4, isActive: true },
+  { id: "c-3", slug: "marine-diving", nameAr: "الأنشطة البحرية والغوص", nameEn: "Marine & Diving", descriptionAr: "استكشاف الشعاب المرجانية الحية ورحلات الجزر وسواحل البحر الأحمر.", programsCount: 9, sortOrder: 3, isActive: true },
+  { id: "c-4", slug: "desert-camping", nameAr: "التخييم وتأمل النجوم في الصحراء", nameEn: "Desert Camping", descriptionAr: "تجارب سهرات الصحراء، الفلك والتأمل تحت السماء المفتوحة.", programsCount: 18, sortOrder: 4, isActive: true },
 ];
 
 const INITIAL_DESTINATIONS: DestinationItem[] = [
-  { id: "d-1", slug: "alula", nameAr: "العلا والأثلب", nameEn: "AlUla", regionAr: "المنطقة الشمالية الغربية", programsCount: 28, sortOrder: 1, isActive: true },
+  { id: "d-1", slug: "alula", nameAr: "العلا ومداين صالح", nameEn: "AlUla", regionAr: "المنطقة الشمالية الغربية", programsCount: 28, sortOrder: 1, isActive: true },
   { id: "d-2", slug: "diriyah-riyadh", nameAr: "الدرعية التاريخية والرياض", nameEn: "Diriyah & Riyadh", regionAr: "منطقة نجد والوسطى", programsCount: 42, sortOrder: 2, isActive: true },
-  { id: "d-3", slug: "al-ahsa", nameAr: "واحة الأحساء وحاسبة", nameEn: "Al Ahsa Oasis", regionAr: "المنطقة الشرقية", programsCount: 16, sortOrder: 3, isActive: true },
+  { id: "d-3", slug: "al-ahsa", nameAr: "واحة الأحساء", nameEn: "Al Ahsa Oasis", regionAr: "المنطقة الشرقية", programsCount: 16, sortOrder: 3, isActive: true },
   { id: "d-4", slug: "asir-abha", nameAr: "عسير والسودة وأبها", nameEn: "Asir & Abha", regionAr: "المنطقة الجنوبية", programsCount: 19, sortOrder: 4, isActive: true },
   { id: "d-5", slug: "historic-jeddah", nameAr: "جدة التاريخية (البلد)", nameEn: "Historic Jeddah", regionAr: "المنطقة الغربية", programsCount: 25, sortOrder: 5, isActive: true },
 ];
@@ -61,6 +61,7 @@ export default function AdminCatalogPage() {
   const [activeTab, setActiveTab] = useState<"categories" | "destinations">("categories");
   const [categories, setCategories] = useState<CategoryItem[]>(INITIAL_CATEGORIES);
   const [destinations, setDestinations] = useState<DestinationItem[]>(INITIAL_DESTINATIONS);
+
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showDestinationModal, setShowDestinationModal] = useState(false);
 
@@ -87,349 +88,410 @@ export default function AdminCatalogPage() {
     setCategories((prev) =>
       prev.map((c) => (c.id === id ? { ...c, isActive: !c.isActive } : c))
     );
-    showToast(isAr ? "تم تحديث حالة القسم السياحي بنجاح! ✓" : "Category status updated.");
+    showToast(isAr ? "تم تحديث حالة القسم بنجاح! ✓" : "Category status updated.");
+  };
+
+  const deleteCategory = (id: string) => {
+    setCategories((prev) => prev.filter((c) => c.id !== id));
+    showToast(isAr ? "تم حذف القسم من الكتالوج!" : "Category deleted.");
   };
 
   const toggleDestinationStatus = (id: string) => {
     setDestinations((prev) =>
       prev.map((d) => (d.id === id ? { ...d, isActive: !d.isActive } : d))
     );
-    showToast(isAr ? "تم تحديث حالة الوجهة السياحية بنجاح! ✓" : "Destination status updated.");
+    showToast(isAr ? "تم تحديث حالة الوجهة بنجاح! ✓" : "Destination status updated.");
+  };
+
+  const deleteDestination = (id: string) => {
+    setDestinations((prev) => prev.filter((d) => d.id !== id));
+    showToast(isAr ? "تم حذف الوجهة من الكتالوج!" : "Destination deleted.");
   };
 
   const handleCreateCategory = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!catNameAr.trim()) return;
+
     const newCat: CategoryItem = {
       id: `c-${Date.now()}`,
-      slug: catSlug || catNameEn.toLowerCase().replace(/\s+/g, "-"),
+      slug: catSlug || catNameEn.toLowerCase().replace(/\s+/g, "-") || `cat-${Date.now()}`,
       nameAr: catNameAr,
-      nameEn: catNameEn,
-      descriptionAr: catDesc || "قسم سياحي جديد مضاف للكتالوج.",
+      nameEn: catNameEn || catNameAr,
+      descriptionAr: catDesc,
       programsCount: 0,
       sortOrder: categories.length + 1,
       isActive: true,
     };
-    setCategories((prev) => [...prev, newCat]);
+
+    setCategories([...categories, newCat]);
     setShowCategoryModal(false);
     setCatNameAr("");
     setCatNameEn("");
     setCatSlug("");
     setCatDesc("");
-
-    dispatchDualActionNotification({
-      title: "إضافة تصنيف سياحي جديد للكتالوج",
-      message: `تم إنشاء التصنيف (${newCat.nameAr} - ${newCat.nameEn}) وإتاحته للمرشدين.`,
-      actionType: "CREATE",
-      targetEmail: "catalog@rafeeq.sa",
-      targetName: "فريق الكتالوج السياحي",
-      targetRole: "Admin",
-    });
-
-    showToast(isAr ? `تم إضافة القسم السياحي (${newCat.nameAr}) بنجاح!` : `Category created.`);
+    showToast(isAr ? "تمت إضافة القسم السياحي الجديد بنجاح! 🏷️✓" : "Category created.");
   };
 
   const handleCreateDestination = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!destNameAr.trim()) return;
+
     const newDest: DestinationItem = {
       id: `d-${Date.now()}`,
-      slug: destSlug || destNameEn.toLowerCase().replace(/\s+/g, "-"),
+      slug: destSlug || destNameEn.toLowerCase().replace(/\s+/g, "-") || `dest-${Date.now()}`,
       nameAr: destNameAr,
-      nameEn: destNameEn,
+      nameEn: destNameEn || destNameAr,
       regionAr: destRegion || "المملكة العربية السعودية",
       programsCount: 0,
       sortOrder: destinations.length + 1,
       isActive: true,
     };
-    setDestinations((prev) => [...prev, newDest]);
+
+    setDestinations([...destinations, newDest]);
     setShowDestinationModal(false);
     setDestNameAr("");
     setDestNameEn("");
     setDestSlug("");
     setDestRegion("");
-
-    dispatchDualActionNotification({
-      title: "إضافة وجهة سياحية سعودية جديدة",
-      message: `تم إضافة الوجهة (${newDest.nameAr} - ${newDest.nameEn}) لمنظومة الاستكشاف.`,
-      actionType: "CREATE",
-      targetEmail: "catalog@rafeeq.sa",
-      targetName: "فريق الكتالوج السياحي",
-      targetRole: "Admin",
-    });
-
-    showToast(isAr ? `تم إضافة الوجهة السياحية (${newDest.nameAr}) بنجاح!` : `Destination created.`);
+    showToast(isAr ? "تمت إضافة الوجهة السياحية الجديدة بنجاح! 📍✓" : "Destination created.");
   };
 
-  const handleDeleteCategory = (cat: CategoryItem) => {
-    if (confirm(isAr ? `حذف القسم (${cat.nameAr})؟` : `Delete category ${cat.nameAr}?`)) {
-      setCategories(categories.filter((c) => c.id !== cat.id));
-      showToast(isAr ? `تم حذف القسم (${cat.nameAr}) بنجاح.` : `Category deleted.`);
-    }
-  };
+  const categoryColumns: DataTableColumn<CategoryItem>[] = [
+    {
+      key: "name",
+      headerAr: "اسم القسم السياحي",
+      headerEn: "Category Name",
+      render: (row) => (
+        <div>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <FolderIcon size={16} color="var(--color-gold-heading)" />
+            <span style={{ fontWeight: 800, fontSize: "13px" }}>{row.nameAr}</span>
+          </div>
+          <span style={{ fontSize: "11px", color: "var(--color-text-muted)" }}>{row.nameEn} • /{row.slug}</span>
+        </div>
+      ),
+    },
+    {
+      key: "desc",
+      headerAr: "الوصف",
+      headerEn: "Description",
+      render: (row) => <span style={{ fontSize: "12px", color: "var(--color-text-secondary)" }}>{row.descriptionAr}</span>,
+    },
+    {
+      key: "programs",
+      headerAr: "البرامج النشطة",
+      headerEn: "Active Tours",
+      render: (row) => (
+        <span style={{ fontSize: "12px", fontWeight: 800, color: "var(--color-gold-heading)" }}>
+          {row.programsCount} برنامج
+        </span>
+      ),
+    },
+    {
+      key: "status",
+      headerAr: "حالة الظهور",
+      headerEn: "Visibility",
+      render: (row) => (
+        <span
+          style={{
+            background: row.isActive ? "rgba(16, 185, 129, 0.12)" : "rgba(239, 68, 68, 0.12)",
+            color: row.isActive ? "#10B981" : "#EF4444",
+            padding: "3px 8px",
+            borderRadius: "6px",
+            fontSize: "11px",
+            fontWeight: 800,
+          }}
+        >
+          {row.isActive ? "ظاهر بالكتالوج ✓" : "مخفي"}
+        </span>
+      ),
+    },
+    {
+      key: "actions",
+      headerAr: "الإجراءات",
+      headerEn: "Actions",
+      align: "center",
+      render: (row) => (
+        <div style={{ display: "flex", gap: "6px", justifyContent: "center" }}>
+          <Button variant={row.isActive ? "outline" : "primary"} size="sm" onClick={() => toggleCategoryStatus(row.id)}>
+            {row.isActive ? "إخفاء" : "تفعيل"}
+          </Button>
+          <IconButton icon={<TrashIcon size={14} />} title="حذف" size="sm" variant="ghost" onClick={() => deleteCategory(row.id)} />
+        </div>
+      ),
+    },
+  ];
 
-  const handleDeleteDestination = (dest: DestinationItem) => {
-    if (confirm(isAr ? `حذف الوجهة (${dest.nameAr})؟` : `Delete destination ${dest.nameAr}?`)) {
-      setDestinations(destinations.filter((d) => d.id !== dest.id));
-      showToast(isAr ? `تم حذف الوجهة (${dest.nameAr}) بنجاح.` : `Destination deleted.`);
-    }
-  };
+  const destinationColumns: DataTableColumn<DestinationItem>[] = [
+    {
+      key: "name",
+      headerAr: "اسم الوجهة السياحية",
+      headerEn: "Destination",
+      render: (row) => (
+        <div>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <MapPinIcon size={16} color="#10B981" />
+            <span style={{ fontWeight: 800, fontSize: "13px" }}>{row.nameAr}</span>
+          </div>
+          <span style={{ fontSize: "11px", color: "var(--color-text-muted)" }}>{row.nameEn} • /{row.slug}</span>
+        </div>
+      ),
+    },
+    {
+      key: "region",
+      headerAr: "المنطقة الجغرافية",
+      headerEn: "Region",
+      render: (row) => <span style={{ fontSize: "12px", color: "var(--color-text-secondary)" }}>{row.regionAr}</span>,
+    },
+    {
+      key: "programs",
+      headerAr: "البرامج والرحلات",
+      headerEn: "Tour Count",
+      render: (row) => (
+        <span style={{ fontSize: "12px", fontWeight: 800, color: "var(--color-gold-heading)" }}>
+          {row.programsCount} رحلة
+        </span>
+      ),
+    },
+    {
+      key: "status",
+      headerAr: "حالة الظهور",
+      headerEn: "Visibility",
+      render: (row) => (
+        <span
+          style={{
+            background: row.isActive ? "rgba(16, 185, 129, 0.12)" : "rgba(239, 68, 68, 0.12)",
+            color: row.isActive ? "#10B981" : "#EF4444",
+            padding: "3px 8px",
+            borderRadius: "6px",
+            fontSize: "11px",
+            fontWeight: 800,
+          }}
+        >
+          {row.isActive ? "نشط بالكتالوج ✓" : "مخفي"}
+        </span>
+      ),
+    },
+    {
+      key: "actions",
+      headerAr: "الإجراءات",
+      headerEn: "Actions",
+      align: "center",
+      render: (row) => (
+        <div style={{ display: "flex", gap: "6px", justifyContent: "center" }}>
+          <Button variant={row.isActive ? "outline" : "primary"} size="sm" onClick={() => toggleDestinationStatus(row.id)}>
+            {row.isActive ? "إخفاء" : "تفعيل"}
+          </Button>
+          <IconButton icon={<TrashIcon size={14} />} title="حذف" size="sm" variant="ghost" onClick={() => deleteDestination(row.id)} />
+        </div>
+      ),
+    },
+  ];
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-      {/* Toast Notification */}
+    <div style={{ padding: "var(--space-6)", display: "flex", flexDirection: "column", gap: "var(--space-6)" }}>
+      {/* Toast */}
       {toastMessage && (
-        <div style={{ position: "fixed", bottom: "24px", left: "24px", background: "var(--color-bg-card)", border: "1px solid var(--color-gold-heading)", color: "var(--color-text-primary)", padding: "14px 24px", borderRadius: "14px", boxShadow: "0 10px 30px rgba(0,0,0,0.6)", zIndex: 9999, fontWeight: 800, fontSize: "13px", display: "flex", alignItems: "center", gap: "10px" }}>
-          <ShieldCheckIcon size={18} color="#10B981" />
-          <span>{toastMessage}</span>
+        <div
+          style={{
+            position: "fixed",
+            bottom: "24px",
+            left: "24px",
+            background: "var(--color-bg-card)",
+            border: "1px solid var(--color-gold-heading)",
+            color: "var(--color-text-primary)",
+            padding: "14px 28px",
+            borderRadius: "14px",
+            boxShadow: "0 10px 30px rgba(0,0,0,0.25)",
+            zIndex: 9999,
+            fontWeight: 800,
+            fontSize: "14px",
+          }}
+        >
+          {toastMessage}
         </div>
       )}
 
       {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "var(--space-4)" }}>
         <div>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "rgba(200, 169, 110, 0.15)", border: "1px solid rgba(200, 169, 110, 0.3)", padding: "4px 12px", borderRadius: "100px", color: "var(--color-gold-heading)", fontSize: "11px", fontWeight: 800, marginBottom: "8px" }}>
-            <FolderIcon size={14} color="var(--color-gold-heading)" />
-            {isAr ? "كتالوج الوجهات والتصنيفات السياحية السعودية" : "Tourism Destinations & Categories Catalog"}
-          </div>
-          <h1 style={{ fontSize: "26px", fontWeight: 900, color: "var(--color-text-primary)" }}>
-            {isAr ? "الكتالوج والوجهات والتصنيفات 🗂️" : "Tourism Catalog & Destinations"}
+          <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 900, fontFamily: "var(--font-heading)" }}>
+            الكتالوج والأقسام والوجهات السياحية 📁
           </h1>
-          <p style={{ color: "var(--color-text-secondary)", fontSize: "13px", marginTop: "2px" }}>
-            {isAr ? "إدارة أقسام وتصنيفات الرحلات والوجهات السياحية السعودية لتحسين تجربة الاستكشاف والـ SEO." : "Manage Saudi destinations and tourism categories to boost catalog discovery and SEO."}
+          <p style={{ color: "var(--color-text-muted)", fontSize: "var(--text-sm)", marginTop: "var(--space-1)" }}>
+            التحكم بهيكل تصنيف البرامج، الوجهات السياحية، وترتيب ظهورها في الصفحة الرئيسية والبحث
           </p>
         </div>
 
         <div style={{ display: "flex", gap: "10px" }}>
-          <Button variant="outline" size="md" onClick={() => setShowCategoryModal(true)} style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-            <PlusIcon size={16} />
-            <span>{isAr ? "إضافة قسم جديد" : "New Category"}</span>
-          </Button>
-          <Button variant="primary" size="md" onClick={() => setShowDestinationModal(true)} style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-            <PlusIcon size={16} />
-            <span>{isAr ? "إضافة وجهة جديدة" : "New Destination"}</span>
-          </Button>
+          {activeTab === "categories" ? (
+            <Button variant="primary" size="md" onClick={() => setShowCategoryModal(true)}>
+              <PlusIcon size={16} />
+              <span>إضافة قسم سياحي جديد</span>
+            </Button>
+          ) : (
+            <Button variant="primary" size="md" onClick={() => setShowDestinationModal(true)}>
+              <PlusIcon size={16} />
+              <span>إضافة وجهة سياحية جديدة</span>
+            </Button>
+          )}
         </div>
       </div>
 
       {/* Tabs */}
-      <div style={{ display: "flex", gap: "12px", borderBottom: "1px solid var(--color-border)", paddingBottom: "12px" }}>
+      <div style={{ display: "flex", gap: "12px", borderBottom: "1px solid var(--color-border)", paddingBottom: "10px" }}>
         <button
           type="button"
           onClick={() => setActiveTab("categories")}
           style={{
-            padding: "8px 20px",
-            borderRadius: "100px",
-            border: `1px solid ${activeTab === "categories" ? "transparent" : "var(--color-border)"}`,
-            background: activeTab === "categories" ? "var(--gradient-gold)" : "var(--color-bg-card)",
-            color: activeTab === "categories" ? "#0f172a" : "var(--color-text-primary)",
-            fontSize: "13px",
+            background: "transparent",
+            border: "none",
+            fontSize: "14px",
             fontWeight: 800,
+            color: activeTab === "categories" ? "var(--color-gold-heading)" : "var(--color-text-muted)",
+            borderBottom: activeTab === "categories" ? "2px solid var(--color-gold-heading)" : "none",
+            paddingBottom: "8px",
             cursor: "pointer",
-            display: "inline-flex",
+            display: "flex",
             alignItems: "center",
-            gap: "8px",
+            gap: "6px",
           }}
         >
-          <FolderIcon size={15} color={activeTab === "categories" ? "#0f172a" : "var(--color-gold-heading)"} />
-          <span>{isAr ? `الأقسام السياحية (${categories.length})` : `Categories (${categories.length})`}</span>
+          <LayersIcon size={16} />
+          <span>الأقسام والتصنيفات ({categories.length})</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab("destinations")}
           style={{
-            padding: "8px 20px",
-            borderRadius: "100px",
-            border: `1px solid ${activeTab === "destinations" ? "transparent" : "var(--color-border)"}`,
-            background: activeTab === "destinations" ? "var(--gradient-gold)" : "var(--color-bg-card)",
-            color: activeTab === "destinations" ? "#0f172a" : "var(--color-text-primary)",
-            fontSize: "13px",
+            background: "transparent",
+            border: "none",
+            fontSize: "14px",
             fontWeight: 800,
+            color: activeTab === "destinations" ? "var(--color-gold-heading)" : "var(--color-text-muted)",
+            borderBottom: activeTab === "destinations" ? "2px solid var(--color-gold-heading)" : "none",
+            paddingBottom: "8px",
             cursor: "pointer",
-            display: "inline-flex",
+            display: "flex",
             alignItems: "center",
-            gap: "8px",
+            gap: "6px",
           }}
         >
-          <MapPinIcon size={15} color={activeTab === "destinations" ? "#0f172a" : "var(--color-gold-heading)"} />
-          <span>{isAr ? `الوجهات السعودية (${destinations.length})` : `Destinations (${destinations.length})`}</span>
+          <MapPinIcon size={16} />
+          <span>الوجهات والمناطق ({destinations.length})</span>
         </button>
       </div>
 
-      {/* Categories Tab */}
-      {activeTab === "categories" && (
-        <div style={{ background: "var(--color-bg-card)", borderRadius: "20px", border: "1px solid var(--color-border)", overflow: "hidden", boxShadow: "var(--shadow-md)" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "start", fontSize: "13px" }}>
-            <thead>
-              <tr style={{ background: "var(--color-bg-secondary)", borderBottom: "1px solid var(--color-border)", color: "var(--color-text-secondary)" }}>
-                <th style={{ padding: "14px 16px" }}>{isAr ? "القسم السياحي" : "Category Name"}</th>
-                <th style={{ padding: "14px 16px" }}>{isAr ? "الاسم بالإنجليزية (Slug)" : "Slug"}</th>
-                <th style={{ padding: "14px 16px" }}>{isAr ? "عدد البرامج" : "Tours Count"}</th>
-                <th style={{ padding: "14px 16px" }}>{isAr ? "الحالة" : "Status"}</th>
-                <th style={{ padding: "14px 16px", textAlign: "end" }}>{isAr ? "الإجراءات" : "Actions"}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {categories.map((c) => (
-                <tr key={c.id} style={{ borderBottom: "1px solid var(--color-border)" }}>
-                  <td style={{ padding: "14px 16px" }}>
-                    <div style={{ fontWeight: 800, color: "var(--color-text-primary)" }}>{c.nameAr}</div>
-                    <div style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>{c.descriptionAr}</div>
-                  </td>
-                  <td style={{ padding: "14px 16px", fontFamily: "monospace", color: "var(--color-gold-heading)", direction: "ltr", textAlign: "start" }}>{c.slug}</td>
-                  <td style={{ padding: "14px 16px", fontWeight: 700 }}>{c.programsCount} {isAr ? "برنامج" : "tours"}</td>
-                  <td style={{ padding: "14px 16px" }}>
-                    <span style={{ color: c.isActive ? "#10B981" : "#EF4444", fontWeight: 800, fontSize: "12px" }}>
-                      {c.isActive ? (isAr ? "نشط ✓" : "Active") : (isAr ? "معطل ✕" : "Inactive")}
-                    </span>
-                  </td>
-                  <td style={{ padding: "14px 16px", textAlign: "end" }}>
-                    <div style={{ display: "inline-flex", gap: "6px", alignItems: "center" }}>
-                      <IconButton
-                        variant={c.isActive ? "danger" : "secondary"}
-                        size="sm"
-                        title={c.isActive ? (isAr ? "تعطيل القسم" : "Disable") : (isAr ? "تفعيل القسم" : "Enable")}
-                        icon={c.isActive ? <XCircleIcon size={15} /> : <CheckCircleIcon size={15} />}
-                        onClick={() => toggleCategoryStatus(c.id)}
-                      />
-                      <IconButton
-                        variant="ghost"
-                        size="sm"
-                        title={isAr ? "حذف القسم" : "Delete"}
-                        icon={<TrashIcon size={15} />}
-                        onClick={() => handleDeleteCategory(c)}
-                        style={{ color: "#EF4444" }}
-                      />
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      {/* Content Table */}
+      {activeTab === "categories" ? (
+        <DataTable
+          data={categories}
+          columns={categoryColumns}
+          searchPlaceholder="بحث في الأقسام والتصنيفات..."
+          searchFilter={(row, query) =>
+            row.nameAr.toLowerCase().includes(query) ||
+            row.nameEn.toLowerCase().includes(query) ||
+            row.descriptionAr.toLowerCase().includes(query)
+          }
+        />
+      ) : (
+        <DataTable
+          data={destinations}
+          columns={destinationColumns}
+          searchPlaceholder="بحث في الوجهات والمناطق..."
+          searchFilter={(row, query) =>
+            row.nameAr.toLowerCase().includes(query) ||
+            row.nameEn.toLowerCase().includes(query) ||
+            row.regionAr.toLowerCase().includes(query)
+          }
+        />
       )}
 
-      {/* Destinations Tab */}
-      {activeTab === "destinations" && (
-        <div style={{ background: "var(--color-bg-card)", borderRadius: "20px", border: "1px solid var(--color-border)", overflow: "hidden", boxShadow: "var(--shadow-md)" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "start", fontSize: "13px" }}>
-            <thead>
-              <tr style={{ background: "var(--color-bg-secondary)", borderBottom: "1px solid var(--color-border)", color: "var(--color-text-secondary)" }}>
-                <th style={{ padding: "14px 16px" }}>{isAr ? "الوجهة السياحية" : "Destination Name"}</th>
-                <th style={{ padding: "14px 16px" }}>{isAr ? "المنطقة" : "Region"}</th>
-                <th style={{ padding: "14px 16px" }}>{isAr ? "الـ Slug" : "Slug"}</th>
-                <th style={{ padding: "14px 16px" }}>{isAr ? "البرامج المتاحة" : "Tours Count"}</th>
-                <th style={{ padding: "14px 16px" }}>{isAr ? "الحالة" : "Status"}</th>
-                <th style={{ padding: "14px 16px", textAlign: "end" }}>{isAr ? "الإجراءات" : "Actions"}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {destinations.map((d) => (
-                <tr key={d.id} style={{ borderBottom: "1px solid var(--color-border)" }}>
-                  <td style={{ padding: "14px 16px" }}>
-                    <div style={{ fontWeight: 800, color: "var(--color-text-primary)" }}>{d.nameAr}</div>
-                    <div style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>{d.nameEn}</div>
-                  </td>
-                  <td style={{ padding: "14px 16px", fontWeight: 600 }}>{d.regionAr}</td>
-                  <td style={{ padding: "14px 16px", fontFamily: "monospace", color: "var(--color-gold-heading)", direction: "ltr", textAlign: "start" }}>{d.slug}</td>
-                  <td style={{ padding: "14px 16px", fontWeight: 700 }}>{d.programsCount} {isAr ? "برنامج" : "tours"}</td>
-                  <td style={{ padding: "14px 16px" }}>
-                    <span style={{ color: d.isActive ? "#10B981" : "#EF4444", fontWeight: 800, fontSize: "12px" }}>
-                      {d.isActive ? (isAr ? "نشطة ✓" : "Active") : (isAr ? "معطلة ✕" : "Inactive")}
-                    </span>
-                  </td>
-                  <td style={{ padding: "14px 16px", textAlign: "end" }}>
-                    <div style={{ display: "inline-flex", gap: "6px", alignItems: "center" }}>
-                      <IconButton
-                        variant={d.isActive ? "danger" : "secondary"}
-                        size="sm"
-                        title={d.isActive ? (isAr ? "تعطيل الوجهة" : "Disable") : (isAr ? "تفعيل الوجهة" : "Enable")}
-                        icon={d.isActive ? <XCircleIcon size={15} /> : <CheckCircleIcon size={15} />}
-                        onClick={() => toggleDestinationStatus(d.id)}
-                      />
-                      <IconButton
-                        variant="ghost"
-                        size="sm"
-                        title={isAr ? "حذف الوجهة" : "Delete"}
-                        icon={<TrashIcon size={15} />}
-                        onClick={() => handleDeleteDestination(d)}
-                        style={{ color: "#EF4444" }}
-                      />
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {/* New Category Modal */}
-      <Modal
-        isOpen={showCategoryModal}
-        onClose={() => setShowCategoryModal(false)}
-        title={isAr ? "إضافة قسم سياحي جديد" : "Add New Category"}
-        subtitle={isAr ? "إضافة تصنيف سياحي جديد في الكتالوج" : "Create new tour category in catalog"}
-        maxWidth="520px"
-      >
-        <form onSubmit={handleCreateCategory}>
-          <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginBottom: "20px" }}>
-            <div>
-              <label style={{ display: "block", fontSize: "12px", color: "var(--color-text-secondary)", marginBottom: "4px" }}>{isAr ? "اسم القسم بالعربية" : "Category Name (Arabic)"}</label>
-              <input type="text" required placeholder="مثال: رحلات المناطيد والتأمل" value={catNameAr} onChange={(e) => setCatNameAr(e.target.value)} style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", background: "var(--color-bg-secondary)", border: "1px solid var(--color-border)", color: "var(--color-text-primary)", outline: "none", fontSize: "13px" }} />
-            </div>
-
-            <div>
-              <label style={{ display: "block", fontSize: "12px", color: "var(--color-text-secondary)", marginBottom: "4px" }}>{isAr ? "اسم القسم بالإنجليزية" : "Category Name (English)"}</label>
-              <input type="text" required placeholder="Hot Air Balloon Tours" value={catNameEn} onChange={(e) => setCatNameEn(e.target.value)} style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", background: "var(--color-bg-secondary)", border: "1px solid var(--color-border)", color: "var(--color-text-primary)", outline: "none", fontSize: "13px" }} />
-            </div>
-
-            <div>
-              <label style={{ display: "block", fontSize: "12px", color: "var(--color-text-secondary)", marginBottom: "4px" }}>{isAr ? "الـ Slug في الرابط" : "URL Slug"}</label>
-              <input type="text" placeholder="hot-air-balloon" value={catSlug} onChange={(e) => setCatSlug(e.target.value)} style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", background: "var(--color-bg-secondary)", border: "1px solid var(--color-border)", color: "var(--color-text-primary)", outline: "none", fontSize: "13px" }} />
-            </div>
-
-            <div>
-              <label style={{ display: "block", fontSize: "12px", color: "var(--color-text-secondary)", marginBottom: "4px" }}>{isAr ? "وصف مختصر للقسم" : "Description"}</label>
-              <textarea rows={3} placeholder="وصف تجارب هذا القسم..." value={catDesc} onChange={(e) => setCatDesc(e.target.value)} style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", background: "var(--color-bg-secondary)", border: "1px solid var(--color-border)", color: "var(--color-text-primary)", outline: "none", fontSize: "13px" }} />
-            </div>
+      {/* Modal: Create Category */}
+      <Modal isOpen={showCategoryModal} onClose={() => setShowCategoryModal(false)} title="إضافة قسم سياحي جديد" maxWidth="500px">
+        <form onSubmit={handleCreateCategory} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+          <div>
+            <label style={{ display: "block", fontSize: "12px", fontWeight: 700, marginBottom: "4px" }}>الاسم بالعربية</label>
+            <input
+              type="text"
+              placeholder="مثال: السياحة الفلكية والصحراوية"
+              value={catNameAr}
+              onChange={(e) => setCatNameAr(e.target.value)}
+              required
+              style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid var(--color-border)", background: "var(--color-bg-primary)" }}
+            />
           </div>
 
-          <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
-            <Button variant="ghost" size="md" type="button" onClick={() => setShowCategoryModal(false)}>{isAr ? "إلغاء" : "Cancel"}</Button>
-            <Button variant="primary" size="md" type="submit">{isAr ? "حفظ وإضافة القسم 🗂️" : "Save Category"}</Button>
+          <div>
+            <label style={{ display: "block", fontSize: "12px", fontWeight: 700, marginBottom: "4px" }}>الاسم بالإنجليزية</label>
+            <input
+              type="text"
+              placeholder="e.g. Astro & Desert Tourism"
+              value={catNameEn}
+              onChange={(e) => setCatNameEn(e.target.value)}
+              style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid var(--color-border)", background: "var(--color-bg-primary)" }}
+            />
+          </div>
+
+          <div>
+            <label style={{ display: "block", fontSize: "12px", fontWeight: 700, marginBottom: "4px" }}>الوصف المختصر</label>
+            <textarea
+              placeholder="وصف القسم السياحي وما يتضمنه من أنشطة..."
+              value={catDesc}
+              onChange={(e) => setCatDesc(e.target.value)}
+              rows={3}
+              style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid var(--color-border)", background: "var(--color-bg-primary)" }}
+            />
+          </div>
+
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "8px" }}>
+            <Button variant="ghost" size="md" onClick={() => setShowCategoryModal(false)} type="button">إلغاء</Button>
+            <Button variant="primary" size="md" type="submit">إضافة وتفعيل القسم</Button>
           </div>
         </form>
       </Modal>
 
-      {/* New Destination Modal */}
-      <Modal
-        isOpen={showDestinationModal}
-        onClose={() => setShowDestinationModal(false)}
-        title={isAr ? "إضافة وجهة سياحية سعودية جديدة" : "Add Saudi Destination"}
-        subtitle={isAr ? "إدراج مدينة أو وجهة سياحية جديدة في المملكة" : "Add new Saudi tourism city or destination"}
-        maxWidth="520px"
-      >
-        <form onSubmit={handleCreateDestination}>
-          <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginBottom: "20px" }}>
-            <div>
-              <label style={{ display: "block", fontSize: "12px", color: "var(--color-text-secondary)", marginBottom: "4px" }}>{isAr ? "اسم الوجهة بالعربية" : "Destination Name (Arabic)"}</label>
-              <input type="text" required placeholder="مثال: جزر أملج والوجه" value={destNameAr} onChange={(e) => setDestNameAr(e.target.value)} style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", background: "var(--color-bg-secondary)", border: "1px solid var(--color-border)", color: "var(--color-text-primary)", outline: "none", fontSize: "13px" }} />
-            </div>
-
-            <div>
-              <label style={{ display: "block", fontSize: "12px", color: "var(--color-text-secondary)", marginBottom: "4px" }}>{isAr ? "اسم الوجهة بالإنجليزية" : "Destination Name (English)"}</label>
-              <input type="text" required placeholder="Umluj Islands" value={destNameEn} onChange={(e) => setDestNameEn(e.target.value)} style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", background: "var(--color-bg-secondary)", border: "1px solid var(--color-border)", color: "var(--color-text-primary)", outline: "none", fontSize: "13px" }} />
-            </div>
-
-            <div>
-              <label style={{ display: "block", fontSize: "12px", color: "var(--color-text-secondary)", marginBottom: "4px" }}>{isAr ? "المنطقة الجغرافية" : "Region"}</label>
-              <input type="text" placeholder="منطقة تبوك والبحر الأحمر" value={destRegion} onChange={(e) => setDestRegion(e.target.value)} style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", background: "var(--color-bg-secondary)", border: "1px solid var(--color-border)", color: "var(--color-text-primary)", outline: "none", fontSize: "13px" }} />
-            </div>
+      {/* Modal: Create Destination */}
+      <Modal isOpen={showDestinationModal} onClose={() => setShowDestinationModal(false)} title="إضافة وجهة سياحية جديدة" maxWidth="500px">
+        <form onSubmit={handleCreateDestination} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+          <div>
+            <label style={{ display: "block", fontSize: "12px", fontWeight: 700, marginBottom: "4px" }}>اسم الوجهة بالعربية</label>
+            <input
+              type="text"
+              placeholder="مثال: حائل وجبال أجا وسلمى"
+              value={destNameAr}
+              onChange={(e) => setDestNameAr(e.target.value)}
+              required
+              style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid var(--color-border)", background: "var(--color-bg-primary)" }}
+            />
           </div>
 
-          <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
-            <Button variant="ghost" size="md" type="button" onClick={() => setShowDestinationModal(false)}>{isAr ? "إلغاء" : "Cancel"}</Button>
-            <Button variant="primary" size="md" type="submit">{isAr ? "حفظ وإضافة الوجهة 📍" : "Save Destination"}</Button>
+          <div>
+            <label style={{ display: "block", fontSize: "12px", fontWeight: 700, marginBottom: "4px" }}>اسم الوجهة بالإنجليزية</label>
+            <input
+              type="text"
+              placeholder="e.g. Hail & Aja Mountains"
+              value={destNameEn}
+              onChange={(e) => setDestNameEn(e.target.value)}
+              style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid var(--color-border)", background: "var(--color-bg-primary)" }}
+            />
+          </div>
+
+          <div>
+            <label style={{ display: "block", fontSize: "12px", fontWeight: 700, marginBottom: "4px" }}>المنطقة الإدارية</label>
+            <input
+              type="text"
+              placeholder="مثال: منطقة حائل والشمال"
+              value={destRegion}
+              onChange={(e) => setDestRegion(e.target.value)}
+              style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid var(--color-border)", background: "var(--color-bg-primary)" }}
+            />
+          </div>
+
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "8px" }}>
+            <Button variant="ghost" size="md" onClick={() => setShowDestinationModal(false)} type="button">إلغاء</Button>
+            <Button variant="primary" size="md" type="submit">إضافة الوجهة وتفعيلها</Button>
           </div>
         </form>
       </Modal>

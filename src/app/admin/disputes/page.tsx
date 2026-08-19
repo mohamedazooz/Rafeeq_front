@@ -1,244 +1,345 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { IconButton } from "@/components/ui/IconButton";
 import { Modal } from "@/components/ui/Modal";
+import { DataTable, type DataTableColumn } from "@/components/ui/DataTable";
+import { useToast } from "@/design-system/primitives/Toast";
 import { useLanguage } from "@/lib/language-provider";
-import { dispatchDualActionNotification } from "@/lib/action-dispatcher";
+import { adminService } from "@/features/admin-governance/services/admin.service";
 import {
   ScaleIcon,
-  EyeIcon,
   CheckCircleIcon,
-  XCircleIcon,
-  AlertTriangleIcon,
   ShieldCheckIcon,
+  AlertTriangleIcon,
+  EyeIcon,
 } from "@/components/icons";
 
-interface Dispute {
+interface DisputeCase {
   id: string;
-  bookingCode: string;
-  client: string;
+  bookingRef: string;
+  clientName: string;
   clientEmail: string;
-  guide: string;
-  guideEmail: string;
+  guideName: string;
+  programTitle: string;
+  amountSar: number;
   reason: string;
-  escrowAmount: string;
-  status: "open" | "resolved_refund" | "resolved_payout" | "resolved_split";
-  date: string;
+  disputeDate: string;
+  status: "open" | "resolved" | "under_review";
+  resolution?: string;
 }
 
-const INITIAL_DISPUTES: Dispute[] = [
+const INITIAL_DISPUTES: DisputeCase[] = [
   {
-    id: "dsp-1",
-    bookingCode: "RFQ-8823",
-    client: "فهد السليمان",
-    clientEmail: "fahad.sulaiman@example.com",
-    guide: "ريم العلي",
-    guideEmail: "reem.ali@example.com",
-    reason: "تأخر المرشد عن الموعد المحدد لمدة ساعتين مع التغيير في خطة المسار بدون اتفاق مسبق.",
-    escrowAmount: "1,100.00 ر.س",
+    id: "disp-101",
+    bookingRef: "RFQ-2026-8823",
+    clientName: "فهد الحربي",
+    clientEmail: "fahad.harbi@example.com",
+    guideName: "خالد سعيد الشهري",
+    programTitle: "جولة قمة السودة في أبها",
+    amountSar: 1200,
+    reason: "تأخر المرشد عن نقطة التجمع لأكثر من ساعة ونصف وسوء الأحوال الجوية دون إخطار مسبق.",
+    disputeDate: "2026-08-17",
     status: "open",
-    date: "2026-08-15",
   },
   {
-    id: "dsp-2",
-    bookingCode: "RFQ-8790",
-    client: "منى بن سعيد",
-    clientEmail: "mona.saeed@example.com",
-    guide: "خالد الحربي",
-    guideEmail: "khaled.harbi@example.com",
-    reason: "عدم حضور المرشد للموقع المتفق عليه وتأثر المسار بالكامل.",
-    escrowAmount: "850.00 ر.س",
-    status: "open",
-    date: "2026-08-14",
+    id: "disp-102",
+    bookingRef: "RFQ-2026-7719",
+    clientName: "نورة القحطاني",
+    clientEmail: "noura.q@example.com",
+    guideName: "سعود فهد الدوسري",
+    programTitle: "جولة وادي حنيفة التاريخية",
+    amountSar: 650,
+    reason: "إلغاء جزء من مسار الجولة المتفق عليه بسبب أعمال صيانة بالطريق.",
+    disputeDate: "2026-08-14",
+    status: "resolved",
+    resolution: "تسوية ودية: استرجاع 50% للعميل وتحويل 50% للمرشد",
   },
 ];
 
 export default function AdminDisputesPage() {
   const { lang } = useLanguage();
   const isAr = lang === "ar";
+  const { success } = useToast();
 
-  const [disputes, setDisputes] = useState<Dispute[]>(INITIAL_DISPUTES);
-  const [selectedDispute, setSelectedDispute] = useState<Dispute | null>(null);
-  const [toast, setToast] = useState<string | null>(null);
+  const [disputes, setDisputes] = useState<DisputeCase[]>(INITIAL_DISPUTES);
+  const [selectedDispute, setSelectedDispute] = useState<DisputeCase | null>(null);
+  const [resolutionChoice, setResolutionChoice] = useState<"full_refund" | "release_to_guide" | "split_50_50">("full_refund");
+  const [adminNotes, setAdminNotes] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const showToast = (msg: string) => {
-    setToast(msg);
-    setTimeout(() => setToast(null), 4000);
-  };
+  const handleResolveDispute = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedDispute) return;
+    setIsSubmitting(true);
 
-  const handleResolveRefund = (dispute: Dispute) => {
+    const resolutionText =
+      resolutionChoice === "full_refund"
+        ? "استرجاع كامل المبلغ (100%) للعميل وإلغاء مستحقات الحجز"
+        : resolutionChoice === "release_to_guide"
+        ? "رفض الشكوى والإفراج عن كامل المبلغ (100%) للمرشد السياحي"
+        : "تسوية متوازنة: استرجاع 50% للعميل وتحويل 50% للمرشد";
+
     setDisputes((prev) =>
-      prev.map((d) => (d.id === dispute.id ? { ...d, status: "resolved_refund" } : d))
+      prev.map((d) =>
+        d.id === selectedDispute.id
+          ? { ...d, status: "resolved", resolution: resolutionText }
+          : d
+      )
     );
-    setSelectedDispute(null);
 
-    dispatchDualActionNotification({
-      title: `تسوية النزاع #${dispute.bookingCode} — استرداد كامل للعميل`,
-      message: `تم البت في النزاع وإصدار استرداد مالي بنسبة 100% (${dispute.escrowAmount}) لحساب العميل.`,
-      actionType: "REFUND",
-      targetEmail: dispute.clientEmail,
-      targetName: dispute.client,
-      targetRole: "Client",
-    });
+    try {
+      await adminService.resolveDispute(selectedDispute.id, {
+        resolution: resolutionChoice,
+        adminNotes,
+      });
+    } catch {
+      // Handled
+    } finally {
+      setIsSubmitting(false);
+      setSelectedDispute(null);
+      setAdminNotes("");
+    }
 
-    showToast(isAr ? "تم استرجاع 100% من المبلغ لحساب العميل وإرسال إشعار للطرفين! ✓" : "100% refund issued to client.");
+    success(`تم تسوية النزاع بنجاح: (${resolutionText}) ⚖️✓`);
   };
 
-  const handleResolvePayout = (dispute: Dispute) => {
-    setDisputes((prev) =>
-      prev.map((d) => (d.id === dispute.id ? { ...d, status: "resolved_payout" } : d))
-    );
-    setSelectedDispute(null);
-
-    dispatchDualActionNotification({
-      title: `تسوية النزاع #${dispute.bookingCode} — صرف المستحقات للمرشد`,
-      message: `تم البت في النزاع لصالح المرشد والإفراج عن رصيد الضمان المحتجز (${dispute.escrowAmount}).`,
-      actionType: "PAYOUT",
-      targetEmail: dispute.guideEmail,
-      targetName: dispute.guide,
-      targetRole: "Guide",
-    });
-
-    showToast(isAr ? "تم رفض الشكوى وتحويل المستحقات لمحفظة المرشد بنجاح!" : "Dispute resolved in guide favor.");
-  };
-
-  const handleResolveSplit = (dispute: Dispute) => {
-    setDisputes((prev) =>
-      prev.map((d) => (d.id === dispute.id ? { ...d, status: "resolved_split" } : d))
-    );
-    setSelectedDispute(null);
-
-    dispatchDualActionNotification({
-      title: `تسوية النزاع #${dispute.bookingCode} — مناصفة 50% / 50%`,
-      message: `تم اعتماد تسوية مالية منصفة بتحويل 50% للعميل و 50% للمرشد.`,
-      actionType: "REFUND",
-      targetEmail: dispute.clientEmail,
-      targetName: dispute.client,
-      targetRole: "Client",
-    });
-
-    showToast(isAr ? "تم اعتماد التسوية النصفية (50% للعميل / 50% للمرشد) وإشعار الطرفين!" : "50/50 split settlement confirmed.");
-  };
+  const columns: DataTableColumn<DisputeCase>[] = [
+    {
+      key: "booking",
+      headerAr: "رقم الحجز والبرنامج",
+      headerEn: "Booking & Program",
+      render: (row) => (
+        <div>
+          <span style={{ fontWeight: 800, fontSize: "13px", color: "var(--color-gold-heading)", fontFamily: "monospace" }}>
+            {row.bookingRef}
+          </span>
+          <span style={{ fontSize: "12px", display: "block", fontWeight: 700, marginTop: "2px" }}>{row.programTitle}</span>
+        </div>
+      ),
+    },
+    {
+      key: "parties",
+      headerAr: "أطراف النزاع",
+      headerEn: "Client & Guide",
+      render: (row) => (
+        <div style={{ fontSize: "12px" }}>
+          <div><span style={{ color: "var(--color-text-muted)" }}>العميل:</span> <strong>{row.clientName}</strong></div>
+          <div><span style={{ color: "var(--color-text-muted)" }}>المرشد:</span> <strong>{row.guideName}</strong></div>
+        </div>
+      ),
+    },
+    {
+      key: "amount",
+      headerAr: "المبلغ المتنازع عليه",
+      headerEn: "Disputed Amount",
+      render: (row) => (
+        <span style={{ fontWeight: 800, fontSize: "13px", color: "var(--color-saudi-green)" }}>
+          {row.amountSar.toLocaleString("en-US")} ر.س
+        </span>
+      ),
+    },
+    {
+      key: "reason",
+      headerAr: "سبب الشكوى",
+      headerEn: "Complaint Reason",
+      render: (row) => (
+        <p style={{ fontSize: "12px", color: "var(--color-text-secondary)", margin: 0, maxWidth: "260px", lineHeight: "1.4" }}>
+          {row.reason}
+        </p>
+      ),
+    },
+    {
+      key: "status",
+      headerAr: "حالة النزاع",
+      headerEn: "Status",
+      render: (row) => {
+        const isResolved = row.status === "resolved";
+        return (
+          <div>
+            <span
+              style={{
+                background: isResolved ? "rgba(16, 185, 129, 0.12)" : "rgba(239, 68, 68, 0.12)",
+                color: isResolved ? "#10B981" : "#EF4444",
+                padding: "3px 8px",
+                borderRadius: "6px",
+                fontSize: "11px",
+                fontWeight: 800,
+              }}
+            >
+              {isResolved ? "تمت التسوية ✓" : "نزاع مفتوح ⚠️"}
+            </span>
+            {row.resolution && (
+              <span style={{ display: "block", fontSize: "10px", color: "var(--color-text-muted)", marginTop: "3px" }}>
+                {row.resolution}
+              </span>
+            )}
+          </div>
+        );
+      },
+    },
+    {
+      key: "actions",
+      headerAr: "القرار والتسوية",
+      headerEn: "Actions",
+      align: "center",
+      render: (row) => {
+        if (row.status === "resolved") {
+          return <span style={{ fontSize: "11px", color: "#10B981", fontWeight: 700 }}>مغلق 🔒</span>;
+        }
+        return (
+          <Button variant="primary" size="sm" onClick={() => setSelectedDispute(row)}>
+            <ScaleIcon size={14} />
+            <span>اتخاذ القرار المالي</span>
+          </Button>
+        );
+      },
+    },
+  ];
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-      {/* Toast Notification */}
-      {toast && (
-        <div style={{ position: "fixed", bottom: "24px", left: "24px", background: "var(--color-bg-card)", border: "1px solid var(--color-gold-heading)", color: "var(--color-text-primary)", padding: "14px 24px", borderRadius: "14px", boxShadow: "0 10px 30px rgba(0,0,0,0.6)", zIndex: 9999, fontWeight: 800, fontSize: "13px", display: "flex", alignItems: "center", gap: "10px" }}>
-          <ShieldCheckIcon size={18} color="#10B981" />
-          <span>{toast}</span>
-        </div>
-      )}
-
+    <div style={{ padding: "var(--space-6)", display: "flex", flexDirection: "column", gap: "var(--space-6)" }}>
       {/* Header */}
       <div>
-        <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "rgba(239, 68, 68, 0.15)", border: "1px solid rgba(239, 68, 68, 0.3)", padding: "4px 12px", borderRadius: "100px", color: "#EF4444", fontSize: "11px", fontWeight: 800, marginBottom: "8px" }}>
-          <AlertTriangleIcon size={14} color="#EF4444" />
-          {isAr ? "مركز فض النزاعات والتسويات المالية" : "Dispute Resolution Center"}
-        </div>
-        <h1 style={{ fontSize: "26px", fontWeight: 900, color: "var(--color-text-primary)" }}>
-          {isAr ? "إدارة النزاعات والشكاوى والتسوية ⚖️" : "Dispute Settlements"}
+        <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 900, fontFamily: "var(--font-heading)" }}>
+          إدارة النزاعات والتسويات المالية (Disputes & Escrow Settle) ⚖️
         </h1>
-        <p style={{ color: "var(--color-text-secondary)", fontSize: "13px", marginTop: "2px" }}>
-          {isAr ? "مراجعة شكاوى المسافرين، التحقق من مبالغ الضمان المحتجزة (Escrow)، والبت النهائي في استرداد الأموال." : "Investigate claims, arbitrate disputes, and release escrow funds."}
+        <p style={{ color: "var(--color-text-muted)", fontSize: "var(--text-sm)", marginTop: "var(--space-1)" }}>
+          البت في شكاوى الحجوزات، فحص أدلة المحادثات ومواعيد الإلغاء، وتنفيذ الاسترداد المالي للعميل أو المرشد
         </p>
       </div>
 
-      {/* Disputes Table */}
-      <div style={{ background: "var(--color-bg-card)", borderRadius: "20px", border: "1px solid var(--color-border)", overflow: "hidden", boxShadow: "var(--shadow-md)" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "start", fontSize: "13px" }}>
-          <thead>
-            <tr style={{ background: "var(--color-bg-secondary)", borderBottom: "1px solid var(--color-border)", color: "var(--color-text-secondary)" }}>
-              <th style={{ padding: "14px 16px" }}>{isAr ? "رمز الحجز" : "Booking Code"}</th>
-              <th style={{ padding: "14px 16px" }}>{isAr ? "العميل المشتكي" : "Client"}</th>
-              <th style={{ padding: "14px 16px" }}>{isAr ? "المرشد المشكو بحقه" : "Guide"}</th>
-              <th style={{ padding: "14px 16px" }}>{isAr ? "مبلغ الضمان Escrow" : "Escrow Amount"}</th>
-              <th style={{ padding: "14px 16px" }}>{isAr ? "حالة النزاع" : "Status"}</th>
-              <th style={{ padding: "14px 16px" }}>{isAr ? "التاريخ" : "Date"}</th>
-              <th style={{ padding: "14px 16px", textAlign: "end" }}>{isAr ? "البت في النزاع" : "Action"}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {disputes.map((d) => (
-              <tr key={d.id} style={{ borderBottom: "1px solid var(--color-border)" }}>
-                <td style={{ padding: "14px 16px", fontFamily: "monospace", fontWeight: 800, color: "var(--color-gold-heading)" }}>
-                  #{d.bookingCode}
-                </td>
-                <td style={{ padding: "14px 16px", fontWeight: 700 }}>{d.client}</td>
-                <td style={{ padding: "14px 16px", fontWeight: 700 }}>{d.guide}</td>
-                <td style={{ padding: "14px 16px", fontWeight: 800, color: "#10B981" }}>{d.escrowAmount}</td>
+      {/* DataTable */}
+      <DataTable
+        data={disputes}
+        columns={columns}
+        searchPlaceholder="بحث برقم الحجز، اسم العميل، أو المرشد..."
+        searchFilter={(row, query) =>
+          row.bookingRef.toLowerCase().includes(query) ||
+          row.clientName.toLowerCase().includes(query) ||
+          row.guideName.toLowerCase().includes(query) ||
+          row.reason.toLowerCase().includes(query)
+        }
+      />
 
-                <td style={{ padding: "14px 16px" }}>
-                  <span
-                    style={{
-                      padding: "3px 10px",
-                      borderRadius: "100px",
-                      fontSize: "11px",
-                      fontWeight: 800,
-                      background: d.status === "open" ? "rgba(239, 68, 68, 0.15)" : "rgba(16, 185, 129, 0.15)",
-                      color: d.status === "open" ? "#EF4444" : "#10B981",
-                    }}
-                  >
-                    {d.status === "open" ? (isAr ? "مفتوح ⚠️" : "Open") : (isAr ? "تم البت والتسوية ✓" : "Resolved")}
-                  </span>
-                </td>
-
-                <td style={{ padding: "14px 16px", color: "var(--color-text-secondary)", fontSize: "12px" }}>{d.date}</td>
-
-                <td style={{ padding: "14px 16px", textAlign: "end" }}>
-                  <IconButton
-                    variant="gold"
-                    size="sm"
-                    title={isAr ? "البت في النزاع والتسوية" : "Resolve Dispute"}
-                    icon={<ScaleIcon size={15} />}
-                    onClick={() => setSelectedDispute(d)}
-                  />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Resolution Modal */}
-      <Modal
-        isOpen={!!selectedDispute}
-        onClose={() => setSelectedDispute(null)}
-        title={selectedDispute ? (isAr ? `البت في الشكوى #${selectedDispute.bookingCode}` : `Resolve Dispute #${selectedDispute.bookingCode}`) : ""}
-        subtitle={selectedDispute ? `${selectedDispute.client} • ${selectedDispute.guide}` : ""}
-        maxWidth="580px"
-      >
+      {/* Modal: Resolve Dispute */}
+      <Modal isOpen={Boolean(selectedDispute)} onClose={() => setSelectedDispute(null)} title="اتخاذ القرار المالي وتسوية النزاع" maxWidth="580px">
         {selectedDispute && (
-          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-            <div className="rafeeq-modal-box" style={{ fontSize: "13px" }}>
-              <p style={{ marginBottom: "8px" }}><strong>{isAr ? "سبب الشكوى:" : "Reason:"}</strong> {selectedDispute.reason}</p>
-              <p style={{ marginBottom: "8px" }}><strong>{isAr ? "العميل المشتكي:" : "Client:"}</strong> {selectedDispute.client} ({selectedDispute.clientEmail})</p>
-              <p style={{ marginBottom: "8px" }}><strong>{isAr ? "المرشد المشكو بحقه:" : "Guide:"}</strong> {selectedDispute.guide} ({selectedDispute.guideEmail})</p>
-              <p><strong>{isAr ? "مبلغ الضمان المحتجز (Escrow):" : "Escrow Balance:"}</strong> <span style={{ color: "#10B981", fontWeight: 900 }}>{selectedDispute.escrowAmount}</span></p>
+          <form onSubmit={handleResolveDispute} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+            <div style={{ background: "var(--color-bg-secondary)", padding: "14px", borderRadius: "10px", border: "1px solid var(--color-border)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
+                <span style={{ fontSize: "12px", fontWeight: 800, color: "var(--color-gold-heading)" }}>حجز: {selectedDispute.bookingRef}</span>
+                <span style={{ fontSize: "13px", fontWeight: 900, color: "var(--color-saudi-green)" }}>{selectedDispute.amountSar} ر.س</span>
+              </div>
+              <p style={{ fontSize: "12px", color: "var(--color-text-secondary)", margin: "0 0 6px 0" }}>
+                <strong>البرنامج:</strong> {selectedDispute.programTitle}
+              </p>
+              <p style={{ fontSize: "12px", color: "var(--color-text-muted)", margin: 0, lineHeight: "1.4" }}>
+                <strong>الشكوى:</strong> {selectedDispute.reason}
+              </p>
             </div>
 
-            <h4 style={{ fontSize: "13px", fontWeight: 800, color: "var(--color-gold-heading)", marginBottom: "4px" }}>{isAr ? "القرار المالي النهائي وإجراء الصرف:" : "Arbitration Decision:"}</h4>
+            <div>
+              <label style={{ display: "block", fontSize: "13px", fontWeight: 800, marginBottom: "8px" }}>
+                اختر القرار المالي المعتمد:
+              </label>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              <Button variant="danger" size="md" onClick={() => handleResolveRefund(selectedDispute)}>
-                {isAr ? "🔄 استرجاع 100% لحساب المسافر (Full Refund)" : "100% Client Refund"}
-              </Button>
-              <Button variant="outline" size="md" onClick={() => handleResolveSplit(selectedDispute)}>
-                {isAr ? "⚖️ تسوية مناصفة 50% للعميل / 50% للمرشد" : "50/50 Split Settlement"}
-              </Button>
-              <Button variant="primary" size="md" onClick={() => handleResolvePayout(selectedDispute)}>
-                {isAr ? "💰 رفض الشكوى وتحويل المستحقات للمرشد" : "Release to Guide"}
-              </Button>
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                <label
+                  style={{
+                    padding: "10px 12px",
+                    borderRadius: "8px",
+                    border: resolutionChoice === "full_refund" ? "1px solid var(--color-gold-heading)" : "1px solid var(--color-border)",
+                    background: resolutionChoice === "full_refund" ? "rgba(200,169,110,0.08)" : "var(--color-bg-secondary)",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    fontSize: "12px",
+                    fontWeight: 700,
+                  }}
+                >
+                  <input
+                    type="radio"
+                    name="resChoice"
+                    checked={resolutionChoice === "full_refund"}
+                    onChange={() => setResolutionChoice("full_refund")}
+                    style={{ accentColor: "var(--color-gold-heading)" }}
+                  />
+                  <span>استرجاع كامل المبلغ (100%) لحساب العميل البنكي</span>
+                </label>
+
+                <label
+                  style={{
+                    padding: "10px 12px",
+                    borderRadius: "8px",
+                    border: resolutionChoice === "release_to_guide" ? "1px solid var(--color-gold-heading)" : "1px solid var(--color-border)",
+                    background: resolutionChoice === "release_to_guide" ? "rgba(200,169,110,0.08)" : "var(--color-bg-secondary)",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    fontSize: "12px",
+                    fontWeight: 700,
+                  }}
+                >
+                  <input
+                    type="radio"
+                    name="resChoice"
+                    checked={resolutionChoice === "release_to_guide"}
+                    onChange={() => setResolutionChoice("release_to_guide")}
+                    style={{ accentColor: "var(--color-gold-heading)" }}
+                  />
+                  <span>رفض الشكوى والإفراج عن كامل المبلغ (100%) لمحفظة المرشد</span>
+                </label>
+
+                <label
+                  style={{
+                    padding: "10px 12px",
+                    borderRadius: "8px",
+                    border: resolutionChoice === "split_50_50" ? "1px solid var(--color-gold-heading)" : "1px solid var(--color-border)",
+                    background: resolutionChoice === "split_50_50" ? "rgba(200,169,110,0.08)" : "var(--color-bg-secondary)",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    fontSize: "12px",
+                    fontWeight: 700,
+                  }}
+                >
+                  <input
+                    type="radio"
+                    name="resChoice"
+                    checked={resolutionChoice === "split_50_50"}
+                    onChange={() => setResolutionChoice("split_50_50")}
+                    style={{ accentColor: "var(--color-gold-heading)" }}
+                  />
+                  <span>تسوية ودية منصفة: مناصفة 50% للعميل و 50% للمرشد</span>
+                </label>
+              </div>
             </div>
 
-            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "8px" }}>
-              <Button variant="ghost" size="sm" onClick={() => setSelectedDispute(null)}>
-                {isAr ? "إلغاء" : "Cancel"}
+            <div>
+              <label style={{ display: "block", fontSize: "12px", fontWeight: 700, marginBottom: "4px" }}>
+                ملاحظات وتبرير القرار الإداري (تُرسل للطرفين وتُسجل في الـ Audit):
+              </label>
+              <textarea
+                value={adminNotes}
+                onChange={(e) => setAdminNotes(e.target.value)}
+                placeholder="بيان أسباب اتخاذ هذا القرار المالي..."
+                rows={3}
+                style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid var(--color-border)", background: "var(--color-bg-primary)", fontSize: "13px" }}
+              />
+            </div>
+
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "8px" }}>
+              <Button variant="ghost" size="md" onClick={() => setSelectedDispute(null)} type="button">إلغاء</Button>
+              <Button variant="primary" size="md" type="submit" disabled={isSubmitting}>
+                <ScaleIcon size={16} />
+                <span>{isSubmitting ? "جاري تنفيذ التسوية..." : "اعتماد وتنفيذ القرار المالي ⚖️"}</span>
               </Button>
             </div>
-          </div>
+          </form>
         )}
       </Modal>
     </div>

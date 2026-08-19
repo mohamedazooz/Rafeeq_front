@@ -36,10 +36,19 @@ export const metadata: Metadata = {
     template: "%s | رفيق",
   },
   icons: {
-    icon: "/icon.png",
-    shortcut: "/icon.png",
-    apple: "/icon.png",
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/icon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
   },
+  manifest: "/manifest.webmanifest",
   description:
     "منصة رفيق تربطك بأفضل المرشدين السياحيين المعتمدين في المملكة العربية السعودية. اكتشف برامج سياحية فريدة في الرياض، العلا، جدة، عسير والمزيد.",
   keywords: [
@@ -61,11 +70,20 @@ export const metadata: Metadata = {
     locale: "ar_SA",
     alternateLocale: "en_US",
     siteName: "رفيق",
+    images: [
+      {
+        url: "/logo-emblem.png",
+        width: 1024,
+        height: 1024,
+        alt: "رفيق | منصة السياحة السعودية",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "رفيق",
     description: "اكتشف السعودية مع مرشد محلي معتمد",
+    images: ["/logo-emblem.png"],
   },
   robots: {
     index: true,
@@ -77,6 +95,7 @@ import { HeaderShell } from "@/components/layout/HeaderShell";
 import { FooterShell } from "@/components/layout/FooterShell";
 import { ThemeProvider } from "@/lib/theme-provider";
 import { LanguageProvider } from "@/lib/language-provider";
+import { ToastProvider } from "@/design-system/primitives";
 
 export default function RootLayout({
   children,
@@ -92,12 +111,15 @@ export default function RootLayout({
       <body className={cairo.className}>
         <LanguageProvider>
           <ThemeProvider>
-            <HeaderShell />
-            {children}
-            <FooterShell />
+            <ToastProvider>
+              <HeaderShell />
+              {children}
+              <FooterShell />
+            </ToastProvider>
           </ThemeProvider>
         </LanguageProvider>
       </body>
     </html>
   );
 }
+

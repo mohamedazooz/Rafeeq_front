@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { BackButton } from "@/components/ui/BackButton";
+import { ProgramBookingSidebar } from "@/features/programs/components/ProgramBookingSidebar";
 
 interface ProgramDetail {
   readonly id: string;
@@ -220,70 +221,7 @@ export default async function ProgramDetailPage({
 
             {/* Right Sticky Booking Calculator Widget */}
             <div>
-              <div
-                className="glass"
-                style={{
-                  position: "sticky",
-                  top: "calc(var(--header-height) + var(--space-6))",
-                  padding: "var(--space-6)",
-                  borderRadius: "var(--radius-2xl)",
-                  border: "1px solid var(--color-gold-royal)",
-                  boxShadow: "var(--shadow-gold)",
-                }}
-              >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "var(--space-6)" }}>
-                  <div>
-                    <span style={{ fontSize: "var(--text-xs)", color: "var(--color-text-muted)" }}>سعر الشخص</span>
-                    <div>
-                      <span style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color: "var(--color-saudi-green)" }}>{prog.priceSar}</span>
-                      <span style={{ fontSize: "var(--text-xs)", color: "var(--color-text-secondary)", marginInlineStart: "var(--space-1)" }}>ر.س</span>
-                    </div>
-                  </div>
-                  <span style={{ fontSize: "var(--text-xs)", color: "var(--color-success)", fontWeight: 600 }}>🔒 دفع آمن بالضمان Escrow</span>
-                </div>
-
-                <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)", marginBottom: "var(--space-6)" }}>
-                  <div>
-                    <label style={{ display: "block", fontSize: "var(--text-xs)", fontWeight: 600, marginBottom: "var(--space-1)" }}>تاريخ الرحلة</label>
-                    <input
-                      type="date"
-                      style={{
-                        width: "100%",
-                        padding: "var(--space-3)",
-                        borderRadius: "var(--radius-md)",
-                        border: "1px solid var(--color-border)",
-                        fontSize: "var(--text-sm)",
-                      }}
-                    />
-                  </div>
-
-                  <div>
-                    <label style={{ display: "block", fontSize: "var(--text-xs)", fontWeight: 600, marginBottom: "var(--space-1)" }}>عدد المشاركين</label>
-                    <select
-                      style={{
-                        width: "100%",
-                        padding: "var(--space-3)",
-                        borderRadius: "var(--radius-md)",
-                        border: "1px solid var(--color-border)",
-                        fontSize: "var(--text-sm)",
-                      }}
-                    >
-                      <option value="1">1 شخص (850 ر.س)</option>
-                      <option value="2">2 شخص (1,700 ر.س)</option>
-                      <option value="3">3 أشخاص (2,550 ر.س)</option>
-                      <option value="4">4 أشخاص (3,400 ر.س)</option>
-                    </select>
-                  </div>
-                </div>
-
-                <Button variant="primary" fullWidth size="lg">
-                  احجز الآن وآمِن مقعدك
-                </Button>
-
-                <p style={{ fontSize: "var(--text-xs)", color: "var(--color-text-muted)", textAlign: "center", marginTop: "var(--space-3)" }}>
-                  تأكيد حجز تلقائي فور نجاح الدفع
-                </p>
-              </div>
+              <ProgramBookingSidebar programId={prog.id} priceSar={prog.priceSar} />
             </div>
           </div>
         </div>
